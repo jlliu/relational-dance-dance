@@ -11,6 +11,7 @@ body {
   width:100vw;
   height:100vh;
   overflow:hidden;
+  color:white;
   /* pointer-events:none; */
 }
 
@@ -23,6 +24,14 @@ canvas {
   transform: translate(-50%, -50%);
   cursor: none !important;
   transition: opacity 1s;
+}
+
+#feedback{
+  position:absolute;
+    left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index:1;
 }
 audio{
   display:none;

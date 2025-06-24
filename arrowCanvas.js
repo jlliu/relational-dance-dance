@@ -8,6 +8,11 @@ let relevantNotes = [];
 
 let songData;
 
+let scoreSpan = document.querySelector("#score");
+let scoreCount = 0;
+
+let feedback = document.querySelector("#feedback");
+
 var arrows = function (p) {
   let thisCanvas;
   let canvasRatio = canvasWidth / canvasHeight;
@@ -76,10 +81,6 @@ var arrows = function (p) {
   p.draw = function () {
     p.background("green");
 
-    // drawImageToScale(hitArrowImgs.left, hitPos.x, hitPos.y);
-    // drawImageToScale(hitArrowImgs.down, hitPos.x + 80, hitPos.y);
-    // drawImageToScale(hitArrowImgs.up, hitPos.x + 160, hitPos.y);
-    // drawImageToScale(hitArrowImgs.right, hitPos.x + 240, hitPos.y);
     Object.values(hitArrowObjs).forEach(function (arrowObj) {
       arrowObj.display();
     });
@@ -91,9 +92,7 @@ var arrows = function (p) {
 
   // current batch num is the measure of the current batch
   let currentBatchStartMeasure = 0;
-
   let bpm = 139;
-
   let currentMeasure = -1;
 
   function timeToMeasure() {}
@@ -107,11 +106,10 @@ var arrows = function (p) {
 
     //Given current time, what is the current measure?
 
-    let beats = t / secondsPerBeat;
-
-    let thisMeasure = Math.floor(beats / 4);
+    let currentBeat = t / secondsPerBeat;
+    let thisMeasure = Math.floor(currentBeat / 4);
     if (thisMeasure > currentMeasure) {
-      console.log("switched measure!");
+      console.log("Measure: " + thisMeasure);
       currentMeasure = thisMeasure;
 
       //Initialize
@@ -170,17 +168,109 @@ var arrows = function (p) {
 
   //Create arrows takes the relevant notes array and then creates objects for them
   function createArrows() {}
+
+  let margin = 25;
   function drawArrows() {
     // console.log(relevantNotes);
     relevantNotes.forEach(function (note) {
       let direction = note.direction;
       let pixelsPerBeat = 100;
 
+      let passedOver = false;
+
       // Get current y position
 
       let pixelsElapsed = (t / secondsPerBeat) * pixelsPerBeat;
       let yPos = hitPos.y + pixelsPerBeat * note.startBeat - pixelsElapsed;
-      drawImageToScale(arrowImgs[direction], arrow_xPos[direction], yPos);
+      note.currentY = yPos;
+
+      // Should this arrow be considered as a hit candidate?
+
+      if (yPos > hitPos.y - margin && yPos < hitPos.y + margin) {
+        //Note within our hit window!
+        note.isHitCandidate = true;
+      } else if (yPos < hitPos.y - margin) {
+        passedOver = true;
+        note.isHitCandidate = false;
+      }
+
+      // Draw at partial opacity if passed over
+      if (note.isHit) {
+        // Display nothing if it's hit
+      } else if (passedOver) {
+        p.tint(255, 127);
+        drawImageToScale(arrowImgs[direction], arrow_xPos[direction], yPos);
+        p.tint(255, 255);
+      } else {
+        drawImageToScale(arrowImgs[direction], arrow_xPos[direction], yPos);
+      }
+    });
+  }
+
+  function updateFeedback(feedbackText) {
+    console.log(feedbackText);
+    feedback.innerHTML = feedbackText;
+  }
+
+  function updateScore(score, note) {
+    console.log("updateScore");
+    console.log(score);
+
+    scoreCount++;
+    scoreSpan.innerHTML = scoreCount;
+    note.isHit = true;
+
+    if (score === "ok") {
+      updateFeedback("OKAY");
+    } else if (score === "great") {
+      updateFeedback("GREAT");
+    } else if (score === "perfect") {
+      updateFeedback("PERFECT!!");
+    }
+  }
+
+  function assessHit(direction) {
+    relevantNotes.forEach(function (note) {
+      if (note.isHitCandidate && note.direction == direction) {
+        let yPos = note.currentY;
+        console.log(yPos);
+
+        //Determine quality of hit
+        //TOO LATE - failed
+        if (yPos > hitPos.y - margin && yPos < hitPos.y - margin + 10) {
+          updateFeedback("TOO LATE!");
+        }
+        // A little late - Ok - PASS
+        else if (
+          yPos >= hitPos.y - margin + 10 &&
+          yPos < hitPos.y - margin + 17
+        ) {
+          updateScore("ok", note);
+        }
+        // Almost perfect - late
+        else if (
+          yPos >= hitPos.y - margin + 17 &&
+          yPos < hitPos.y - margin + 22
+        ) {
+          updateScore("great", note);
+        }
+        // Perfect - PASS
+        else if (yPos >= hitPos.y - 3 && yPos < hitPos.y + 3) {
+          updateScore("perfect", note);
+        }
+        // Almost perfect - late - PASS
+        else if (yPos >= hitPos.y + 3 && yPos < hitPos.y + 8) {
+          updateScore("great", note);
+        }
+        // A little early - OK - PASS
+        else if (yPos >= hitPos.y + 8 && yPos < hitPos.y + 15) {
+          updateScore("ok", note);
+        }
+        // TOO EARLY - Failed
+        else if (yPos >= hitPos.y + 15 && yPos < hitPos.y + margin) {
+          updateFeedback("TOO EARLY!");
+        }
+      }
     });
   }
 
@@ -193,15 +283,19 @@ var arrows = function (p) {
     ) {
       if (e.code == "ArrowLeft") {
         hitArrowObjs["left"].pressed = true;
+        assessHit("left");
       }
       if (e.code == "ArrowRight") {
         hitArrowObjs["right"].pressed = true;
+        assessHit("right");
       }
       if (e.code == "ArrowUp") {
         hitArrowObjs["up"].pressed = true;
+        assessHit("up");
       }
       if (e.code == "ArrowDown") {
         hitArrowObjs["down"].pressed = true;
+        assessHit("down");
       }
     }
   });
