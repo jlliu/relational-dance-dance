@@ -31,6 +31,7 @@ var arrows = function (p) {
   let hitArrowObjs = {};
 
   let holdMiddleImg;
+  let holdEndImgs;
 
   p.preload = function () {
     //Preload a background here
@@ -42,6 +43,12 @@ var arrows = function (p) {
       down: p.loadImage("assets/hit-arrow-down.png"),
     };
     holdMiddleImg = p.loadImage("assets/hold-middle.png");
+    holdEndImgs = {
+      left: p.loadImage("assets/left-hold-end.png"),
+      up: p.loadImage("assets/up-hold-end.png"),
+      right: p.loadImage("assets/right-hold-end.png"),
+      down: p.loadImage("assets/down-hold-end.png"),
+    };
     arrowImgs = {
       left: p.loadImage("assets/arrow-left.png"),
       up: p.loadImage("assets/arrow-up.png"),
@@ -62,8 +69,6 @@ var arrows = function (p) {
     p.noSmooth();
 
     songData = JSON.parse(songJson);
-    console.log("song data");
-    console.log(songData);
 
     hitArrowObjs = {
       left: new HitArrow("left", hitPos.x, hitPos.y),
@@ -82,7 +87,7 @@ var arrows = function (p) {
   let startDrawingArrows = false;
 
   p.draw = function () {
-    p.background("green");
+    p.background("pink");
 
     Object.values(hitArrowObjs).forEach(function (arrowObj) {
       arrowObj.display();
@@ -99,8 +104,6 @@ var arrows = function (p) {
   let currentBatchStartMeasure = 0;
   let bpm = 138;
   let currentMeasure = -1;
-
-  function timeToMeasure() {}
 
   let t = 0;
   let secondsPerBeat = 1 / (bpm / 60);
@@ -205,9 +208,6 @@ var arrows = function (p) {
       //Should this arrow, if a hold, be considered completed if we're still holding?
       let end_yPos = hitPos.y + pixelsPerBeat * note.endBeat - pixelsElapsed;
       if (end_yPos < hitPos.y && note.isHolding && !note.completedHold) {
-        console.log("completed hold");
-        // note.completedHold = true;
-        // note.isHolding = false;
         updateScore("ok", note);
       }
 
@@ -217,7 +217,7 @@ var arrows = function (p) {
 
   // Note type
   function drawArrow(note, yPos, passedOver) {
-    // Case: Draw instant notes only if they're NOT hit...
+    // Draw instant notes
     if (note.noteType == "instant" && !note.isHit) {
       if (passedOver) {
         p.tint(255, 127);
@@ -231,20 +231,8 @@ var arrows = function (p) {
         p.tint(255, 255);
       }
     } else if (note.noteType == "hold") {
-      // HOLDS
-      //   - case 1: hit first note, is currently holding in the middle
-      //   - case 2: hit first note, lifted up before end
-      //   - case 3: hit first note, held to completion, after arrow
-      //   -  case 4+5: missed entire hold, passes over grey, note is upcoming
+      // Draw holds
       let rectangleHeight;
-      // console.log(
-      //   "isHit: " +
-      //     note.isHit +
-      //     ", isHolding: " +
-      //     note.isHolding +
-      //     ", completedHold: " +
-      //     note.completedHold
-      // );
       if (note.isHit && note.isHolding && !note.completedHold) {
         // hit first note, is currently holding in the middle of hold
         rectangleHeight = pixelsPerBeat * (note.endBeat - currentBeat);
@@ -257,7 +245,7 @@ var arrows = function (p) {
         );
         // Draw arrow at end of rectangle
         drawImageToScale(
-          arrowImgs[note.direction],
+          holdEndImgs[note.direction],
           arrow_xPos[note.direction],
           hitPos.y + rectangleHeight
         );
@@ -285,7 +273,7 @@ var arrows = function (p) {
         );
         // Draw arrow at end of rectangle
         drawImageToScale(
-          arrowImgs[note.direction],
+          holdEndImgs[note.direction],
           arrow_xPos[note.direction],
           yPosReleased + rectangleHeight
         );
@@ -317,7 +305,7 @@ var arrows = function (p) {
           yPos
         );
         drawImageToScale(
-          arrowImgs[note.direction],
+          holdEndImgs[note.direction],
           arrow_xPos[note.direction],
           yPos + rectangleHeight
         );
@@ -401,18 +389,11 @@ var arrows = function (p) {
         note.isHolding &&
         note.direction == direction
       ) {
-        console.log("ASSESSING LIFT");
         // get the y pos of the end of the note
         let yPos =
           note.currentY + (note.endBeat - note.startBeat) * pixelsPerBeat;
         note.releasedBeat = currentBeat;
-        //Determine quality of hit
-        //Lift is TOO LATE... shouldn't do anything
-        // if (yPos > hitPos.y - Infinity && yPos < hitPos.y - 40) {
-        //   // updateFeedback("TOO LATE!");
-        //   note.isHolding = false;
-        //   note.completedHold = false;
-        // }
+
         // Lift is in range PASS
         if (yPos >= hitPos.y - Infinity && yPos < hitPos.y + 40) {
           updateScore("ok", note);
@@ -424,7 +405,6 @@ var arrows = function (p) {
           note.isHolding = false;
           note.completedHold = false;
         }
-        console.log(note);
       }
     });
   }
@@ -504,17 +484,6 @@ var arrows = function (p) {
   }
 
   // CLASSES
-  // class Arrow {
-  //   constructor(direction) {
-  //     this.direction = direction;
-  //     this.imgToDraw = arrowImgs[direction];
-  //     this.xPos = arrow_xPos[direction];
-  //     this.yPos = 0;
-  //   }
-  //   display() {
-  //     drawImageToScale(this.imgToDraw, this.xPos, simMousePos.y);
-  //   }
-  // }
 
   class HitArrow {
     constructor(direction, xPos, yPos) {
