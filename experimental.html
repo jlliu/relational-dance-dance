@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDR GAME</title>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <script src="lib/p5.min.js"></script>
+  <script src="lib/tone.js"></script>
+
+  <!-- <script src="scenesInfo.js"></script>
+  <script src="audio.js" defer></script>
+  <script src="story.js" defer></script> -->
+
+  <!-- Uncomment for installation mode -->
+  <!-- <script src="refreshIdle.js" defer></script> -->
+   <!-- <script src="songParser.js" defer></script> -->
+    <!-- <script src="songData.js" defer></script> -->
+  <script src="experimentalSong.js" defer></script>
+
+  <script src="experimentalScene.js" defer></script>
+  <!-- <script src="game1.js" defer></script>
+  <script src="game2.js" defer></script>
+  <script src="game3.js" defer></script>
+  <script src="game4.js" defer></script>
+  <script src="game5.js" defer></script>
+  <script src="game6.js" defer></script>
+  <script src="game7.js" defer></script>
+  <script src="sketch_end.js" defer></script> -->
+
+</head>
+
+<body id="experimental">
+  <!-- <button id="goToEnding">Go to ending</button> -->
+  <main>
+
+    <p id="clickToStart">
+      Click anywhere to start
+
+    </p>
+    <h1 >Score: <span id="score">0</span></h1>
+
+    <div class="narrativeScene scene1" >
+      <h1>
+        <span data-cue="1">I</span>
+        <span data-cue="2">find</span>
+        <span data-cue="3">myself</span>
+        <span data-cue="4">replaying</span>
+        <span data-cue="5">these</span>
+        <span data-cue="6">familiar</span>
+        <span data-cue="7">old</span>
+        <span data-cue="8">stories</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene2" >
+      <h1>
+        <span data-cue="9">My</span>
+        <span data-cue="10">mind</span><br>
+        <span data-cue="11">for</span>
+        <span data-cue="12">gets</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene3" >
+      <h1>
+        <span data-cue="13">My</span>
+        <span data-cue="14">body</span><br>
+        <span data-cue="15">re</span><span data-cue="16">members</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene4" >
+      <h1>
+        <span data-cue="17">I</span>
+        <span data-cue="18">used</span>
+        <span data-cue="19">to</span>
+        <span data-cue="20">be</span><span data-cue="21">lieve</span>
+        <span data-cue="22">I</span>
+        <span data-cue="23">was</span>
+        <span data-cue="24">emp</span><span data-cue="25">ty,</span>
+        <span data-cue="26">a</span>
+        <span data-cue="27">blank</span>
+        <span data-cue="28">slate</span>
+      </h1>
+    </div>
+        <div class="narrativeScene scene5" >
+      <h1>
+        <span data-cue="29">I</span>
+        <span data-cue="30">was</span>
+        <span data-cue="31">looking</span>
+        <span data-cue="32">for</span>
+        <span data-cue="33">a</span>
+        <span data-cue="34">witness</span>
+        <span data-cue="35">all</span>
+        <span data-cue="36">along</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene6" >
+      <h1>
+        <span data-cue="37">I</span>
+        <span data-cue="38">have</span>
+        <span data-cue="39">learned</span>
+        <span data-cue="40">to</span>
+        <span data-cue="41">stay</span>
+        <span data-cue="42">in</span>
+        <span data-cue="43">constant</span>
+        <span data-cue="44">motion</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene7" >
+      <h1>
+        <span data-cue="45">But to hold</span><br>
+        <span data-cue="46">is to be held</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene7" >
+      <h1>
+        <span data-cue="47">I</span>
+        <span data-cue="48">can</span>
+        <span data-cue="49">believe</span>
+        <span data-cue="50">in</span>
+        <span data-cue="51">the</span>
+        <span data-cue="52">truth</span>
+        <span data-cue="53">of</span>
+        <span data-cue="54">sensations</span>
+      </h1>
+    </div>
+    <h1 id="feedback"></h1>
+    <div id="arrow-canvas"></div>
+    <!-- <audio controls src="assets/song.mp3"></audio> -->
+ <audio controls src="assets/heaven.ogg"></audio>
+  </main>
+
+
+</body>
+
+</html>

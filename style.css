@@ -15,6 +15,11 @@ body {
   /* pointer-events:none; */
 }
 
+body#experimental{
+  background-color:white;
+  color:black;
+}
+
 canvas {
   margin: auto;
   visibility: visible;
@@ -97,3 +102,23 @@ main {
   font-weight:400;
   visibility:hidden;
 } */
+
+
+.narrativeScene{
+  display:none;
+  color:black;
+  text-align:center;
+    position:absolute;
+    left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index:1;
+
+}
+.narrativeScene span{
+  display:none;
+}
+
+.narrativeScene h1{
+  font-size:80px;
+}

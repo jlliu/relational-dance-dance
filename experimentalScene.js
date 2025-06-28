@@ -9,7 +9,7 @@ let songData;
 let scoreSpan = document.querySelector("#score");
 let scoreCount = 0;
 
-let feedback = document.querySelector("#feedback");
+// let feedback = document.querySelector("#feedback");
 
 var arrows = function (p) {
   let thisCanvas;
@@ -19,7 +19,7 @@ var arrows = function (p) {
 
   let hitArrowImgs;
 
-  let hitPos = { x: 160, y: 50 };
+  let hitPos = { x: 160, y: 200 };
 
   let arrow_xPos = {
     left: 160,
@@ -87,7 +87,7 @@ var arrows = function (p) {
   let startDrawingArrows = false;
 
   p.draw = function () {
-    p.background("pink");
+    p.background("white");
 
     Object.values(hitArrowObjs).forEach(function (arrowObj) {
       arrowObj.display();
@@ -102,7 +102,8 @@ var arrows = function (p) {
 
   // current batch num is the measure of the current batch
   let currentBatchStartMeasure = 0;
-  let bpm = 138;
+  // let bpm = 20;
+  let bpm = 80;
   let currentMeasure = -1;
 
   let t = 0;
@@ -111,81 +112,97 @@ var arrows = function (p) {
 
   let pixelsElapsed = 0;
 
+  let cueCount = 0;
+
   function updateNotes() {
-    //Keep a queue of relevantNotes
-    t = track.currentTime - 1.147;
+    if (!timerPaused) {
+      //Keep a queue of relevantNotes
 
-    //Given current time, what is the current measure?
+      // t = track.currentTime - 1.147;
 
-    currentBeat = t / secondsPerBeat;
-    let thisMeasure = Math.floor(currentBeat / 4);
-    if (thisMeasure > currentMeasure) {
-      console.log("Measure: " + thisMeasure);
-      currentMeasure = thisMeasure;
+      //Given current time, what is the current measure?
 
-      //Initialize
-      if (currentMeasure == 0) {
-        let measuresInBatch = songData.slice(
-          currentBatchStartMeasure,
-          currentBatchStartMeasure + batchSize
-        );
-        measuresInBatch.forEach(function (measure) {
-          if (measure) {
-            relevantNotes = relevantNotes.concat(measure);
-          }
-        });
+      currentBeat = t / secondsPerBeat;
+      let thisMeasure = Math.floor(currentBeat / 4);
+      if (thisMeasure > currentMeasure) {
+        console.log("Measure: " + thisMeasure);
+        currentMeasure = thisMeasure;
+
+        //Initialize
+        if (currentMeasure == 0) {
+          let measuresInBatch = songData.slice(
+            currentBatchStartMeasure,
+            currentBatchStartMeasure + batchSize
+          );
+          measuresInBatch.forEach(function (measure) {
+            if (measure) {
+              relevantNotes = relevantNotes.concat(measure);
+            }
+          });
+        }
+        //Are we ALMOST at a new batch? Update the batch data!
+        else if (currentMeasure % batchSize == batchSize - 1) {
+          //Discard old ones BEFORE 1 measure ago....
+          let remainingNotes = relevantNotes.filter(function (note) {
+            //Keep only if this note is a hold and it's done...
+            if (
+              note.noteType == "hold" &&
+              note.endMeasure >= currentMeasure - 1
+            ) {
+              return true;
+            } else if (
+              note.noteType == "instant" &&
+              note.measure >= currentMeasure - 1
+            ) {
+              return true;
+            } else {
+              return false;
+            }
+          });
+          relevantNotes = remainingNotes;
+          //Load in next batch notes
+          currentBatchStartMeasure += batchSize;
+          let measuresInBatch = songData.slice(
+            currentBatchStartMeasure,
+            currentBatchStartMeasure + batchSize
+          );
+          measuresInBatch.forEach(function (measure) {
+            if (measure) {
+              relevantNotes = relevantNotes.concat(measure);
+            }
+          });
+        }
       }
-      //Are we ALMOST at a new batch? Update the batch data!
-      else if (currentMeasure % batchSize == batchSize - 1) {
-        //Discard old ones BEFORE 1 measure ago....
-        let remainingNotes = relevantNotes.filter(function (note) {
-          //Keep only if this note is a hold and it's done...
-          if (
-            note.noteType == "hold" &&
-            note.endMeasure >= currentMeasure - 1
-          ) {
-            return true;
-          } else if (
-            note.noteType == "instant" &&
-            note.measure >= currentMeasure - 1
-          ) {
-            return true;
-          } else {
-            return false;
-          }
-        });
-        relevantNotes = remainingNotes;
-        //Load in next batch notes
-        currentBatchStartMeasure += batchSize;
-        let measuresInBatch = songData.slice(
-          currentBatchStartMeasure,
-          currentBatchStartMeasure + batchSize
-        );
-        measuresInBatch.forEach(function (measure) {
-          if (measure) {
-            relevantNotes = relevantNotes.concat(measure);
-          }
-        });
-      }
+      t += 0.01;
     }
   }
 
+  let timer;
+
+  let timerPaused = false;
   document.body.addEventListener("click", function () {
-    track.play();
+    // track.play();
 
     setTimeout(function () {
-      setInterval(function () {
+      timer = setInterval(function () {
         updateNotes();
       }, 10);
       startDrawingArrows = true;
     }, 1.147 * 1000);
   });
 
+  //What needs to happen in Part 1 of experimental scene, if we are no longer doing the traditional game play?
+
+  // Play baseline sound in background.....
+  // Notes drift up.... but then STAY in the hit zone until hit... When it reaches hit zone, pause timer...
+
   //Create arrows takes the relevant notes array and then creates objects for them
   function createArrows() {}
 
-  let margin = 50;
-  let pixelsPerBeat = 100;
+  let margin = 10;
+
+  let pauseMargin = 1;
+  let pixelsPerBeat = 80;
   function drawArrows() {
     relevantNotes.forEach(function (note) {
       let direction = note.direction;
@@ -196,7 +213,12 @@ var arrows = function (p) {
       let yPos = hitPos.y + pixelsPerBeat * note.startBeat - pixelsElapsed;
       note.currentY = yPos;
 
+      //Pause timer if note has reached this
+      if (yPos < hitPos.y && !note.isHit) {
+        timerPaused = true;
+      }
       // Should this arrow be considered as a hit candidate?
+
       if (yPos > hitPos.y - margin && yPos < hitPos.y + margin) {
         //Note within our hit window!
         note.isHitCandidate = true;
@@ -256,8 +278,6 @@ var arrows = function (p) {
           hitPos.y
         );
       } else if (note.isHit && !note.isHolding && !note.completedHold) {
-        console.log("CASE 2");
-
         //   case 2: hit first note, lifted up before end
         //   What happens? need to grey out and keep on going
         p.tint(255, 127);
@@ -325,12 +345,16 @@ var arrows = function (p) {
       scoreCount++;
       scoreSpan.innerHTML = scoreCount;
       note.isHit = true;
+      timerPaused = false;
+      cueCount++;
+      triggerNarrative(cueCount);
+
       if (score === "ok") {
-        updateFeedback("OKAY");
+        // updateFeedback("OKAY");
       } else if (score === "great") {
-        updateFeedback("GREAT");
+        // updateFeedback("GREAT");
       } else if (score === "perfect") {
-        updateFeedback("PERFECT!!");
+        // updateFeedback("PERFECT!!");
       }
     }
 
@@ -344,7 +368,6 @@ var arrows = function (p) {
   }
 
   function assessHit(direction, hitType) {
-    console.log("running assess hit");
     relevantNotes.forEach(function (note) {
       //Assess notes that are the START of either instant or holds
       if (
@@ -357,7 +380,7 @@ var arrows = function (p) {
         //Determine quality of hit
         //TOO LATE - failed
         if (yPos > hitPos.y - 50 && yPos < hitPos.y - 40) {
-          updateFeedback("TOO LATE!");
+          // updateFeedback("TOO LATE!");
         }
         // A little late - Ok - PASS
         else if (yPos >= hitPos.y - 40 && yPos < hitPos.y - 20) {
@@ -381,7 +404,7 @@ var arrows = function (p) {
         }
         // TOO EARLY - Failed
         else if (yPos >= hitPos.y + 40 && yPos < hitPos.y + 50) {
-          updateFeedback("TOO EARLY!");
+          // updateFeedback("TOO EARLY!");
         }
       }
       //Assess notes that are currently being held. Did we lift before it's over or not?
@@ -404,7 +427,7 @@ var arrows = function (p) {
 
         // Lift is TOO EARLY - Failed
         else if (yPos >= hitPos.y + 40 && yPos < hitPos.y + Infinity) {
-          updateFeedback("TOO EARLY!");
+          // updateFeedback("TOO EARLY!");
           note.isHolding = false;
           note.completedHold = false;
         }
@@ -555,3 +578,61 @@ var arrows = function (p) {
 };
 
 new p5(arrows, "arrow-canvas");
+
+////////////////////////
+// NARRATIVE CUES     //
+////////////////////////
+
+function showElement(el) {
+  el.style.display = "inline";
+}
+
+function hideElement(el) {
+  el.style.display = "none";
+}
+
+function getCueEl(cueCount) {
+  return document.querySelector(`.narrativeScene span[data-cue='${cueCount}']`);
+}
+
+function getSceneEl(sceneNum) {
+  return document.querySelector(`.scene${sceneNum}`);
+}
+
+function triggerNarrative(cueCount) {
+  // Define special moments like start of scene
+  if (cueCount == 1) {
+    showElement(getSceneEl(1));
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 9) {
+    hideElement(getSceneEl(1));
+    showElement(getSceneEl(2));
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 13) {
+    hideElement(getSceneEl(2));
+    showElement(getSceneEl(3));
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 17) {
+    hideElement(getSceneEl(3));
+    showElement(getSceneEl(4));
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 29) {
+    hideElement(getSceneEl(4));
+    showElement(getSceneEl(5));
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 37) {
+    hideElement(getSceneEl(5));
+    showElement(getSceneEl(6));
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 45) {
+    hideElement(getSceneEl(6));
+    showElement(getSceneEl(7));
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 47) {
+    hideElement(getSceneEl(7));
+    showElement(getSceneEl(8));
+    showElement(getCueEl(cueCount));
+  } else {
+    showElement(getCueEl(cueCount));
+  }
+}

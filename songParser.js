@@ -299,7 +299,7 @@ let getDirection = function (arrowIndex) {
 
 let parseSong = function (songText) {
   console.log(songText);
-  let measures = songText.split("\n,\n");
+  let measures = songText.split(/\s+,\s+/);
   console.log(measures);
 
   let testBPM = 139;
