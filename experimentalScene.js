@@ -103,7 +103,7 @@ var arrows = function (p) {
   // current batch num is the measure of the current batch
   let currentBatchStartMeasure = 0;
   // let bpm = 20;
-  let bpm = 80;
+  let bpm = 200;
   let currentMeasure = -1;
 
   let t = 0;
@@ -213,17 +213,29 @@ var arrows = function (p) {
       let yPos = hitPos.y + pixelsPerBeat * note.startBeat - pixelsElapsed;
       note.currentY = yPos;
 
-      //Pause timer if note has reached this
+      //Pause timer if note has reached hit zone before hit
       if (yPos < hitPos.y && !note.isHit) {
         timerPaused = true;
       }
       // Should this arrow be considered as a hit candidate?
 
-      if (yPos > hitPos.y - margin && yPos < hitPos.y + margin) {
+      // Let's try to prevent notes from passing over without giving us a chance for them to be hit candidates....
+
+      // everything is always a hit candidate until it is hit...
+
+      // if (yPos > hitPos.y - margin && yPos < hitPos.y + margin) {
+      //   //Note within our hit window!
+      //   note.isHitCandidate = true;
+      // } else if (yPos < hitPos.y - margin) {
+      //   // passedOver = true;
+      //   note.isHitCandidate = false;
+      // }
+
+      // For experimental... note is a hit candidate only if it's within range and UNHIT
+      if (yPos > -Infinity && yPos < hitPos.y + margin && !note.isHit) {
         //Note within our hit window!
         note.isHitCandidate = true;
-      } else if (yPos < hitPos.y - margin) {
-        passedOver = true;
+      } else {
         note.isHitCandidate = false;
       }
 
@@ -241,17 +253,25 @@ var arrows = function (p) {
   function drawArrow(note, yPos, passedOver) {
     // Draw instant notes
     if (note.noteType == "instant" && !note.isHit) {
-      if (passedOver) {
-        p.tint(255, 127);
-      }
+      // if (passedOver) {
+      //   p.tint(255, 127);
+      // }
+      // drawImageToScale(
+      //   arrowImgs[note.direction],
+      //   arrow_xPos[note.direction],
+      //   yPos
+      // );
+      // if (passedOver) {
+      //   p.tint(255, 255);
+      // }
+
+      //Adjust for experimental
+
       drawImageToScale(
         arrowImgs[note.direction],
         arrow_xPos[note.direction],
-        yPos
+        Math.max(hitPos.y, yPos)
       );
-      if (passedOver) {
-        p.tint(255, 255);
-      }
     } else if (note.noteType == "hold") {
       // Draw holds
       let rectangleHeight;
@@ -367,6 +387,21 @@ var arrows = function (p) {
     }
   }
 
+  function allHoldsUnpaused() {
+    let isAnyHoldPaused = false;
+    relevantNotes.forEach(function (note) {
+      if (
+        note.noteType == "hold" &&
+        note.isHolding == true &&
+        !note.completedHold &&
+        note.holdPaused == true
+      ) {
+        isAnyHoldPaused = true;
+      }
+    });
+    return !isAnyHoldPaused;
+  }
+
   function assessHit(direction, hitType) {
     relevantNotes.forEach(function (note) {
       //Assess notes that are the START of either instant or holds
@@ -375,6 +410,7 @@ var arrows = function (p) {
         note.isHitCandidate &&
         note.direction == direction
       ) {
+        console.log("hit case 1");
         let yPos = note.currentY;
 
         //Determine quality of hit
@@ -428,8 +464,31 @@ var arrows = function (p) {
         // Lift is TOO EARLY - Failed
         else if (yPos >= hitPos.y + 40 && yPos < hitPos.y + Infinity) {
           // updateFeedback("TOO EARLY!");
-          note.isHolding = false;
-          note.completedHold = false;
+          // note.isHolding = false;
+          // note.completedHold = false;
+
+          //Adjust for experimental scene
+          //Actually, we can't pause timer because there can be two at the same time...
+          // Well, we can pause it if there's only one hold at the time
+          // Once there's two, it requires BOTH to be lifted to be paused
+          timerPaused = true;
+          // console.log("timer paused on lift");
+          note.holdPaused = true;
+        }
+      }
+      // add another case for re-pressing a hold
+      else if (
+        hitType == "press" &&
+        note.noteType == "hold" &&
+        note.isHolding &&
+        note.direction == direction
+      ) {
+        console.log("RE-HOlDING!");
+        //unpause timer if BOTH holds are holding...
+        // timerPaused = false;
+        note.holdPaused = false;
+        if (allHoldsUnpaused()) {
+          timerPaused = false;
         }
       }
     });
@@ -599,38 +658,138 @@ function getSceneEl(sceneNum) {
   return document.querySelector(`.scene${sceneNum}`);
 }
 
+function switchScene(newSceneNum) {
+  hideElement(getSceneEl(newSceneNum - 1));
+  showElement(getSceneEl(newSceneNum));
+}
+
 function triggerNarrative(cueCount) {
   // Define special moments like start of scene
   if (cueCount == 1) {
     showElement(getSceneEl(1));
     showElement(getCueEl(cueCount));
   } else if (cueCount == 9) {
-    hideElement(getSceneEl(1));
-    showElement(getSceneEl(2));
+    switchScene(2);
     showElement(getCueEl(cueCount));
   } else if (cueCount == 13) {
-    hideElement(getSceneEl(2));
-    showElement(getSceneEl(3));
+    switchScene(3);
     showElement(getCueEl(cueCount));
   } else if (cueCount == 17) {
-    hideElement(getSceneEl(3));
-    showElement(getSceneEl(4));
+    switchScene(4);
     showElement(getCueEl(cueCount));
   } else if (cueCount == 29) {
-    hideElement(getSceneEl(4));
-    showElement(getSceneEl(5));
+    switchScene(5);
     showElement(getCueEl(cueCount));
   } else if (cueCount == 37) {
-    hideElement(getSceneEl(5));
-    showElement(getSceneEl(6));
+    switchScene(6);
     showElement(getCueEl(cueCount));
   } else if (cueCount == 45) {
-    hideElement(getSceneEl(6));
-    showElement(getSceneEl(7));
+    switchScene(7);
     showElement(getCueEl(cueCount));
   } else if (cueCount == 47) {
-    hideElement(getSceneEl(7));
-    showElement(getSceneEl(8));
+    switchScene(8);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 57) {
+    switchScene(9);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 67) {
+    switchScene(10);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 77) {
+    switchScene(11);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 87) {
+    switchScene(12);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 97) {
+    switchScene(13);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 99) {
+    switchScene(14);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 107) {
+    switchScene(15);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 109) {
+    switchScene(16);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 111) {
+    switchScene(17);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 131) {
+    switchScene(18);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 135) {
+    switchScene(19);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 139) {
+    switchScene(20);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 143) {
+    switchScene(21);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 147) {
+    switchScene(22);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 151) {
+    switchScene(23);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 155) {
+    switchScene(24);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 159) {
+    switchScene(25);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 163) {
+    switchScene(26);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 167) {
+    switchScene(27);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 171) {
+    switchScene(28);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 175) {
+    switchScene(29);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 179) {
+    switchScene(30);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 183) {
+    switchScene(31);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 187) {
+    switchScene(32);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 191) {
+    switchScene(33);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 195) {
+    switchScene(34);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 199) {
+    switchScene(35);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 201) {
+    switchScene(36);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 203) {
+    switchScene(37);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 205) {
+    switchScene(38);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 207) {
+    switchScene(39);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 211) {
+    switchScene(40);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 215) {
+    switchScene(41);
+    showElement(getCueEl(cueCount));
+  } else if (cueCount == 219) {
+    switchScene(42);
     showElement(getCueEl(cueCount));
   } else {
     showElement(getCueEl(cueCount));
