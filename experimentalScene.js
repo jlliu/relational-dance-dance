@@ -103,7 +103,7 @@ var arrows = function (p) {
   // current batch num is the measure of the current batch
   let currentBatchStartMeasure = 0;
   // let bpm = 20;
-  let bpm = 200;
+  let bpm = 100;
   let currentMeasure = -1;
 
   let t = 0;
@@ -415,8 +415,9 @@ var arrows = function (p) {
 
         //Determine quality of hit
         //TOO LATE - failed
-        if (yPos > hitPos.y - 50 && yPos < hitPos.y - 40) {
+        if (yPos > -Infinity && yPos < hitPos.y - 40) {
           // updateFeedback("TOO LATE!");
+          updateScore("ok", note);
         }
         // A little late - Ok - PASS
         else if (yPos >= hitPos.y - 40 && yPos < hitPos.y - 20) {
