@@ -11,6 +11,13 @@ let scoreCount = 0;
 
 // let feedback = document.querySelector("#feedback");
 
+let moveHitArrows = false;
+
+let waitForHit = true;
+// waitForHit = false;
+
+let part1HoldsDone = false;
+
 var arrows = function (p) {
   let thisCanvas;
   let canvasRatio = canvasWidth / canvasHeight;
@@ -20,6 +27,8 @@ var arrows = function (p) {
   let hitArrowImgs;
 
   let hitPos = { x: 160, y: 200 };
+
+  let hitPosFinal = { x: 160, y: 50 };
 
   let arrow_xPos = {
     left: 160,
@@ -90,6 +99,16 @@ var arrows = function (p) {
     p.background("white");
 
     Object.values(hitArrowObjs).forEach(function (arrowObj) {
+      // Move arrowObjs up until it reaches hit pos final
+      // console.log(moveHitArrows);
+      if (moveHitArrows) {
+        if (arrowObj.yPos > hitPosFinal.y) {
+          arrowObj.yPos--;
+        } else {
+          moveHitArrows = false;
+        }
+      }
+
       arrowObj.display();
     });
 
@@ -98,12 +117,12 @@ var arrows = function (p) {
     }
   };
 
-  let batchSize = 2;
+  let batchSize = 4;
 
   // current batch num is the measure of the current batch
   let currentBatchStartMeasure = 0;
   // let bpm = 20;
-  let bpm = 100;
+  let bpm = 20;
   let currentMeasure = -1;
 
   let t = 0;
@@ -199,10 +218,10 @@ var arrows = function (p) {
   //Create arrows takes the relevant notes array and then creates objects for them
   function createArrows() {}
 
-  let margin = 10;
+  let margin = 50;
 
   let pauseMargin = 1;
-  let pixelsPerBeat = 80;
+  let pixelsPerBeat = 100;
   function drawArrows() {
     relevantNotes.forEach(function (note) {
       let direction = note.direction;
@@ -210,38 +229,52 @@ var arrows = function (p) {
 
       // Get current y position: yPos is where the start of the note is currently on the p5 canvas
       pixelsElapsed = (t / secondsPerBeat) * pixelsPerBeat;
-      let yPos = hitPos.y + pixelsPerBeat * note.startBeat - pixelsElapsed;
+      let yPos =
+        hitArrowObjs["left"].yPos +
+        pixelsPerBeat * note.startBeat -
+        pixelsElapsed;
       note.currentY = yPos;
 
       //Pause timer if note has reached hit zone before hit
-      if (yPos < hitPos.y && !note.isHit) {
-        timerPaused = true;
-      }
-      // Should this arrow be considered as a hit candidate?
-
-      // Let's try to prevent notes from passing over without giving us a chance for them to be hit candidates....
-
-      // everything is always a hit candidate until it is hit...
-
-      // if (yPos > hitPos.y - margin && yPos < hitPos.y + margin) {
-      //   //Note within our hit window!
-      //   note.isHitCandidate = true;
-      // } else if (yPos < hitPos.y - margin) {
-      //   // passedOver = true;
-      //   note.isHitCandidate = false;
-      // }
-
-      // For experimental... note is a hit candidate only if it's within range and UNHIT
-      if (yPos > -Infinity && yPos < hitPos.y + margin && !note.isHit) {
-        //Note within our hit window!
-        note.isHitCandidate = true;
+      // Should this arrow be considered as a hit candidate? Different for waiting and not waiting modes
+      if (waitForHit) {
+        if (yPos < hitArrowObjs["left"].yPos && !note.isHit) {
+          timerPaused = true;
+        }
+        // For experimental... note is a hit candidate only if it's within range and UNHIT
+        if (
+          yPos > -Infinity &&
+          yPos < hitArrowObjs["left"].yPos + margin &&
+          !note.isHit
+        ) {
+          //Note within our hit window!
+          note.isHitCandidate = true;
+        } else {
+          note.isHitCandidate = false;
+        }
       } else {
-        note.isHitCandidate = false;
+        if (
+          yPos > hitArrowObjs["left"].yPos - margin &&
+          yPos < hitArrowObjs["left"].yPos + margin
+        ) {
+          //Note within our hit window!
+          note.isHitCandidate = true;
+        } else if (yPos < hitArrowObjs["left"].yPos - margin) {
+          passedOver = true;
+          note.isHitCandidate = false;
+        }
       }
 
       //Should this arrow, if a hold, be considered completed if we're still holding?
-      let end_yPos = hitPos.y + pixelsPerBeat * note.endBeat - pixelsElapsed;
-      if (end_yPos < hitPos.y && note.isHolding && !note.completedHold) {
+      let end_yPos =
+        hitArrowObjs["left"].yPos +
+        pixelsPerBeat * note.endBeat -
+        pixelsElapsed;
+      if (
+        end_yPos < hitArrowObjs["left"].yPos &&
+        note.isHolding &&
+        !note.completedHold
+      ) {
         updateScore("ok", note);
       }
 
@@ -253,25 +286,26 @@ var arrows = function (p) {
   function drawArrow(note, yPos, passedOver) {
     // Draw instant notes
     if (note.noteType == "instant" && !note.isHit) {
-      // if (passedOver) {
-      //   p.tint(255, 127);
-      // }
-      // drawImageToScale(
-      //   arrowImgs[note.direction],
-      //   arrow_xPos[note.direction],
-      //   yPos
-      // );
-      // if (passedOver) {
-      //   p.tint(255, 255);
-      // }
-
       //Adjust for experimental
-
-      drawImageToScale(
-        arrowImgs[note.direction],
-        arrow_xPos[note.direction],
-        Math.max(hitPos.y, yPos)
-      );
+      if (waitForHit) {
+        drawImageToScale(
+          arrowImgs[note.direction],
+          arrow_xPos[note.direction],
+          Math.max(hitArrowObjs["left"].yPos, yPos)
+        );
+      } else {
+        if (passedOver) {
+          p.tint(255, 127);
+        }
+        drawImageToScale(
+          arrowImgs[note.direction],
+          arrow_xPos[note.direction],
+          yPos
+        );
+        if (passedOver) {
+          p.tint(255, 255);
+        }
+      }
     } else if (note.noteType == "hold") {
       // Draw holds
       let rectangleHeight;
@@ -282,20 +316,20 @@ var arrows = function (p) {
         drawImageToScaleWithHeight(
           holdMiddleImg,
           arrow_xPos[note.direction],
-          hitPos.y + 40,
+          hitArrowObjs["left"].yPos + 40,
           rectangleHeight
         );
         // Draw arrow at end of rectangle
         drawImageToScale(
           holdEndImgs[note.direction],
           arrow_xPos[note.direction],
-          hitPos.y + rectangleHeight
+          hitArrowObjs["left"].yPos + rectangleHeight
         );
         // Draw arrow at hit pos
         drawImageToScale(
           arrowImgs[note.direction],
           arrow_xPos[note.direction],
-          hitPos.y
+          hitArrowObjs["left"].yPos
         );
       } else if (note.isHit && !note.isHolding && !note.completedHold) {
         //   case 2: hit first note, lifted up before end
@@ -303,7 +337,9 @@ var arrows = function (p) {
         p.tint(255, 127);
         rectangleHeight = pixelsPerBeat * (note.endBeat - note.releasedBeat);
         let yPosReleased =
-          hitPos.y + pixelsPerBeat * note.releasedBeat - pixelsElapsed;
+          hitArrowObjs["left"].yPos +
+          pixelsPerBeat * note.releasedBeat -
+          pixelsElapsed;
         // Draw rectangle
         drawImageToScaleWithHeight(
           holdMiddleImg,
@@ -325,8 +361,15 @@ var arrows = function (p) {
         );
         p.tint(255, 255);
         // If you're still holding down...
-      } else if (note.isHit && note.isHolding && note.completedHold) {
+      } else if (note.isHit && note.completedHold) {
         // case 3: hit first note, held to completion... show nothing!
+
+        // Here is the case where the holds will start to be done
+        // AKA, the first moment when holds are complete... and the cue count is 46
+        if (!part1HoldsDone && cueCount == 46) {
+          part1HoldsDone = true;
+          waitForHit = false;
+        }
       } else if (!note.isHit) {
         // last case: the note is not hit, either passed over or upcoming...
         if (passedOver) {
@@ -366,7 +409,8 @@ var arrows = function (p) {
       scoreSpan.innerHTML = scoreCount;
       note.isHit = true;
       timerPaused = false;
-      cueCount++;
+      // cueCount++;
+      cueCount = parseInt(note.id) + 1;
       triggerNarrative(cueCount);
 
       if (score === "ok") {
@@ -410,37 +454,68 @@ var arrows = function (p) {
         note.isHitCandidate &&
         note.direction == direction
       ) {
-        console.log("hit case 1");
         let yPos = note.currentY;
 
         //Determine quality of hit
         //TOO LATE - failed
-        if (yPos > -Infinity && yPos < hitPos.y - 40) {
+
+        //Case for wait for hit (helps prevent getting stuck)
+        if (
+          yPos > -Infinity &&
+          yPos < hitArrowObjs["left"].yPos - 40 &&
+          waitForHit
+        ) {
           // updateFeedback("TOO LATE!");
+          // console.log("wait for hit too late");
           updateScore("ok", note);
+        } else if (
+          yPos > hitArrowObjs["left"].yPos - 50 &&
+          yPos < hitArrowObjs["left"].yPos - 40 &&
+          !waitForHit
+        ) {
+          // updateFeedback("TOO LATE!");
+          // updateScore("ok", note);
         }
         // A little late - Ok - PASS
-        else if (yPos >= hitPos.y - 40 && yPos < hitPos.y - 20) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos - 40 &&
+          yPos < hitArrowObjs["left"].yPos - 20
+        ) {
           updateScore("ok", note);
         }
         // Almost perfect - late
-        else if (yPos >= hitPos.y - 20 && yPos < hitPos.y - 5) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos - 20 &&
+          yPos < hitArrowObjs["left"].yPos - 5
+        ) {
           updateScore("great", note);
         }
         // Perfect - PASS
-        else if (yPos >= hitPos.y - 5 && yPos < hitPos.y + 5) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos - 5 &&
+          yPos < hitArrowObjs["left"].yPos + 5
+        ) {
           updateScore("perfect", note);
         }
         // Almost perfect - late - PASS
-        else if (yPos >= hitPos.y + 5 && yPos < hitPos.y + 20) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos + 5 &&
+          yPos < hitArrowObjs["left"].yPos + 20
+        ) {
           updateScore("great", note);
         }
         // A little early - OK - PASS
-        else if (yPos >= hitPos.y + 20 && yPos < hitPos.y + 40) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos + 20 &&
+          yPos < hitArrowObjs["left"].yPos + 40
+        ) {
           updateScore("ok", note);
         }
         // TOO EARLY - Failed
-        else if (yPos >= hitPos.y + 40 && yPos < hitPos.y + 50) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos + 40 &&
+          yPos < hitArrowObjs["left"].yPos + 50
+        ) {
           // updateFeedback("TOO EARLY!");
         }
       }
@@ -458,23 +533,31 @@ var arrows = function (p) {
         note.releasedBeat = currentBeat;
 
         // Lift is in range PASS
-        if (yPos >= hitPos.y - Infinity && yPos < hitPos.y + 40) {
+        if (
+          yPos >= hitArrowObjs["left"].yPos - Infinity &&
+          yPos < hitArrowObjs["left"].yPos + 40
+        ) {
           updateScore("ok", note);
         }
 
         // Lift is TOO EARLY - Failed
-        else if (yPos >= hitPos.y + 40 && yPos < hitPos.y + Infinity) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos + 40 &&
+          yPos < hitArrowObjs["left"].yPos + Infinity
+        ) {
           // updateFeedback("TOO EARLY!");
-          // note.isHolding = false;
-          // note.completedHold = false;
 
           //Adjust for experimental scene
           //Actually, we can't pause timer because there can be two at the same time...
           // Well, we can pause it if there's only one hold at the time
           // Once there's two, it requires BOTH to be lifted to be paused
-          timerPaused = true;
-          // console.log("timer paused on lift");
-          note.holdPaused = true;
+          if (waitForHit) {
+            timerPaused = true;
+            note.holdPaused = true;
+          } else {
+            note.isHolding = false;
+            note.completedHold = false;
+          }
         }
       }
       // add another case for re-pressing a hold
@@ -484,7 +567,6 @@ var arrows = function (p) {
         note.isHolding &&
         note.direction == direction
       ) {
-        console.log("RE-HOlDING!");
         //unpause timer if BOTH holds are holding...
         // timerPaused = false;
         note.holdPaused = false;
@@ -660,7 +742,12 @@ function getSceneEl(sceneNum) {
 }
 
 function switchScene(newSceneNum) {
-  hideElement(getSceneEl(newSceneNum - 1));
+  // hideElement(getSceneEl(newSceneNum - 1));
+  console.log("switchScene");
+  let allScenes = document.querySelectorAll(".narrativeScene");
+  allScenes.forEach(function (scene) {
+    hideElement(scene);
+  });
   showElement(getSceneEl(newSceneNum));
 }
 
@@ -687,6 +774,11 @@ function triggerNarrative(cueCount) {
   } else if (cueCount == 45) {
     switchScene(7);
     showElement(getCueEl(cueCount));
+  } else if (cueCount == 46) {
+    // "IS TO BE HELD PRESSED"
+    // Move hit position up gradually
+    showElement(getCueEl(cueCount));
+    moveHitArrows = true;
   } else if (cueCount == 47) {
     switchScene(8);
     showElement(getCueEl(cueCount));
@@ -793,6 +885,8 @@ function triggerNarrative(cueCount) {
     switchScene(42);
     showElement(getCueEl(cueCount));
   } else {
+    //We are within a scene, and showing the element for that cue
     showElement(getCueEl(cueCount));
+    // Also show the previous elements for that cue that were missed
   }
 }

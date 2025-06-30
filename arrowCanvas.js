@@ -193,21 +193,34 @@ var arrows = function (p) {
 
       // Get current y position: yPos is where the start of the note is currently on the p5 canvas
       pixelsElapsed = (t / secondsPerBeat) * pixelsPerBeat;
-      let yPos = hitPos.y + pixelsPerBeat * note.startBeat - pixelsElapsed;
+      let yPos =
+        hitArrowObjs["left"].yPos +
+        pixelsPerBeat * note.startBeat -
+        pixelsElapsed;
       note.currentY = yPos;
 
       // Should this arrow be considered as a hit candidate?
-      if (yPos > hitPos.y - margin && yPos < hitPos.y + margin) {
+      if (
+        yPos > hitArrowObjs["left"].yPos - margin &&
+        yPos < hitArrowObjs["left"].yPos + margin
+      ) {
         //Note within our hit window!
         note.isHitCandidate = true;
-      } else if (yPos < hitPos.y - margin) {
+      } else if (yPos < hitArrowObjs["left"].yPos - margin) {
         passedOver = true;
         note.isHitCandidate = false;
       }
 
       //Should this arrow, if a hold, be considered completed if we're still holding?
-      let end_yPos = hitPos.y + pixelsPerBeat * note.endBeat - pixelsElapsed;
-      if (end_yPos < hitPos.y && note.isHolding && !note.completedHold) {
+      let end_yPos =
+        hitArrowObjs["left"].yPos +
+        pixelsPerBeat * note.endBeat -
+        pixelsElapsed;
+      if (
+        end_yPos < hitArrowObjs["left"].yPos &&
+        note.isHolding &&
+        !note.completedHold
+      ) {
         updateScore("ok", note);
       }
 
@@ -240,20 +253,20 @@ var arrows = function (p) {
         drawImageToScaleWithHeight(
           holdMiddleImg,
           arrow_xPos[note.direction],
-          hitPos.y + 40,
+          hitArrowObjs["left"].yPos + 40,
           rectangleHeight
         );
         // Draw arrow at end of rectangle
         drawImageToScale(
           holdEndImgs[note.direction],
           arrow_xPos[note.direction],
-          hitPos.y + rectangleHeight
+          hitArrowObjs["left"].yPos + rectangleHeight
         );
         // Draw arrow at hit pos
         drawImageToScale(
           arrowImgs[note.direction],
           arrow_xPos[note.direction],
-          hitPos.y
+          hitArrowObjs["left"].yPos
         );
       } else if (note.isHit && !note.isHolding && !note.completedHold) {
         console.log("CASE 2");
@@ -263,7 +276,9 @@ var arrows = function (p) {
         p.tint(255, 127);
         rectangleHeight = pixelsPerBeat * (note.endBeat - note.releasedBeat);
         let yPosReleased =
-          hitPos.y + pixelsPerBeat * note.releasedBeat - pixelsElapsed;
+          hitArrowObjs["left"].yPos +
+          pixelsPerBeat * note.releasedBeat -
+          pixelsElapsed;
         // Draw rectangle
         drawImageToScaleWithHeight(
           holdMiddleImg,
@@ -285,7 +300,7 @@ var arrows = function (p) {
         );
         p.tint(255, 255);
         // If you're still holding down...
-      } else if (note.isHit && note.isHolding && note.completedHold) {
+      } else if (note.isHit && note.completedHold) {
         // case 3: hit first note, held to completion... show nothing!
       } else if (!note.isHit) {
         // last case: the note is not hit, either passed over or upcoming...
@@ -356,31 +371,52 @@ var arrows = function (p) {
 
         //Determine quality of hit
         //TOO LATE - failed
-        if (yPos > hitPos.y - 50 && yPos < hitPos.y - 40) {
+        if (
+          yPos > hitArrowObjs["left"].yPos - 50 &&
+          yPos < hitArrowObjs["left"].yPos - 40
+        ) {
           updateFeedback("TOO LATE!");
         }
         // A little late - Ok - PASS
-        else if (yPos >= hitPos.y - 40 && yPos < hitPos.y - 20) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos - 40 &&
+          yPos < hitArrowObjs["left"].yPos - 20
+        ) {
           updateScore("ok", note);
         }
         // Almost perfect - late
-        else if (yPos >= hitPos.y - 20 && yPos < hitPos.y - 5) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos - 20 &&
+          yPos < hitArrowObjs["left"].yPos - 5
+        ) {
           updateScore("great", note);
         }
         // Perfect - PASS
-        else if (yPos >= hitPos.y - 5 && yPos < hitPos.y + 5) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos - 5 &&
+          yPos < hitArrowObjs["left"].yPos + 5
+        ) {
           updateScore("perfect", note);
         }
         // Almost perfect - late - PASS
-        else if (yPos >= hitPos.y + 5 && yPos < hitPos.y + 20) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos + 5 &&
+          yPos < hitArrowObjs["left"].yPos + 20
+        ) {
           updateScore("great", note);
         }
         // A little early - OK - PASS
-        else if (yPos >= hitPos.y + 20 && yPos < hitPos.y + 40) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos + 20 &&
+          yPos < hitArrowObjs["left"].yPos + 40
+        ) {
           updateScore("ok", note);
         }
         // TOO EARLY - Failed
-        else if (yPos >= hitPos.y + 40 && yPos < hitPos.y + 50) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos + 40 &&
+          yPos < hitArrowObjs["left"].yPos + 50
+        ) {
           updateFeedback("TOO EARLY!");
         }
       }
@@ -398,12 +434,18 @@ var arrows = function (p) {
         note.releasedBeat = currentBeat;
 
         // Lift is in range PASS
-        if (yPos >= hitPos.y - Infinity && yPos < hitPos.y + 40) {
+        if (
+          yPos >= hitArrowObjs["left"].yPos - Infinity &&
+          yPos < hitArrowObjs["left"].yPos + 40
+        ) {
           updateScore("ok", note);
         }
 
         // Lift is TOO EARLY - Failed
-        else if (yPos >= hitPos.y + 40 && yPos < hitPos.y + Infinity) {
+        else if (
+          yPos >= hitArrowObjs["left"].yPos + 40 &&
+          yPos < hitArrowObjs["left"].yPos + Infinity
+        ) {
           updateFeedback("TOO EARLY!");
           note.isHolding = false;
           note.completedHold = false;

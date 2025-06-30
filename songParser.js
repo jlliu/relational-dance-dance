@@ -342,6 +342,7 @@ let parseSong = function (songText) {
           if (parseInt(arrowElement) == 1) {
             // console.log(startTime);
             let thisNoteData = {
+              id: noteData.length,
               startBeat: startBeat,
               startTime: startTime,
               noteType: "instant",
@@ -357,6 +358,7 @@ let parseSong = function (songText) {
             //Otherwise account for holds
 
             let thisNoteData = {
+              id: noteData.length,
               startBeat: startBeat,
               startTime: startTime,
               noteType: "hold",
