@@ -2,9 +2,26 @@ let arrowCanvas;
 let canvasWidth = 640;
 let canvasHeight = 480;
 
-let track = document.querySelector("audio");
+// let ambientBreeze_track = document.querySelector("#ambientBreeze");
+// ambientBreeze_track.loop = true;
+
+const ambientPlayer = new Tone.Player(
+  "assets/audio/ambient-breeze-Cmajor.wav"
+).toDestination();
+ambientPlayer.loop = true;
+
+// let euroBeat_track = document.querySelector("#euroBeat");
+// euroBeat_track.loop = true;
+
+const beatPlayer = new Tone.Player(
+  "assets/audio/eurobeat2.wav"
+).toDestination();
+beatPlayer.loop = true;
+
 let relevantNotes = [];
 let songData;
+
+let songData2;
 
 let scoreSpan = document.querySelector("#score");
 let scoreCount = 0;
@@ -17,6 +34,8 @@ let waitForHit = true;
 // waitForHit = false;
 
 let part1HoldsDone = false;
+
+let part2Started = false;
 
 var arrows = function (p) {
   let thisCanvas;
@@ -78,6 +97,7 @@ var arrows = function (p) {
     p.noSmooth();
 
     songData = JSON.parse(songJson);
+    songData2 = JSON.parse(part2);
 
     hitArrowObjs = {
       left: new HitArrow("left", hitPos.x, hitPos.y),
@@ -122,10 +142,11 @@ var arrows = function (p) {
   // current batch num is the measure of the current batch
   let currentBatchStartMeasure = 0;
   // let bpm = 20;
-  let bpm = 20;
+  let bpm = 130;
   let currentMeasure = -1;
 
   let t = 0;
+
   let secondsPerBeat = 1 / (bpm / 60);
   let currentBeat = 0;
 
@@ -133,11 +154,34 @@ var arrows = function (p) {
 
   let cueCount = 0;
 
-  function updateNotes() {
+  function pauseTimer() {
+    timerPaused = true;
+    clock.pause();
+    // beatPlayer.stop();
+    // Tone.Transport.pause();
+  }
+
+  function unpauseTimer() {
+    timerPaused = false;
+    clock.start();
+    // beatPlayer.start();
+    // Tone.Transport.start();
+  }
+  function updateNotes(songData) {
     if (!timerPaused) {
+      t = clock.seconds;
+      // console.log(t);
       //Keep a queue of relevantNotes
 
-      // t = track.currentTime - 1.147;
+      // t = ambientBreeze_track.currentTime;
+      // console.log(ambientPlayer.now());
+
+      // but we still need this T to pause...
+      // t = ambientPlayer.now();
+      // console.log(Tone.Transport.now());
+      // t = Tone.Transport.now();
+
+      // t should be how much time passed... when the timer is not pausing...
 
       //Given current time, what is the current measure?
 
@@ -192,22 +236,37 @@ var arrows = function (p) {
           });
         }
       }
-      t += 0.01;
     }
   }
 
   let timer;
-
   let timerPaused = false;
-  document.body.addEventListener("click", function () {
-    // track.play();
 
-    setTimeout(function () {
-      timer = setInterval(function () {
-        updateNotes();
-      }, 10);
-      startDrawingArrows = true;
-    }, 1.147 * 1000);
+  let beatStarted = false;
+
+  let t_part1Complete = 0;
+
+  let clock = new Tone.Clock((time) => {
+    // console.log("this is a clock");
+    // updateNotes();
+  }, 1);
+
+  document.body.addEventListener("click", function () {
+    ambientPlayer.start();
+    // beatPlayer.start();
+
+    timer = setInterval(function () {
+      if (part2Started) {
+        updateNotes(songData2);
+      } else {
+        updateNotes(songData);
+      }
+    }, 10);
+
+    //Start a tone.js clock to keep time
+    clock.start();
+
+    startDrawingArrows = true;
   });
 
   //What needs to happen in Part 1 of experimental scene, if we are no longer doing the traditional game play?
@@ -239,7 +298,7 @@ var arrows = function (p) {
       // Should this arrow be considered as a hit candidate? Different for waiting and not waiting modes
       if (waitForHit) {
         if (yPos < hitArrowObjs["left"].yPos && !note.isHit) {
-          timerPaused = true;
+          pauseTimer();
         }
         // For experimental... note is a hit candidate only if it's within range and UNHIT
         if (
@@ -253,6 +312,18 @@ var arrows = function (p) {
           note.isHitCandidate = false;
         }
       } else {
+        //First of all check if this is note 47, when the beat drops
+        // I don't think this is the best place for this...
+        // if (
+        //   parseInt(note.id) == 47 &&
+        //   yPos < hitArrowObjs["left"].yPos &&
+        //   !beatStarted
+        // ) {
+        //   ambientPlayer.stop();
+        //   beatStarted = true;
+        //   beatPlayer.start();
+        // }
+
         if (
           yPos > hitArrowObjs["left"].yPos - margin &&
           yPos < hitArrowObjs["left"].yPos + margin
@@ -369,6 +440,9 @@ var arrows = function (p) {
         if (!part1HoldsDone && cueCount == 46) {
           part1HoldsDone = true;
           waitForHit = false;
+          t_part1Complete = t;
+          // Can we set a timer for the beat to start?
+          resetForPart2();
         }
       } else if (!note.isHit) {
         // last case: the note is not hit, either passed over or upcoming...
@@ -399,6 +473,29 @@ var arrows = function (p) {
     }
   }
 
+  function resetForPart2() {
+    let measuresUntilBeat = 2;
+    let delayForBeat = measuresUntilBeat * 4 * secondsPerBeat;
+    // console.log(delayForBeat);
+    // ambientPlayer.stop();
+    clock.stop();
+
+    setTimeout(function () {
+      // Lets try resetting everything here!
+      relevantNotes = [];
+      currentBatchStartMeasure = 0;
+      currentMeasure = -1;
+      currentBeat = 0;
+      pixelsElapsed = 0;
+      part2Started = true;
+      console.log("part 2 started!");
+      clock.start();
+      setTimeout(function () {
+        beatPlayer.start();
+      }, delayForBeat * 1000);
+    }, delayForBeat * 1000);
+  }
+
   function updateFeedback(feedbackText) {
     feedback.innerHTML = feedbackText;
   }
@@ -408,7 +505,9 @@ var arrows = function (p) {
       scoreCount++;
       scoreSpan.innerHTML = scoreCount;
       note.isHit = true;
-      timerPaused = false;
+      if (timerPaused) {
+        unpauseTimer();
+      }
       // cueCount++;
       cueCount = parseInt(note.id) + 1;
       triggerNarrative(cueCount);
@@ -552,7 +651,7 @@ var arrows = function (p) {
           // Well, we can pause it if there's only one hold at the time
           // Once there's two, it requires BOTH to be lifted to be paused
           if (waitForHit) {
-            timerPaused = true;
+            pauseTimer();
             note.holdPaused = true;
           } else {
             note.isHolding = false;
@@ -571,7 +670,7 @@ var arrows = function (p) {
         // timerPaused = false;
         note.holdPaused = false;
         if (allHoldsUnpaused()) {
-          timerPaused = false;
+          unpauseTimer();
         }
       }
     });

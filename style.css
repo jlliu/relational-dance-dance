@@ -39,7 +39,7 @@ canvas {
   z-index:1;
 }
 audio{
-  display:none;
+  /* display:none; */
 }
 /* .gameCanvas{
   z-index:-1;

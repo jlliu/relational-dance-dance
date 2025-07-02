@@ -297,7 +297,7 @@ let getDirection = function (arrowIndex) {
   }
 };
 
-let parseSong = function (songText) {
+let parseSong = function (songText, offsetId) {
   console.log(songText);
   let measures = songText.split(/\s+,\s+/);
   console.log(measures);
@@ -342,7 +342,7 @@ let parseSong = function (songText) {
           if (parseInt(arrowElement) == 1) {
             // console.log(startTime);
             let thisNoteData = {
-              id: noteData.length,
+              id: noteData.length + offsetId,
               startBeat: startBeat,
               startTime: startTime,
               noteType: "instant",
@@ -358,7 +358,7 @@ let parseSong = function (songText) {
             //Otherwise account for holds
 
             let thisNoteData = {
-              id: noteData.length,
+              id: noteData.length + offsetId,
               startBeat: startBeat,
               startTime: startTime,
               noteType: "hold",
@@ -431,8 +431,10 @@ let parseSong = function (songText) {
 
 let parseButton = document.querySelector("#parseButton");
 let inputSong = document.querySelector("#inputSong");
+let numberInput = document.querySelector("#number");
 let resultTextarea = document.querySelector("#results");
 parseButton.addEventListener("click", function () {
-  let results = parseSong(inputSong.value);
+  let offsetVal = parseInt(numberInput.value);
+  let results = parseSong(inputSong.value, offsetVal);
   resultTextarea.innerHTML = results;
 });
