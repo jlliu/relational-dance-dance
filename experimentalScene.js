@@ -18,6 +18,8 @@ const beatPlayer = new Tone.Player(
 ).toDestination();
 beatPlayer.loop = true;
 
+const kickPlayer = new Tone.Player("assets/audio/kick.wav").toDestination();
+
 let relevantNotes = [];
 let songData;
 
@@ -528,6 +530,10 @@ var arrows = function (p) {
       note.isHolding = false;
       note.completedHold = true;
     }
+
+    // if (!waitForHit && note.noteType !== "hold") {
+    //   kickPlayer.start();
+    // }
   }
 
   function allHoldsUnpaused() {

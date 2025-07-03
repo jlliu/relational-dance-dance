@@ -1,4 +1,6 @@
 let arrowCanvas;
+
+let canvasSizeOriginal = { width: 640, height: 480 };
 let canvasWidth = 640;
 let canvasHeight = 480;
 
@@ -10,6 +12,17 @@ let scoreSpan = document.querySelector("#score");
 let scoreCount = 0;
 
 let feedback = document.querySelector("#feedback");
+
+let charsToImgs = {};
+
+let feedbackObj;
+
+// let showingFeedback = false;
+// let feedbackText = "";
+// let feedbackScale = 1;
+// let feedbackTimeout;
+// let feedbackAnimationIndex = 0;
+// let feedbackAnimationInterval;
 
 var arrows = function (p) {
   let thisCanvas;
@@ -33,6 +46,13 @@ var arrows = function (p) {
   let holdMiddleImg;
   let holdEndImgs;
 
+  let fontSpritesheet;
+
+  let charSize = {
+    height: 58,
+    width: 40,
+  };
+
   p.preload = function () {
     //Preload a background here
     //Preload whatever needs to be preloaded
@@ -55,6 +75,8 @@ var arrows = function (p) {
       right: p.loadImage("assets/arrow-right.png"),
       down: p.loadImage("assets/arrow-down.png"),
     };
+
+    fontSpritesheet = p.loadImage("assets/font-spritesheet.png");
   };
 
   p.setup = function () {
@@ -77,11 +99,31 @@ var arrows = function (p) {
       right: new HitArrow("right", hitPos.x + 240, hitPos.y),
     };
 
+    feedbackObj = new FeedbackText();
+
     // setupNavigation();
 
     // cursor = new Cursor();
 
     //Initialize Game N Sprites
+
+    //Initialize the font sprites!!
+
+    // Get and store image object for character
+    characterList.forEach(function (character, index) {
+      let columns = fontSpritesheet.width / charSize.width;
+      let rows = fontSpritesheet.height / charSize.height;
+      let startingX = (index % columns) * charSize.width;
+      let startingY = Math.floor(index / columns) * charSize.height;
+      let charImg = fontSpritesheet.get(
+        startingX,
+        startingY,
+        charSize.width,
+        charSize.height
+      );
+      charsToImgs[character] = charImg;
+    });
+    console.log(charsToImgs);
   };
 
   let startDrawingArrows = false;
@@ -96,6 +138,12 @@ var arrows = function (p) {
     if (startDrawingArrows) {
       drawArrows();
     }
+    // drawText("PERFECT!");
+    // if (showingFeedback) {
+
+    feedbackObj.display();
+    // drawText(feedbackText, feedbackScale);
+    // }
   };
 
   let batchSize = 2;
@@ -269,7 +317,7 @@ var arrows = function (p) {
           hitArrowObjs["left"].yPos
         );
       } else if (note.isHit && !note.isHolding && !note.completedHold) {
-        console.log("CASE 2");
+        // console.log("CASE 2");
 
         //   case 2: hit first note, lifted up before end
         //   What happens? need to grey out and keep on going
@@ -331,8 +379,22 @@ var arrows = function (p) {
     }
   }
 
-  function updateFeedback(feedbackText) {
-    feedback.innerHTML = feedbackText;
+  // Draw text centered on the screen
+  function drawText(textToDraw, scaleFactor, start_xPos, start_yPos) {
+    //Automatically center if position not specified
+    let charsToDraw = textToDraw.split("");
+    if (start_xPos == null || start_yPos == null) {
+      start_xPos =
+        (canvasSizeOriginal.width -
+          charsToDraw.length * charSize.width * scaleFactor) /
+        2;
+      start_yPos =
+        (canvasSizeOriginal.height - charSize.height * scaleFactor) / 2;
+    }
+    charsToDraw.forEach(function (char, index) {
+      let xPos = start_xPos + index * charSize.width * scaleFactor;
+      drawImageToScale(charsToImgs[char], xPos, start_yPos, scaleFactor);
+    });
   }
 
   function updateScore(score, note) {
@@ -341,11 +403,11 @@ var arrows = function (p) {
       scoreSpan.innerHTML = scoreCount;
       note.isHit = true;
       if (score === "ok") {
-        updateFeedback("OKAY");
+        feedbackObj.updateState("ok");
       } else if (score === "great") {
-        updateFeedback("GREAT");
+        feedbackObj.updateState("great");
       } else if (score === "perfect") {
-        updateFeedback("PERFECT!!");
+        feedbackObj.updateState("perfect");
       }
     }
 
@@ -359,7 +421,6 @@ var arrows = function (p) {
   }
 
   function assessHit(direction, hitType) {
-    console.log("running assess hit");
     relevantNotes.forEach(function (note) {
       //Assess notes that are the START of either instant or holds
       if (
@@ -375,7 +436,7 @@ var arrows = function (p) {
           yPos > hitArrowObjs["left"].yPos - 50 &&
           yPos < hitArrowObjs["left"].yPos - 40
         ) {
-          updateFeedback("TOO LATE!");
+          feedbackObj.updateState("late");
         }
         // A little late - Ok - PASS
         else if (
@@ -387,20 +448,20 @@ var arrows = function (p) {
         // Almost perfect - late
         else if (
           yPos >= hitArrowObjs["left"].yPos - 20 &&
-          yPos < hitArrowObjs["left"].yPos - 5
+          yPos < hitArrowObjs["left"].yPos - 10
         ) {
           updateScore("great", note);
         }
         // Perfect - PASS
         else if (
-          yPos >= hitArrowObjs["left"].yPos - 5 &&
-          yPos < hitArrowObjs["left"].yPos + 5
+          yPos >= hitArrowObjs["left"].yPos - 10 &&
+          yPos < hitArrowObjs["left"].yPos + 10
         ) {
           updateScore("perfect", note);
         }
         // Almost perfect - late - PASS
         else if (
-          yPos >= hitArrowObjs["left"].yPos + 5 &&
+          yPos >= hitArrowObjs["left"].yPos + 10 &&
           yPos < hitArrowObjs["left"].yPos + 20
         ) {
           updateScore("great", note);
@@ -417,7 +478,7 @@ var arrows = function (p) {
           yPos >= hitArrowObjs["left"].yPos + 40 &&
           yPos < hitArrowObjs["left"].yPos + 50
         ) {
-          updateFeedback("TOO EARLY!");
+          feedbackObj.updateState("early");
         }
       }
       //Assess notes that are currently being held. Did we lift before it's over or not?
@@ -446,7 +507,7 @@ var arrows = function (p) {
           yPos >= hitArrowObjs["left"].yPos + 40 &&
           yPos < hitArrowObjs["left"].yPos + Infinity
         ) {
-          updateFeedback("TOO EARLY!");
+          feedbackObj.updateState("early");
           note.isHolding = false;
           note.completedHold = false;
         }
@@ -553,6 +614,64 @@ var arrows = function (p) {
     }
   }
 
+  class FeedbackText {
+    constructor() {
+      this.showing = false;
+      this.text = "OK";
+      this.state = "ok";
+      this.scale = 1;
+      this.animationIndex = 0;
+      this.animationInterval;
+      this.hideTimeout;
+    }
+    updateState(newState) {
+      clearTimeout(this.hideTimeout);
+      clearInterval(this.animationInterval);
+      this.showing = true;
+      this.animationIndex = 0;
+      this.scale = 1;
+      this.state = newState;
+      if (this.state == "ok") {
+        this.text = "OK";
+      } else if (this.state == "great") {
+        this.text = "GREAT";
+      } else if (this.state == "perfect") {
+        this.text = "PERFECT!";
+      } else if (this.state == "early") {
+        this.text = "Too early!";
+      } else if (this.state == "late") {
+        this.text = "Too late!";
+      }
+      let _this = this;
+      this.animationInterval = setInterval(function () {
+        _this.animationIndex++;
+        if (_this.animationIndex == 1) {
+          _this.scale = 1.12;
+        } else if (_this.animationIndex == 2) {
+          _this.scale = 1.15;
+        } else if (_this.animationIndex == 3) {
+          _this.scale = 1.14;
+        } else if (_this.animationIndex == 4) {
+          _this.scale = 1.1;
+        } else if (_this.animationIndex == 5) {
+          _this.scale = 1.05;
+        } else {
+          _this.scale = 1;
+        }
+      }, 10);
+
+      this.hideTimeout = setTimeout(function () {
+        _this.showing = false;
+        clearInterval(_this.animationInterval);
+      }, 1000);
+    }
+    display() {
+      if (this.showing) {
+        drawText(this.text, this.scale);
+      }
+    }
+  }
+
   function hideCanvas() {
     //Add things we want to do when we leave this scene
     // gameEntered = false;
@@ -564,14 +683,24 @@ var arrows = function (p) {
     p.resizeCanvas(canvasWidth, canvasHeight);
   };
 
-  function drawImageToScale(img, x, y) {
-    p.image(
-      img,
-      x * scaleRatio,
-      y * scaleRatio,
-      img.width * scaleRatio,
-      img.height * scaleRatio
-    );
+  function drawImageToScale(img, x, y, scaleFactor) {
+    if (scaleFactor) {
+      p.image(
+        img,
+        x * scaleRatio,
+        y * scaleRatio,
+        img.width * scaleRatio * scaleFactor,
+        img.height * scaleRatio * scaleFactor
+      );
+    } else {
+      p.image(
+        img,
+        x * scaleRatio,
+        y * scaleRatio,
+        img.width * scaleRatio,
+        img.height * scaleRatio
+      );
+    }
   }
 
   function drawImageToScaleWithHeight(img, x, y, height) {
