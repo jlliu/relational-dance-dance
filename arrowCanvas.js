@@ -13,9 +13,8 @@ let scoreCount = 0;
 
 let feedback = document.querySelector("#feedback");
 
-let charsToImgs = {};
-
 let feedbackObj;
+let comboObj;
 
 // let showingFeedback = false;
 // let feedbackText = "";
@@ -24,7 +23,7 @@ let feedbackObj;
 // let feedbackAnimationIndex = 0;
 // let feedbackAnimationInterval;
 
-var arrows = function (p) {
+var arrowScene = function (p) {
   let thisCanvas;
   let canvasRatio = canvasWidth / canvasHeight;
   let mouse_x;
@@ -47,11 +46,6 @@ var arrows = function (p) {
   let holdEndImgs;
 
   let fontSpritesheet;
-
-  let charSize = {
-    height: 58,
-    width: 40,
-  };
 
   p.preload = function () {
     //Preload a background here
@@ -76,7 +70,8 @@ var arrows = function (p) {
       down: p.loadImage("assets/arrow-down.png"),
     };
 
-    fontSpritesheet = p.loadImage("assets/font-spritesheet.png");
+    fonts.mainYellow.imgObj = p.loadImage(fonts.mainYellow.src);
+    fonts.pinkDigits.imgObj = p.loadImage(fonts.pinkDigits.src);
   };
 
   p.setup = function () {
@@ -100,6 +95,7 @@ var arrows = function (p) {
     };
 
     feedbackObj = new FeedbackText();
+    comboObj = new ComboText();
 
     // setupNavigation();
 
@@ -110,20 +106,10 @@ var arrows = function (p) {
     //Initialize the font sprites!!
 
     // Get and store image object for character
-    characterList.forEach(function (character, index) {
-      let columns = fontSpritesheet.width / charSize.width;
-      let rows = fontSpritesheet.height / charSize.height;
-      let startingX = (index % columns) * charSize.width;
-      let startingY = Math.floor(index / columns) * charSize.height;
-      let charImg = fontSpritesheet.get(
-        startingX,
-        startingY,
-        charSize.width,
-        charSize.height
-      );
-      charsToImgs[character] = charImg;
-    });
-    console.log(charsToImgs);
+    setupFont("mainYellow");
+
+    // Get and store image object for digits
+    setupFont("pinkDigits");
   };
 
   let startDrawingArrows = false;
@@ -142,8 +128,7 @@ var arrows = function (p) {
     // if (showingFeedback) {
 
     feedbackObj.display();
-    // drawText(feedbackText, feedbackScale);
-    // }
+    comboObj.display();
   };
 
   let batchSize = 2;
@@ -256,6 +241,15 @@ var arrows = function (p) {
         note.isHitCandidate = true;
       } else if (yPos < hitArrowObjs["left"].yPos - margin) {
         passedOver = true;
+
+        //The note is passed over for the first time!
+        if (note.hasPassedOver == null) {
+          note.hasPassedOver = true;
+          //If it's first time passing over a NOT hit note, reset combo
+          if (!note.isHit) {
+            comboObj.resetCombo();
+          }
+        }
         note.isHitCandidate = false;
       }
 
@@ -379,28 +373,54 @@ var arrows = function (p) {
     }
   }
 
-  // Draw text centered on the screen
-  function drawText(textToDraw, scaleFactor, start_xPos, start_yPos) {
+  function setupFont(fontName) {
+    fonts[fontName].charSet.forEach(function (character, index) {
+      let size = fonts[fontName].size;
+      let imgObj = fonts[fontName].imgObj;
+      let columns = imgObj.width / size.width;
+      let rows = imgObj.height / size.height;
+      let startingX = (index % columns) * size.width;
+      let startingY = Math.floor(index / columns) * size.height;
+      let charImg = imgObj.get(startingX, startingY, size.width, size.height);
+      fonts[fontName].charsToImgs[character] = charImg;
+    });
+  }
+
+  // Draw text centered on the screen or at a certain position if specified
+  function drawText(textToDraw, fontName, scaleFactor, start_xPos, start_yPos) {
+    if (scaleFactor == null) {
+      scaleFactor = 1;
+    }
     //Automatically center if position not specified
     let charsToDraw = textToDraw.split("");
-    if (start_xPos == null || start_yPos == null) {
+    if (start_xPos == null) {
       start_xPos =
         (canvasSizeOriginal.width -
-          charsToDraw.length * charSize.width * scaleFactor) /
+          charsToDraw.length * fonts[fontName].size.width * scaleFactor) /
         2;
+    }
+    if (start_yPos == null) {
       start_yPos =
-        (canvasSizeOriginal.height - charSize.height * scaleFactor) / 2;
+        (canvasSizeOriginal.height -
+          fonts[fontName].size.height * scaleFactor) /
+        2;
     }
     charsToDraw.forEach(function (char, index) {
-      let xPos = start_xPos + index * charSize.width * scaleFactor;
-      drawImageToScale(charsToImgs[char], xPos, start_yPos, scaleFactor);
+      let xPos = start_xPos + index * fonts[fontName].size.width * scaleFactor;
+      drawImageToScale(
+        fonts[fontName].charsToImgs[char],
+        xPos,
+        start_yPos,
+        scaleFactor
+      );
     });
   }
 
   function updateScore(score, note) {
     if (!note.isHit) {
       scoreCount++;
-      scoreSpan.innerHTML = scoreCount;
+      comboObj.incrementCombo();
+      // scoreSpan.innerHTML = scoreCount;
       note.isHit = true;
       if (score === "ok") {
         feedbackObj.updateState("ok");
@@ -437,6 +457,7 @@ var arrows = function (p) {
           yPos < hitArrowObjs["left"].yPos - 40
         ) {
           feedbackObj.updateState("late");
+          comboObj.resetCombo();
         }
         // A little late - Ok - PASS
         else if (
@@ -479,6 +500,7 @@ var arrows = function (p) {
           yPos < hitArrowObjs["left"].yPos + 50
         ) {
           feedbackObj.updateState("early");
+          comboObj.resetCombo();
         }
       }
       //Assess notes that are currently being held. Did we lift before it's over or not?
@@ -614,6 +636,43 @@ var arrows = function (p) {
     }
   }
 
+  class ComboText {
+    constructor() {
+      this.count = 0;
+      this.showing = false;
+      this.scale = 1;
+      this.animationIndex = 0;
+      this.animationInterval;
+      this.hideTimeout;
+    }
+    incrementCombo() {
+      this.showing = true;
+      this.count++;
+      clearInterval(this.animationInterval);
+      this.showing = true;
+      this.animationIndex = 0;
+      this.scale = 1;
+      let _this = this;
+      this.animationInterval = setInterval(function () {
+        _this.animationIndex++;
+        let newScale = hitAnimationTimings[_this.animationIndex];
+        if (newScale == null) {
+          newScale = 1;
+        }
+        _this.scale = newScale;
+      }, 10);
+    }
+    resetCombo() {
+      this.count = 0;
+      this.showing = false;
+    }
+    display() {
+      if (this.showing && this.count >= 2) {
+        drawText(this.count.toString(), "pinkDigits", this.scale, null, 240);
+      }
+    }
+  }
+
   class FeedbackText {
     constructor() {
       this.showing = false;
@@ -645,19 +704,11 @@ var arrows = function (p) {
       let _this = this;
       this.animationInterval = setInterval(function () {
         _this.animationIndex++;
-        if (_this.animationIndex == 1) {
-          _this.scale = 1.12;
-        } else if (_this.animationIndex == 2) {
-          _this.scale = 1.15;
-        } else if (_this.animationIndex == 3) {
-          _this.scale = 1.14;
-        } else if (_this.animationIndex == 4) {
-          _this.scale = 1.1;
-        } else if (_this.animationIndex == 5) {
-          _this.scale = 1.05;
-        } else {
-          _this.scale = 1;
+        let newScale = hitAnimationTimings[_this.animationIndex];
+        if (newScale == null) {
+          newScale = 1;
         }
+        _this.scale = newScale;
       }, 10);
 
       this.hideTimeout = setTimeout(function () {
@@ -667,10 +718,14 @@ var arrows = function (p) {
     }
     display() {
       if (this.showing) {
-        drawText(this.text, this.scale);
+        drawText(this.text, "mainYellow", this.scale, null, 150);
       }
     }
   }
+
+  //////////////////////////
+  // General Helpers      //
+  //////////////////////////
 
   function hideCanvas() {
     //Add things we want to do when we leave this scene
@@ -725,4 +780,4 @@ var arrows = function (p) {
   }
 };
 
-new p5(arrows, "arrow-canvas");
+new p5(arrowScene, "arrow-canvas");
