@@ -6,7 +6,7 @@ let canvasHeight = 480;
 // ambientBreeze_track.loop = true;
 
 const ambientPlayer = new Tone.Player(
-  "assets/audio/ambient-breeze-Cmajor.wav"
+  "assets/audio/RDD_p1_ambience_loop.mp3"
 ).toDestination();
 ambientPlayer.loop = true;
 
@@ -14,7 +14,7 @@ ambientPlayer.loop = true;
 // euroBeat_track.loop = true;
 
 const beatPlayer = new Tone.Player(
-  "assets/audio/eurobeat2.wav"
+  "assets/audio/RDD_p2_drum_loop.mp3"
 ).toDestination();
 beatPlayer.loop = true;
 
@@ -476,26 +476,39 @@ var arrows = function (p) {
   }
 
   function resetForPart2() {
-    let measuresUntilBeat = 2;
+    let measuresUntilBeat = 1;
     let delayForBeat = measuresUntilBeat * 4 * secondsPerBeat;
     // console.log(delayForBeat);
-    // ambientPlayer.stop();
+    ambientPlayer.stop();
     clock.stop();
 
+    // Lets try resetting everything here!
+    relevantNotes = [];
+    currentBatchStartMeasure = 0;
+    currentMeasure = -1;
+    currentBeat = 0;
+    pixelsElapsed = 0;
+    part2Started = true;
+    console.log("part 2 started!");
+    clock.start();
     setTimeout(function () {
-      // Lets try resetting everything here!
-      relevantNotes = [];
-      currentBatchStartMeasure = 0;
-      currentMeasure = -1;
-      currentBeat = 0;
-      pixelsElapsed = 0;
-      part2Started = true;
-      console.log("part 2 started!");
-      clock.start();
-      setTimeout(function () {
-        beatPlayer.start();
-      }, delayForBeat * 1000);
+      beatPlayer.start();
     }, delayForBeat * 1000);
+
+    // setTimeout(function () {
+    //   // Lets try resetting everything here!
+    //   relevantNotes = [];
+    //   currentBatchStartMeasure = 0;
+    //   currentMeasure = -1;
+    //   currentBeat = 0;
+    //   pixelsElapsed = 0;
+    //   part2Started = true;
+    //   console.log("part 2 started!");
+    //   clock.start();
+    //   setTimeout(function () {
+    //     beatPlayer.start();
+    //   }, delayForBeat * 1000);
+    // }, delayForBeat * 1000);
   }
 
   function updateFeedback(feedbackText) {
