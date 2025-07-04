@@ -9,12 +9,16 @@ let relevantNotes = [];
 let songData;
 
 let scoreSpan = document.querySelector("#score");
-let scoreCount = 0;
+// let scoreCount = 0;
 
 let feedback = document.querySelector("#feedback");
 
 let feedbackObj;
 let comboObj;
+
+let scoreData;
+
+let healthBar;
 
 // let showingFeedback = false;
 // let feedbackText = "";
@@ -45,7 +49,11 @@ var arrowScene = function (p) {
   let holdMiddleImg;
   let holdEndImgs;
 
-  let fontSpritesheet;
+  let comboTextImg;
+
+  let healthBarFrameImg;
+  let greenGradientImg;
+  let rainbowGradientImg;
 
   p.preload = function () {
     //Preload a background here
@@ -72,6 +80,10 @@ var arrowScene = function (p) {
 
     fonts.mainYellow.imgObj = p.loadImage(fonts.mainYellow.src);
     fonts.pinkDigits.imgObj = p.loadImage(fonts.pinkDigits.src);
+    comboTextImg = p.loadImage("assets/comboText.png");
+    healthBarFrameImg = p.loadImage("assets/healthBarFrame.png");
+    greenGradientImg = p.loadImage("assets/greenGradient.png");
+    rainbowGradientImg = p.loadImage("assets/rainbowGradient.png");
   };
 
   p.setup = function () {
@@ -96,6 +108,9 @@ var arrowScene = function (p) {
 
     feedbackObj = new FeedbackText();
     comboObj = new ComboText();
+
+    scoreData = new Score();
+    healthBar = new HealthBar();
 
     // setupNavigation();
 
@@ -129,6 +144,7 @@ var arrowScene = function (p) {
 
     feedbackObj.display();
     comboObj.display();
+    healthBar.display();
   };
 
   let batchSize = 2;
@@ -242,12 +258,12 @@ var arrowScene = function (p) {
       } else if (yPos < hitArrowObjs["left"].yPos - margin) {
         passedOver = true;
 
-        //The note is passed over for the first time!
+        //The note is passed over for the first time! THIS IS A MISS....
         if (note.hasPassedOver == null) {
           note.hasPassedOver = true;
           //If it's first time passing over a NOT hit note, reset combo
           if (!note.isHit) {
-            comboObj.resetCombo();
+            updateMiss("miss", note);
           }
         }
         note.isHitCandidate = false;
@@ -263,7 +279,7 @@ var arrowScene = function (p) {
         note.isHolding &&
         !note.completedHold
       ) {
-        updateScore("ok", note);
+        updateHit("ok", note);
       }
 
       drawArrow(note, yPos, passedOver);
@@ -393,17 +409,19 @@ var arrowScene = function (p) {
     }
     //Automatically center if position not specified
     let charsToDraw = textToDraw.split("");
+    let wordWidth = charsToDraw.length * fonts[fontName].size.width;
+    let wordHeight = fonts[fontName].size.height;
     if (start_xPos == null) {
-      start_xPos =
-        (canvasSizeOriginal.width -
-          charsToDraw.length * fonts[fontName].size.width * scaleFactor) /
-        2;
+      start_xPos = (canvasSizeOriginal.width - wordWidth * scaleFactor) / 2;
+    } else {
+      let dx = ((scaleFactor - 1) * wordWidth) / 2;
+      start_xPos -= dx;
     }
     if (start_yPos == null) {
-      start_yPos =
-        (canvasSizeOriginal.height -
-          fonts[fontName].size.height * scaleFactor) /
-        2;
+      start_yPos = (canvasSizeOriginal.height - wordHeight * scaleFactor) / 2;
+    } else {
+      let dy = ((scaleFactor - 1) * wordHeight) / 2;
+      start_yPos -= dy;
     }
     charsToDraw.forEach(function (char, index) {
       let xPos = start_xPos + index * fonts[fontName].size.width * scaleFactor;
@@ -415,22 +433,28 @@ var arrowScene = function (p) {
       );
     });
   }
-
-  function updateScore(score, note) {
+  function updateMiss(score, note) {
+    feedbackObj.updateState(score);
+    comboObj.resetCombo();
+    scoreData.update("miss");
+  }
+  function updateHit(score, note) {
+    //Is this the first time hitting this note?
     if (!note.isHit) {
-      scoreCount++;
       comboObj.incrementCombo();
-      // scoreSpan.innerHTML = scoreCount;
       note.isHit = true;
+      let scoreScale = 1;
       if (score === "ok") {
-        feedbackObj.updateState("ok");
+        feedbackObj.updateState("ok", true);
       } else if (score === "great") {
-        feedbackObj.updateState("great");
+        feedbackObj.updateState("great", true);
       } else if (score === "perfect") {
-        feedbackObj.updateState("perfect");
+        feedbackObj.updateState("perfect", true);
       }
+      scoreData.update(score);
     }
 
+    //Add logic for hitting holds in particular
     if (note.noteType == "hold" && !note.isHolding) {
       note.isHolding = true;
       note.completedHold = false;
@@ -456,51 +480,49 @@ var arrowScene = function (p) {
           yPos > hitArrowObjs["left"].yPos - 50 &&
           yPos < hitArrowObjs["left"].yPos - 40
         ) {
-          feedbackObj.updateState("late");
-          comboObj.resetCombo();
+          updateMiss("late", note);
         }
         // A little late - Ok - PASS
         else if (
           yPos >= hitArrowObjs["left"].yPos - 40 &&
           yPos < hitArrowObjs["left"].yPos - 20
         ) {
-          updateScore("ok", note);
+          updateHit("ok", note);
         }
         // Almost perfect - late
         else if (
           yPos >= hitArrowObjs["left"].yPos - 20 &&
           yPos < hitArrowObjs["left"].yPos - 10
         ) {
-          updateScore("great", note);
+          updateHit("great", note);
         }
         // Perfect - PASS
         else if (
           yPos >= hitArrowObjs["left"].yPos - 10 &&
           yPos < hitArrowObjs["left"].yPos + 10
         ) {
-          updateScore("perfect", note);
+          updateHit("perfect", note);
         }
         // Almost perfect - late - PASS
         else if (
           yPos >= hitArrowObjs["left"].yPos + 10 &&
           yPos < hitArrowObjs["left"].yPos + 20
         ) {
-          updateScore("great", note);
+          updateHit("great", note);
         }
         // A little early - OK - PASS
         else if (
           yPos >= hitArrowObjs["left"].yPos + 20 &&
           yPos < hitArrowObjs["left"].yPos + 40
         ) {
-          updateScore("ok", note);
+          updateHit("ok", note);
         }
         // TOO EARLY - Failed
         else if (
           yPos >= hitArrowObjs["left"].yPos + 40 &&
           yPos < hitArrowObjs["left"].yPos + 50
         ) {
-          feedbackObj.updateState("early");
-          comboObj.resetCombo();
+          updateMiss("early", note);
         }
       }
       //Assess notes that are currently being held. Did we lift before it's over or not?
@@ -521,7 +543,7 @@ var arrowScene = function (p) {
           yPos >= hitArrowObjs["left"].yPos - Infinity &&
           yPos < hitArrowObjs["left"].yPos + 40
         ) {
-          updateScore("ok", note);
+          updateHit("ok", note);
         }
 
         // Lift is TOO EARLY - Failed
@@ -617,6 +639,97 @@ var arrowScene = function (p) {
 
   // CLASSES
 
+  class Score {
+    constructor() {
+      this.miss = 0;
+      this.perfect = 0;
+      this.ok = 0;
+      this.great = 0;
+      this.scoreCount = 0;
+    }
+    update(scoreType) {
+      if (scoreType == "miss") {
+        this.miss++;
+        healthBar.decrement();
+      } else {
+        if (scoreType == "ok") {
+          this.ok++;
+          this.scoreCount += 1;
+          healthBar.increment(1);
+        }
+        if (scoreType == "great") {
+          this.great++;
+          this.scoreCount += 3;
+          healthBar.increment(3);
+        }
+        if (scoreType == "perfect") {
+          this.perfect++;
+          this.scoreCount += 5;
+          healthBar.increment(5);
+        }
+      }
+      scoreSpan.innerHTML = JSON.stringify(this);
+    }
+  }
+
+  class HealthBar {
+    constructor() {
+      this.amountFilled = 0.5;
+      this.xPos = 165;
+      this.yPos = 0;
+      this.tick = 0;
+      this.animate = true;
+      this.gradientColor = "green";
+    }
+    display() {
+      let gradientImg;
+      if (this.gradientColor == "green") {
+        gradientImg = greenGradientImg;
+      } else if (this.gradientColor == "rainbow") {
+        gradientImg = rainbowGradientImg;
+      }
+      // first draw underlying bar
+      p.fill("black");
+      drawRectToScale(193, 5, 254, 32);
+
+      p.fill("lime");
+      // drawRectToScale(193, 5, 254 * this.amountFilled, 32);
+      let gradientToDraw = gradientImg.get(
+        this.tick % 254,
+        0,
+        254 * this.amountFilled,
+        32
+      );
+      let dw = this.animate ? Math.sin(this.tick * 0.05) * 3 : 0;
+      drawImageToScaleWithWidth(
+        gradientToDraw,
+        193,
+        5,
+        gradientToDraw.width + dw
+      );
+
+      //Draw frame over
+      drawImageToScale(healthBarFrameImg, this.xPos, this.yPos);
+      this.tick++;
+    }
+    increment(scaleFactor) {
+      if (this.amountFilled < 1) {
+        this.animate = true;
+        this.amountFilled += 0.01;
+        this.gradientColor = "green";
+      } else if (this.amountFilled >= 1) {
+        this.animate = false;
+        this.gradientColor = "rainbow";
+      }
+    }
+    decrement() {
+      if (this.amountFilled > 0) {
+        this.amountFilled -= 0.01;
+        this.gradientColor = "green";
+      }
+    }
+  }
+
   class HitArrow {
     constructor(direction, xPos, yPos) {
       this.direction = direction;
@@ -667,8 +780,18 @@ var arrowScene = function (p) {
       this.showing = false;
     }
     display() {
+      //Calculate offset between number and comboTextImg
+      let numberWidth;
+      if (this.count < 10) {
+        numberWidth = fonts.pinkDigits.size.width;
+      } else if (this.count < 100) {
+        numberWidth = fonts.pinkDigits.size.width * 2;
+      }
+      let xPos =
+        (canvasSizeOriginal.width - (numberWidth + comboTextImg.width + 5)) / 2;
       if (this.showing && this.count >= 2) {
-        drawText(this.count.toString(), "pinkDigits", this.scale, null, 240);
+        drawImageToScale(comboTextImg, xPos + numberWidth + 5, 267, this.scale);
+        drawText(this.count.toString(), "pinkDigits", this.scale, xPos, 240);
       }
     }
   }
@@ -683,7 +806,7 @@ var arrowScene = function (p) {
       this.animationInterval;
       this.hideTimeout;
     }
-    updateState(newState) {
+    updateState(newState, animate) {
       clearTimeout(this.hideTimeout);
       clearInterval(this.animationInterval);
       this.showing = true;
@@ -700,16 +823,20 @@ var arrowScene = function (p) {
         this.text = "Too early!";
       } else if (this.state == "late") {
         this.text = "Too late!";
+      } else if (this.state == "miss") {
+        this.text = "Miss";
       }
       let _this = this;
-      this.animationInterval = setInterval(function () {
-        _this.animationIndex++;
-        let newScale = hitAnimationTimings[_this.animationIndex];
-        if (newScale == null) {
-          newScale = 1;
-        }
-        _this.scale = newScale;
-      }, 10);
+      if (animate) {
+        this.animationInterval = setInterval(function () {
+          _this.animationIndex++;
+          let newScale = hitAnimationTimings[_this.animationIndex];
+          if (newScale == null) {
+            newScale = 1;
+          }
+          _this.scale = newScale;
+        }, 10);
+      }
 
       this.hideTimeout = setTimeout(function () {
         _this.showing = false;
@@ -738,6 +865,14 @@ var arrowScene = function (p) {
     p.resizeCanvas(canvasWidth, canvasHeight);
   };
 
+  function drawRectToScale(x, y, width, height) {
+    p.rect(
+      x * scaleRatio,
+      y * scaleRatio,
+      width * scaleRatio,
+      height * scaleRatio
+    );
+  }
   function drawImageToScale(img, x, y, scaleFactor) {
     if (scaleFactor) {
       p.image(
@@ -756,6 +891,16 @@ var arrowScene = function (p) {
         img.height * scaleRatio
       );
     }
+  }
+
+  function drawImageToScaleWithWidth(img, x, y, width) {
+    p.image(
+      img,
+      x * scaleRatio,
+      y * scaleRatio,
+      width * scaleRatio,
+      img.height * scaleRatio
+    );
   }
 
   function drawImageToScaleWithHeight(img, x, y, height) {
