@@ -9,23 +9,13 @@ let relevantNotes = [];
 let songData;
 
 let scoreSpan = document.querySelector("#score");
-// let scoreCount = 0;
-
 let feedback = document.querySelector("#feedback");
 
 let feedbackObj;
 let comboObj;
 
 let scoreData;
-
 let healthBar;
-
-// let showingFeedback = false;
-// let feedbackText = "";
-// let feedbackScale = 1;
-// let feedbackTimeout;
-// let feedbackAnimationIndex = 0;
-// let feedbackAnimationInterval;
 
 var arrowScene = function (p) {
   let thisCanvas;
@@ -114,6 +104,15 @@ var arrowScene = function (p) {
 
     scoreData = new Score();
     healthBar = new HealthBar();
+
+    holdMiddleImg.loadPixels();
+    Object.values(arrowImgs).forEach(function (imgObj) {
+      imgObj.loadPixels();
+    });
+    Object.values(holdEndImgs).forEach(function (imgObj) {
+      imgObj.loadPixels();
+    });
+    // arrowImgs["left"].loadPixels();
 
     // setupNavigation();
 
@@ -231,6 +230,7 @@ var arrowScene = function (p) {
     setTimeout(function () {
       setInterval(function () {
         updateNotes();
+        updateArrowRainbow();
       }, 10);
       startDrawingArrows = true;
     }, 1.147 * 1000);
@@ -297,15 +297,24 @@ var arrowScene = function (p) {
     // Draw instant notes
     if (note.noteType == "instant" && !note.isHit) {
       if (passedOver) {
+        //Draw passed over notes greyed out
         p.tint(255, 127);
-      }
-      drawImageToScale(
-        arrowImgs[note.direction],
-        arrow_xPos[note.direction],
-        yPos
-      );
-      if (passedOver) {
+        drawImageToScale(
+          arrowImgs[note.direction],
+          arrow_xPos[note.direction],
+          yPos
+        );
         p.tint(255, 255);
+      } else {
+        //Draw upcoming notes iwth rainbow
+        // p.tint(255, 0, 0);
+        // arrowImgs[note.direction].filter(p.INVERT);
+        drawImageToScale(
+          arrowImgs[note.direction],
+          arrow_xPos[note.direction],
+          yPos
+        );
+        // p.tint(255, 255, 255);
       }
     } else if (note.noteType == "hold") {
       // Draw holds
@@ -333,8 +342,6 @@ var arrowScene = function (p) {
           hitArrowObjs["left"].yPos
         );
       } else if (note.isHit && !note.isHolding && !note.completedHold) {
-        // console.log("CASE 2");
-
         //   case 2: hit first note, lifted up before end
         //   What happens? need to grey out and keep on going
         p.tint(255, 127);
@@ -393,6 +400,57 @@ var arrowScene = function (p) {
         }
       }
     }
+  }
+
+  function updateArrowRainbow() {
+    convertArrowImgToRainbow(holdMiddleImg);
+    Object.values(arrowImgs).forEach(function (arrowImg) {
+      convertArrowImgToRainbow(arrowImg);
+    });
+    Object.values(holdEndImgs).forEach(function (arrowImg) {
+      convertArrowImgToRainbow(arrowImg);
+    });
+  }
+
+  function convertArrowImgToRainbow(imgObj) {
+    // Iterates across each pixel in the canvas
+    // let arrowImg = arrowImgs["left"];
+    let currentHue = (t * 50) % 360;
+    let rgb = hsl2rgb(currentHue, 0.97, 0.6);
+    for (let y = 0; y < imgObj.height; y++) {
+      for (let x = 0; x < imgObj.width; x++) {
+        // Gets the index of the red value for this pixel
+        let redIndex = (x + y * imgObj.width) * 4;
+        let greenIndex = redIndex + 1;
+        let blueIndex = redIndex + 2;
+        let alphaIndex = redIndex + 3;
+        let isWhite =
+          imgObj.pixels[redIndex] == 255 &&
+          imgObj.pixels[greenIndex] == 255 &&
+          imgObj.pixels[blueIndex] == 255 &&
+          imgObj.pixels[alphaIndex] == 255;
+        let isTransparent =
+          imgObj.pixels[redIndex] == 0 &&
+          imgObj.pixels[greenIndex] == 0 &&
+          imgObj.pixels[blueIndex] == 0 &&
+          imgObj.pixels[alphaIndex] == 0;
+        if (!isWhite && !isTransparent) {
+          imgObj.pixels[redIndex] = rgb[0] * 255; // Red value
+          imgObj.pixels[greenIndex] = rgb[1] * 255; // Green value
+          imgObj.pixels[blueIndex] = rgb[2] * 255; // Blue value
+          imgObj.pixels[alphaIndex] = 255; // Alpha value
+        }
+      }
+    }
+    // console.log("updating pixels");
+    imgObj.updatePixels();
+  }
+
+  function hsl2rgb(h, s, l) {
+    let a = s * Math.min(l, 1 - l);
+    let f = (n, k = (n + h / 30) % 12) =>
+      l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return [f(0), f(8), f(4)];
   }
 
   function setupFont(fontName) {
