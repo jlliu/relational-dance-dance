@@ -16,6 +16,7 @@
   <!-- Uncomment for installation mode -->
   <!-- <script src="refreshIdle.js" defer></script> -->
    <!-- <script src="songParser.js" defer></script> -->
+      <script src="hid-reader.js" defer></script>
   <script src="songData.js" defer></script>
   <script src="helpers.js" defer></script>
   <script src="arrowCanvas.js" defer></script>
@@ -33,11 +34,14 @@
 <body>
   <!-- <button id="goToEnding">Go to ending</button> -->
   <main>
-
+<button onclick="connectDevice()">Connect</button>
+<select id="deviceSelect" oninput="deviceSelectionChanged()"></select>
+<br />
+<!-- <textarea id="inputReport" cols="100" rows="5" disabled></textarea><br /> -->
     <p id="clickToStart">
       Click anywhere to start
-
     </p>
+
     <p >Score: <span id="score">0</span></p>
     <h1 id="feedback"></h1>
     <div id="arrow-canvas"></div>

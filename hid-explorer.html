@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>HID Explorer</title>
+<script>
+let connectedDevices = [];
+let selectedDevice = null;
+
+// Formats an 8-bit integer |value| in hexadecimal with leading zeros.
+const hex8 = value => {
+  return `00${value.toString(16)}`.substr(-2).toUpperCase();
+};
+
+// Formats a 16-bit integer |value| in hexadecimal with leading zeros.
+const hex16 = value => {
+  return `0000${value.toString(16)}`.substr(-4).toUpperCase();
+};
+
+const hexview = data => {
+  let buffer = '';
+  let u8array = new Uint8Array(data.buffer);
+  for (const byteValue of u8array) {
+    if (buffer)
+      buffer += ' ';
+    buffer += hex8(byteValue);
+  }
+  return buffer;
+};
+
+const parseHexArray = text => {
+  // Remove non-hex characters.
+  text = text.replace(/[^0-9a-fA-F]/g, '');
+  if (text.length % 2)
+    return null;
+
+  // Parse each character pair as a hex byte value.
+  let u8 = new Uint8Array(text.length / 2);
+  for (let i = 0; i < text.length; i += 2)
+    u8[i / 2] = parseInt(text.substr(i, 2), 16);
+
+  return new DataView(u8.buffer);
+};
+
+const pluralize = (count, unit) => {
+  if (count === 1) {
+    return `${count} ${unit}`;
+  }
+  return `${count} ${unit}s`;
+};
+
+// Displays the device chooser to allow the user to connect to a new device.
+// The selection is updated to the newly connected device.
+const connectDevice = async () => {
+  const devices = await navigator.hid.requestDevice({filters:[]});
+  if (devices.length == 0)
+    return;
+
+  for (let device of devices)
+    await addDevice(device);
+};
+
+// Adds |device| to |connectedDevices|. Selects the device if there was no prior
+// selection.
+const addDevice = async (device) => {
+  if (connectedDevices.includes(device)) {
+    console.log('device already in connectedDevices');
+    return;
+  }
+  connectedDevices.push(device);
+  console.log(`device connected: ${device.productName}`);
+  if (selectedDevice === null)
+    await selectDevice(device);
+  // updateDeviceMenu();
+};
+
+// Removes |device| from |connectedDevices|.
+const removeDevice = device => {
+  if (device === selectedDevice)
+    selectedDevice = null;
+  for (let i = connectedDevices.length - 1; i >= 0; --i) {
+    if (connectedDevices[i] === device) {
+      connectedDevices.splice(i, 1);
+      console.log(`device disconnected: ${device.productName}`);
+      // updateDeviceMenu();
+    }
+  }
+};
+
+let arrowStates = {
+  "up": false,
+  "down": false,
+  "right": false,
+  "left": false
+}
+
+function press(direction){
+ if (!arrowStates[direction]){
+  arrowStates[direction] = true;
+  console.log("Pressed "+direction);
+}
+ }
+
+
+function release(direction){
+ if (arrowStates[direction]){
+  arrowStates[direction] = false;
+  console.log("Released "+direction);
+ }
+
+}
+
+const handleInputReport = event => {
+  const inputReportTextView = document.getElementById('inputReport');
+  if (!inputReportTextView)
+    return;
+
+  let buffer = hex8(event.reportId);
+  const reportData = new Uint8Array(event.data.buffer);
+  for (let byte of reportData)
+    buffer += ' ' + hex8(byte);
+  inputReportTextView.innerHTML = buffer;
+  // console.log(buffer);
+  //give the buffer results, how do we know when we LIFT up from notes?
+  // Nothing / center: 01 00 00
+  // Up              : 01 04 00
+  // right           : 01 02 00
+  // left            : 01 01 00
+  // down            : 01 08 00
+  // up + right.    : 01 06 00
+  // down + right.   : 01 0A 00
+  // left + right.   : 01 03 00
+  // up + left.      : 01 05 00
+  // down + left.    : 01 09 00
+  // up + down.      : 01 0C 00
+
+  // Let's have an ongoing state of our arrows, is it pressed or not?
+  // on input, we update it based on the buffer
+  // We need to have a notion of "lifting"..there is a "lift" when. apreviously pressed arrow is now lifted
+
+  // Nothing / center
+  if (buffer == "01 00 00"){
+    release("left");
+    release("right");
+    release("up");
+    release("down");
+  }
+  // Up
+  if (buffer == "01 04 00"){
+    release("left");
+    release("right");
+    press("up");
+    release("down");
+  }
+
+  // Right
+  if (buffer == "01 02 00"){
+    release("left");
+    press("right");
+    release("up");
+    release("down");
+  }
+
+  // Left
+  if (buffer == "01 01 00"){
+    press("left");
+    release("right");
+    release("up");
+    release("down");
+  }
+
+  // Down
+  if (buffer == "01 08 00"){
+    release("left");
+    release("right");
+    release("up");
+    press("down");
+  }
+
+  // Up + Right
+  if (buffer == "01 06 00"){
+    release("left");
+    press("right");
+    press("up");
+    release("down");
+  }
+  // Down + Right
+  if (buffer == "01 0A 00"){
+    release("left");
+    press("right");
+    release("up");
+    press("down");
+  }
+  // Left + Right
+  if (buffer == "01 03 00"){
+    press("left");
+    press("right");
+    release("up");
+    release("down");
+  }
+
+  // Up + Left
+  if (buffer == "01 05 00"){
+    press("left");
+    release("right");
+    press("up");
+    release("down");
+  }
+  // Down + Left
+  if (buffer == "01 09 00"){
+    press("left");
+    release("right");
+    release("up");
+    press("down");
+  }
+  // Up+Down
+  if (buffer == "01 0C 000"){
+    release("left");
+    release("right");
+    press("up");
+    press("down");
+  }
+}
+
+
+
+const sendOutputReport = () => {
+  if (!selectedDevice)
+    return;
+
+  const reportTextArea = document.getElementById('outputReport');
+  if (!reportTextArea)
+    return;
+
+  let data = parseHexArray(reportTextArea.value);
+  reportTextArea.value = hexview(data);
+
+  let reportId = data.getUint8(0);
+  let reportData = new Uint8Array(data.buffer).slice(1);
+  console.log(reportId, reportData);
+
+  selectedDevice.sendReport(reportId, reportData);
+};
+
+const sendFeatureReport = () => {
+  if (!selectedDevice)
+    return;
+
+  const reportTextArea = document.getElementById('featureReport');
+  if (!reportTextArea)
+    return;
+
+  let data = parseHexArray(reportTextArea.value);
+  reportTextArea.value = hexview(data);
+
+  let reportId = data.getUint8(0);
+  let reportData = new Uint8Array(data.buffer).slice(1);
+
+  selectedDevice.sendFeatureReport(reportId, reportData);
+};
+
+const receiveFeatureReport = () => {
+  if (!selectedDevice)
+    return;
+
+  const reportTextArea = document.getElementById('featureReport');
+  if (!reportTextArea)
+    return;
+
+  let data = parseHexArray(reportTextArea.value);
+  reportTextArea.value = hexview(data);
+
+  let reportId = data.getUint8(0);
+
+  selectedDevice.receiveFeatureReport(reportId).then(data => {
+    reportTextArea.value = `${hex8(reportId)} ${hexview(data)}`;
+  });
+};
+
+// Selects |device| and updates the device info display.
+const selectDevice = async (device) => {
+  if (selectedDevice)
+    selectedDevice.oninputreport = null;
+
+  if (!device) {
+    selectedDevice = null;
+  } else {
+    let select = document.getElementById('deviceSelect');
+    for (let i = 0; i < select.options.length; ++i) {
+      if (select.options[i].device === device) {
+        select.value = i;
+        break;
+      }
+    }
+    selectedDevice = device;
+  }
+
+  if (selectedDevice) {
+    selectedDevice.oninputreport = handleInputReport;
+    if (!selectedDevice.opened) {
+      try {
+        await selectedDevice.open();
+      } catch (e) {
+        if (e instanceof DOMException) {
+          console.log(`Error opening ${selectedDevice.productName}: ${e.message}`);
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+
+  // updateDeviceInfo();
+};
+
+// Updates the device selection menu to match |connectedDevices|.
+const updateDeviceMenu = () => {
+  let select = document.getElementById('deviceSelect');
+  for (let i = select.options.length - 1; i >= 0; --i)
+    select.options[i] = null;
+
+  if (connectedDevices.length == 0) {
+    var opt = document.createElement('option');
+    opt.value = 0;
+    opt.device = null;
+    opt.innerHTML = 'No connected devices';
+    select.appendChild(opt);
+
+    updateDeviceInfo();
+    return;
+  }
+
+  let index = 0;
+  for (let device of connectedDevices) {
+    var opt = document.createElement('option');
+    opt.value = index++;
+    opt.device = device;
+    opt.innerHTML = device.productName;
+    select.appendChild(opt);
+  }
+
+  // updateDeviceInfo();
+};
+
+// Called when the user changes the selected device.
+const deviceSelectionChanged = () => {
+  let select = document.getElementById('deviceSelect');
+  selectDevice(select.options[select.value].device);
+};
+
+// Returns true if |item| has at least one usage.
+const hasUsages = item => {
+  return item.isRange || item.usages.length > 0
+}
+
+// Returns true if the physical minimum and maximum for |item| are not both
+// zero.
+const hasPhysicalBounds = item => {
+  return item.physicalMinimum != 0 || item.physicalMaximum != item.physicalMinimum;
+};
+
+// Returns true if any unit factor exponent is non-zero, if the unit exponent is
+// not zero, or if the unit system is not 'none'.
+const hasUnitDefinition = item => {
+  return item.unitFactorLengthExponent != 0 ||
+          item.unitFactorMassExponent != 0 ||
+          item.unitFactorTimeExponent != 0 ||
+          item.unitFactorTemperatureExponent != 0 ||
+          item.unitFactorCurrentExponent != 0 ||
+          item.unitFactorLuminousIntensityExponent != 0 ||
+          item.unitExponent != 0 ||
+          item.unitSystem != 'none';
+};
+
+// Returns a string describing the size of an |item| starting at bit |startBit|
+// within the containing report.
+const reportSizeAndCountAsString = (item, startBit) => {
+  const bitWidth = item.reportCount * item.reportSize;
+  if (bitWidth == 1)
+    return `1 bit (bit ${startBit})`;
+
+  const endBit = startBit + bitWidth - 1;
+  if (item.reportCount == 1)
+    return `${item.reportSize} bits (bits ${startBit} to ${endBit})`;
+
+  return `${pluralize(item.reportCount, 'value')} * ${pluralize(item.reportSize, 'bit')} (bits ${startBit} to ${endBit})`;
+};
+
+// Returns the bitfield values for |item| using human-readable abbreviations.
+// Some values are only included if they differ from the typical defaults.
+const bitFieldAsString = item => {
+  let bits = [];
+  bits.push(item.isConstant ? 'Cnst' : 'Data');
+  bits.push(item.isArray ? 'Ary' : 'Var');
+  bits.push(item.isAbsolute ? 'Abs' : 'Rel');
+  if (item.wrap) bits.push('Wrap');
+  if (!item.isLinear) bits.push('NLin');
+  if (!item.hasPreferredState) bits.push('NPrf');
+  if (item.hasNull) bits.push('Null');
+  if (item.isVolatile) bits.push('Vol');
+  if (item.isBufferedBytes) bits.push('Buf');
+  return bits.join(',');
+};
+
+const vendorName = vendorId => {
+  // USB vendor ID to vendor name map, sourced from
+  // https://www.usb.org/sites/default/files/vendor_ids072121_0.pdf
+      const usbVendors = {
+       1003:"Atmel Corporation"
+    }
+
+  if (vendorId in usbVendors) {
+    return usbVendors[vendorId];
+  }
+  return 'Unknown vendor';
+};
+
+// Returns a human-readable name for the HID usage page identified by the
+// 16-bit |usagePage| value.
+
+
+
+window.onload = async () => {
+  // Register for connection and disconnection events.
+  navigator.hid.onconnect = e => { addDevice(e.device); };
+  navigator.hid.ondisconnect = e => { removeDevice(e.device); };
+
+  // Fetch the list of connected devices.
+  const devices = await navigator.hid.getDevices();
+  for (let device of devices)
+    await addDevice(device);
+};
+</script>
+</head>
+<body>
+<h1>HID Explorer</h1>
+<button onclick="connectDevice()">Connect</button>
+<select id="deviceSelect" oninput="deviceSelectionChanged()"></select>
+<br />
+Input report<br />
+<textarea id="inputReport" cols="100" rows="5" disabled></textarea><br />
+<!-- Output report <button onclick="sendOutputReport()">Send</button><br />
+<textarea id="outputReport" cols="100" rows="5"></textarea><br /> -->
+<!-- Feature report <button onclick="sendFeatureReport()">Send</button><button onclick="receiveFeatureReport()">Receive</button><br />
+<textarea id="featureReport" cols="100" rows="5"></textarea><br /> -->
+<!-- Device info<br />
+<textarea id="deviceInfo" cols="100" rows="50" disabled></textarea><br /> -->
+</body>
+</html>

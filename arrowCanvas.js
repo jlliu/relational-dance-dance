@@ -250,7 +250,7 @@ var arrowScene = function (p) {
   //Create arrows takes the relevant notes array and then creates objects for them
   function createArrows() {}
 
-  let margin = 50;
+  let hitMargin = 70;
   let pixelsPerBeat = 100;
   function drawArrows() {
     relevantNotes.forEach(function (note) {
@@ -267,12 +267,12 @@ var arrowScene = function (p) {
 
       // Should this arrow be considered as a hit candidate?
       if (
-        yPos > hitArrowObjs["left"].yPos - margin &&
-        yPos < hitArrowObjs["left"].yPos + margin
+        yPos > hitArrowObjs["left"].yPos - hitMargin &&
+        yPos < hitArrowObjs["left"].yPos + hitMargin
       ) {
         //Note within our hit window!
         note.isHitCandidate = true;
-      } else if (yPos < hitArrowObjs["left"].yPos - margin) {
+      } else if (yPos < hitArrowObjs["left"].yPos - hitMargin) {
         passedOver = true;
 
         //The note is passed over for the first time! THIS IS A MISS....
@@ -444,14 +444,14 @@ var arrowScene = function (p) {
         //Determine quality of hit
         //TOO LATE - failed
         if (
-          yPos > hitArrowObjs["left"].yPos - 50 &&
-          yPos < hitArrowObjs["left"].yPos - 40
+          yPos > hitArrowObjs["left"].yPos - 70 &&
+          yPos < hitArrowObjs["left"].yPos - 50
         ) {
           updateMiss("late", note);
         }
         // A little late - Ok - PASS
         else if (
-          yPos >= hitArrowObjs["left"].yPos - 40 &&
+          yPos >= hitArrowObjs["left"].yPos - 50 &&
           yPos < hitArrowObjs["left"].yPos - 20
         ) {
           updateHit("ok", note);
@@ -484,15 +484,15 @@ var arrowScene = function (p) {
         // A little early - OK - PASS
         else if (
           yPos >= hitArrowObjs["left"].yPos + 20 &&
-          yPos < hitArrowObjs["left"].yPos + 40
+          yPos < hitArrowObjs["left"].yPos + 50
         ) {
           updateHit("ok", note);
           hitSuccessful = true;
         }
         // TOO EARLY - Failed
         else if (
-          yPos >= hitArrowObjs["left"].yPos + 40 &&
-          yPos < hitArrowObjs["left"].yPos + 50
+          yPos >= hitArrowObjs["left"].yPos + 60 &&
+          yPos < hitArrowObjs["left"].yPos + 70
         ) {
           updateMiss("early", note);
         }
@@ -532,9 +532,26 @@ var arrowScene = function (p) {
     return hitSuccessful;
   }
 
+  function padOrKeypress(direction) {
+    let hitSuccessful = assessHit(direction, "press");
+    hitArrowObjs[direction].press(hitSuccessful);
+  }
+
+  function padOrKeyrelease(direction) {
+    hitArrowObjs[direction].release();
+    assessHit(direction, "lift");
+  }
+
+  window.addEventListener("padPress", function (e) {
+    let direction = e.detail.direction;
+    padOrKeypress(direction);
+  });
+  window.addEventListener("padRelease", function (e) {
+    let direction = e.detail.direction;
+    padOrKeyrelease(direction);
+  });
   window.addEventListener("keydown", function (e) {
     //Ignore repeated keydown
-    console.log(e);
     if (e.repeat) {
       return;
     }
@@ -545,20 +562,16 @@ var arrowScene = function (p) {
       e.code == "ArrowDown"
     ) {
       if (e.code == "ArrowLeft") {
-        let hitSuccessful = assessHit("left", "press");
-        hitArrowObjs["left"].press(hitSuccessful);
+        padOrKeypress("left");
       }
       if (e.code == "ArrowRight") {
-        let hitSuccessful = assessHit("right", "press");
-        hitArrowObjs["right"].press(hitSuccessful);
+        padOrKeypress("right");
       }
       if (e.code == "ArrowUp") {
-        let hitSuccessful = assessHit("up", "press");
-        hitArrowObjs["up"].press(hitSuccessful);
+        padOrKeypress("up");
       }
       if (e.code == "ArrowDown") {
-        let hitSuccessful = assessHit("down", "press");
-        hitArrowObjs["down"].press(hitSuccessful);
+        padOrKeypress("down");
       }
     }
   });
@@ -571,20 +584,16 @@ var arrowScene = function (p) {
       e.code == "ArrowDown"
     ) {
       if (e.code == "ArrowLeft") {
-        hitArrowObjs["left"].release();
-        assessHit("left", "lift");
+        padOrKeyrelease("left");
       }
       if (e.code == "ArrowRight") {
-        hitArrowObjs["right"].release();
-        assessHit("right", "lift");
+        padOrKeyrelease("right");
       }
       if (e.code == "ArrowUp") {
-        hitArrowObjs["up"].release();
-        assessHit("up", "lift");
+        padOrKeyrelease("up");
       }
       if (e.code == "ArrowDown") {
-        hitArrowObjs["down"].release();
-        assessHit("down", "lift");
+        padOrKeyrelease("down");
       }
     }
   });
