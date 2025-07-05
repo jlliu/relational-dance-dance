@@ -55,6 +55,8 @@ var arrowScene = function (p) {
   let greenGradientImg;
   let rainbowGradientImg;
 
+  let hitGlowImg;
+
   p.preload = function () {
     //Preload a background here
     //Preload whatever needs to be preloaded
@@ -84,6 +86,7 @@ var arrowScene = function (p) {
     healthBarFrameImg = p.loadImage("assets/healthBarFrame.png");
     greenGradientImg = p.loadImage("assets/greenGradient.png");
     rainbowGradientImg = p.loadImage("assets/rainbowGradient.png");
+    hitGlowImg = p.loadImage("assets/hit-glow.png");
   };
 
   p.setup = function () {
@@ -132,6 +135,9 @@ var arrowScene = function (p) {
   p.draw = function () {
     p.background("pink");
 
+    Object.values(hitArrowObjs).forEach(function (arrowObj) {
+      arrowObj.displayGlow();
+    });
     Object.values(hitArrowObjs).forEach(function (arrowObj) {
       arrowObj.display();
     });
@@ -465,12 +471,14 @@ var arrowScene = function (p) {
   }
 
   function assessHit(direction, hitType) {
+    let hitSuccessful = false;
     relevantNotes.forEach(function (note) {
       //Assess notes that are the START of either instant or holds
       if (
         hitType == "press" &&
         note.isHitCandidate &&
-        note.direction == direction
+        note.direction == direction &&
+        !note.isHit
       ) {
         let yPos = note.currentY;
 
@@ -488,6 +496,7 @@ var arrowScene = function (p) {
           yPos < hitArrowObjs["left"].yPos - 20
         ) {
           updateHit("ok", note);
+          hitSuccessful = true;
         }
         // Almost perfect - late
         else if (
@@ -495,6 +504,7 @@ var arrowScene = function (p) {
           yPos < hitArrowObjs["left"].yPos - 10
         ) {
           updateHit("great", note);
+          hitSuccessful = true;
         }
         // Perfect - PASS
         else if (
@@ -502,6 +512,7 @@ var arrowScene = function (p) {
           yPos < hitArrowObjs["left"].yPos + 10
         ) {
           updateHit("perfect", note);
+          hitSuccessful = true;
         }
         // Almost perfect - late - PASS
         else if (
@@ -509,6 +520,7 @@ var arrowScene = function (p) {
           yPos < hitArrowObjs["left"].yPos + 20
         ) {
           updateHit("great", note);
+          hitSuccessful = true;
         }
         // A little early - OK - PASS
         else if (
@@ -516,6 +528,7 @@ var arrowScene = function (p) {
           yPos < hitArrowObjs["left"].yPos + 40
         ) {
           updateHit("ok", note);
+          hitSuccessful = true;
         }
         // TOO EARLY - Failed
         else if (
@@ -557,6 +570,7 @@ var arrowScene = function (p) {
         }
       }
     });
+    return hitSuccessful;
   }
 
   window.addEventListener("keydown", function (e) {
@@ -571,20 +585,20 @@ var arrowScene = function (p) {
       e.code == "ArrowDown"
     ) {
       if (e.code == "ArrowLeft") {
-        hitArrowObjs["left"].pressed = true;
-        assessHit("left", "press");
+        let hitSuccessful = assessHit("left", "press");
+        hitArrowObjs["left"].press(hitSuccessful);
       }
       if (e.code == "ArrowRight") {
-        hitArrowObjs["right"].pressed = true;
-        assessHit("right", "press");
+        let hitSuccessful = assessHit("right", "press");
+        hitArrowObjs["right"].press(hitSuccessful);
       }
       if (e.code == "ArrowUp") {
-        hitArrowObjs["up"].pressed = true;
-        assessHit("up", "press");
+        let hitSuccessful = assessHit("up", "press");
+        hitArrowObjs["up"].press(hitSuccessful);
       }
       if (e.code == "ArrowDown") {
-        hitArrowObjs["down"].pressed = true;
-        assessHit("down", "press");
+        let hitSuccessful = assessHit("down", "press");
+        hitArrowObjs["down"].press(hitSuccessful);
       }
     }
   });
@@ -597,19 +611,19 @@ var arrowScene = function (p) {
       e.code == "ArrowDown"
     ) {
       if (e.code == "ArrowLeft") {
-        hitArrowObjs["left"].pressed = false;
+        hitArrowObjs["left"].release();
         assessHit("left", "lift");
       }
       if (e.code == "ArrowRight") {
-        hitArrowObjs["right"].pressed = false;
+        hitArrowObjs["right"].release();
         assessHit("right", "lift");
       }
       if (e.code == "ArrowUp") {
-        hitArrowObjs["up"].pressed = false;
+        hitArrowObjs["up"].release();
         assessHit("up", "lift");
       }
       if (e.code == "ArrowDown") {
-        hitArrowObjs["down"].pressed = false;
+        hitArrowObjs["down"].release();
         assessHit("down", "lift");
       }
     }
@@ -730,6 +744,7 @@ var arrowScene = function (p) {
     }
   }
 
+  //Add functionality to animate when hit
   class HitArrow {
     constructor(direction, xPos, yPos) {
       this.direction = direction;
@@ -737,14 +752,66 @@ var arrowScene = function (p) {
       this.xPos = xPos;
       this.yPos = yPos;
       this.pressed = false;
+      this.glowing = false;
+      this.scale = 1;
+      this.gradientOpacity = 0;
+      this.animationIndex = 0;
+      this.animationInterval;
+      this.animationTimeout;
+    }
+    press(successfulHit) {
+      this.pressed = true;
+      this.scale = 1;
+      this.animationIndex = 0;
+      this.gradientOpacity = 0;
+      let _this = this;
+      clearInterval(this.animationInterval);
+      clearTimeout(this.animationTimeout);
+      this.animationInterval = setInterval(function () {
+        _this.animationIndex++;
+        let newScale = arrowHitSizeTimings[_this.animationIndex];
+        if (newScale == null) {
+          newScale = 1;
+        }
+        _this.scale = newScale;
+        if (successfulHit) {
+          _this.glowing = true;
+          let gradientOpacity = arrowHitGradientTimings[_this.animationIndex];
+          if (gradientOpacity == null) {
+            gradientOpacity = 0;
+            _this.glowing = false;
+          }
+          _this.gradientOpacity = gradientOpacity;
+        }
+      }, 10);
+
+      this.animationTimeout = setTimeout(function () {
+        clearInterval(_this.animationInterval);
+      }, 500);
+    }
+    release() {
+      this.pressed = false;
     }
     display() {
-      if (this.pressed) {
-        p.tint(255, 127);
-        drawImageToScale(this.imgToDraw, this.xPos, this.yPos);
+      //Draw arrow at scale
+      let d = (this.imgToDraw.width * (1 - this.scale)) / 2;
+      drawImageToScale(
+        this.imgToDraw,
+        this.xPos + d,
+        this.yPos + d,
+        this.scale
+      );
+    }
+    displayGlow() {
+      if (this.glowing) {
+        let arrowMargin = 20;
+        p.tint(255, this.gradientOpacity * 255);
+        drawImageToScale(
+          hitGlowImg,
+          this.xPos - arrowMargin,
+          this.yPos - arrowMargin
+        );
         p.tint(255, 255);
-      } else {
-        drawImageToScale(this.imgToDraw, this.xPos, this.yPos);
       }
     }
   }
@@ -759,21 +826,30 @@ var arrowScene = function (p) {
       this.hideTimeout;
     }
     incrementCombo() {
-      this.showing = true;
       this.count++;
-      clearInterval(this.animationInterval);
-      this.showing = true;
-      this.animationIndex = 0;
-      this.scale = 1;
-      let _this = this;
-      this.animationInterval = setInterval(function () {
-        _this.animationIndex++;
-        let newScale = hitAnimationTimings[_this.animationIndex];
-        if (newScale == null) {
-          newScale = 1;
-        }
-        _this.scale = newScale;
-      }, 10);
+
+      if (this.count >= 2) {
+        this.showing = true;
+        clearTimeout(this.hideTimeout);
+        clearInterval(this.animationInterval);
+        this.showing = true;
+        this.animationIndex = 0;
+        this.scale = 1;
+        let _this = this;
+        this.animationInterval = setInterval(function () {
+          _this.animationIndex++;
+          let newScale = hitAnimationTimings[_this.animationIndex];
+          if (newScale == null) {
+            newScale = 1;
+          }
+          _this.scale = newScale;
+        }, 10);
+
+        this.hideTimeout = setTimeout(function () {
+          _this.showing = false;
+          clearInterval(_this.animationInterval);
+        }, 500);
+      }
     }
     resetCombo() {
       this.count = 0;
@@ -841,7 +917,7 @@ var arrowScene = function (p) {
       this.hideTimeout = setTimeout(function () {
         _this.showing = false;
         clearInterval(_this.animationInterval);
-      }, 1000);
+      }, 500);
     }
     display() {
       if (this.showing) {
