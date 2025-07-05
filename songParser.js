@@ -371,17 +371,12 @@ let parseSong = function (songText, offsetId) {
 
             noteData.push(thisNoteData);
             lastHoldIndices[arrowIndex] = noteData.length - 1;
-            console.log(lastHoldIndices);
-            console.log(noteData);
           } else if (parseInt(arrowElement) == 3) {
             // need to record end time for a previous hold...
             // How are we supposed to find this????
             // This is always gonna match up with the last "2" / hold we saw in this arrow direction.... maybe we can just store this as an array
             let lastHoldNote = noteData[lastHoldIndices[arrowIndex]];
-            console.log("arrow index");
-            console.log(arrowIndex);
 
-            console.log(lastHoldIndices[arrowIndex]);
             lastHoldNote.endTime = startTime;
             //not sure if end measure is accurate
             lastHoldNote.endBeat = startBeat;

@@ -5,7 +5,10 @@ let canvasWidth = 640;
 let canvasHeight = 480;
 
 let track = document.querySelector("audio");
+
+//relevantNotes stores an array of note objects
 let relevantNotes = [];
+
 let songData;
 
 let scoreSpan = document.querySelector("#score");
@@ -177,15 +180,19 @@ var arrowScene = function (p) {
       console.log("Measure: " + thisMeasure);
       currentMeasure = thisMeasure;
 
-      //Initialize
+      //Initialize start of song
       if (currentMeasure == 0) {
         let measuresInBatch = songData.slice(
           currentBatchStartMeasure,
           currentBatchStartMeasure + batchSize
         );
         measuresInBatch.forEach(function (measure) {
+          //If measure has notes, add contents into relevantNotes
           if (measure) {
-            relevantNotes = relevantNotes.concat(measure);
+            measure.forEach(function (note) {
+              let newNote = new Note(note);
+              relevantNotes.push(newNote);
+            });
           }
         });
       }
@@ -217,7 +224,11 @@ var arrowScene = function (p) {
         );
         measuresInBatch.forEach(function (measure) {
           if (measure) {
-            relevantNotes = relevantNotes.concat(measure);
+            //If measure has notes, add contents into relevantNotes
+            measure.forEach(function (note) {
+              let newNote = new Note(note);
+              relevantNotes.push(newNote);
+            });
           }
         });
       }
@@ -288,118 +299,8 @@ var arrowScene = function (p) {
         updateHit("ok", note);
       }
 
-      drawArrow(note, yPos, passedOver);
+      note.display(yPos, passedOver);
     });
-  }
-
-  // Note type
-  function drawArrow(note, yPos, passedOver) {
-    // Draw instant notes
-    if (note.noteType == "instant" && !note.isHit) {
-      if (passedOver) {
-        //Draw passed over notes greyed out
-        p.tint(255, 127);
-        drawImageToScale(
-          arrowImgs[note.direction],
-          arrow_xPos[note.direction],
-          yPos
-        );
-        p.tint(255, 255);
-      } else {
-        //Draw upcoming notes iwth rainbow
-        // p.tint(255, 0, 0);
-        // arrowImgs[note.direction].filter(p.INVERT);
-        drawImageToScale(
-          arrowImgs[note.direction],
-          arrow_xPos[note.direction],
-          yPos
-        );
-        // p.tint(255, 255, 255);
-      }
-    } else if (note.noteType == "hold") {
-      // Draw holds
-      let rectangleHeight;
-      if (note.isHit && note.isHolding && !note.completedHold) {
-        // hit first note, is currently holding in the middle of hold
-        rectangleHeight = pixelsPerBeat * (note.endBeat - currentBeat);
-        // Draw rectangle
-        drawImageToScaleWithHeight(
-          holdMiddleImg,
-          arrow_xPos[note.direction],
-          hitArrowObjs["left"].yPos + 40,
-          rectangleHeight
-        );
-        // Draw arrow at end of rectangle
-        drawImageToScale(
-          holdEndImgs[note.direction],
-          arrow_xPos[note.direction],
-          hitArrowObjs["left"].yPos + rectangleHeight
-        );
-        // Draw arrow at hit pos
-        drawImageToScale(
-          arrowImgs[note.direction],
-          arrow_xPos[note.direction],
-          hitArrowObjs["left"].yPos
-        );
-      } else if (note.isHit && !note.isHolding && !note.completedHold) {
-        //   case 2: hit first note, lifted up before end
-        //   What happens? need to grey out and keep on going
-        p.tint(255, 127);
-        rectangleHeight = pixelsPerBeat * (note.endBeat - note.releasedBeat);
-        let yPosReleased =
-          hitArrowObjs["left"].yPos +
-          pixelsPerBeat * note.releasedBeat -
-          pixelsElapsed;
-        // Draw rectangle
-        drawImageToScaleWithHeight(
-          holdMiddleImg,
-          arrow_xPos[note.direction],
-          yPosReleased + 40,
-          rectangleHeight
-        );
-        // Draw arrow at end of rectangle
-        drawImageToScale(
-          holdEndImgs[note.direction],
-          arrow_xPos[note.direction],
-          yPosReleased + rectangleHeight
-        );
-        // Draw arrow at hit pos
-        drawImageToScale(
-          arrowImgs[note.direction],
-          arrow_xPos[note.direction],
-          yPosReleased
-        );
-        p.tint(255, 255);
-        // If you're still holding down...
-      } else if (note.isHit && note.completedHold) {
-        // case 3: hit first note, held to completion... show nothing!
-      } else if (!note.isHit) {
-        // last case: the note is not hit, either passed over or upcoming...
-        if (passedOver) {
-          p.tint(255, 127);
-        }
-        rectangleHeight = pixelsPerBeat * (note.endBeat - note.startBeat);
-        drawImageToScaleWithHeight(
-          holdMiddleImg,
-          arrow_xPos[note.direction],
-          yPos + 40,
-          rectangleHeight
-        );
-        drawImageToScale(
-          arrowImgs[note.direction],
-          arrow_xPos[note.direction],
-          yPos
-        );
-        drawImageToScale(
-          holdEndImgs[note.direction],
-          arrow_xPos[note.direction],
-          yPos + rectangleHeight
-        );
-        if (passedOver) {
-          p.tint(255, 255);
-        }
-      }
-    }
   }
 
   function updateArrowRainbow() {
@@ -633,6 +534,7 @@ var arrowScene = function (p) {
 
   window.addEventListener("keydown", function (e) {
     //Ignore repeated keydown
+    console.log(e);
     if (e.repeat) {
       return;
     }
@@ -711,6 +613,128 @@ var arrowScene = function (p) {
 
   // CLASSES
 
+  class Note {
+    constructor(noteData) {
+      this.id = noteData.id;
+      this.direction = noteData.direction;
+      this.startBeat = noteData.startBeat;
+      this.startTime = noteData.startTime;
+      this.noteType = noteData.noteType;
+      this.measure = noteData.measure;
+      this.endTime = noteData.endTime;
+      this.endBeat = noteData.endBeat;
+      this.endMeasure = noteData.endMeasure;
+    }
+    display(yPos, passedOver) {
+      // Draw instant notes
+      if (this.noteType == "instant" && !this.isHit) {
+        if (passedOver) {
+          //Draw passed over notes greyed out
+          p.tint(255, 127);
+          drawImageToScale(
+            arrowImgs[this.direction],
+            arrow_xPos[this.direction],
+            yPos
+          );
+          p.tint(255, 255);
+        } else {
+          //Draw upcoming notes iwth rainbow
+          // p.tint(255, 0, 0);
+          // arrowImgs[note.direction].filter(p.INVERT);
+          drawImageToScale(
+            arrowImgs[this.direction],
+            arrow_xPos[this.direction],
+            yPos
+          );
+          // p.tint(255, 255, 255);
+        }
+      } else if (this.noteType == "hold") {
+        // Draw holds
+        let rectangleHeight;
+        if (this.isHit && this.isHolding && !this.completedHold) {
+          // hit first note, is currently holding in the middle of hold
+          rectangleHeight = pixelsPerBeat * (this.endBeat - currentBeat);
+          // Draw rectangle
+          drawImageToScaleWithHeight(
+            holdMiddleImg,
+            arrow_xPos[this.direction],
+            hitArrowObjs["left"].yPos + 40,
+            rectangleHeight
+          );
+          // Draw arrow at end of rectangle
+          drawImageToScale(
+            holdEndImgs[this.direction],
+            arrow_xPos[this.direction],
+            hitArrowObjs["left"].yPos + rectangleHeight
+          );
+          // Draw arrow at hit pos
+          drawImageToScale(
+            arrowImgs[this.direction],
+            arrow_xPos[this.direction],
+            hitArrowObjs["left"].yPos
+          );
+        } else if (this.isHit && !this.isHolding && !this.completedHold) {
+          //   case 2: hit first note, lifted up before end
+          //   What happens? need to grey out and keep on going
+          p.tint(255, 127);
+          rectangleHeight = pixelsPerBeat * (this.endBeat - this.releasedBeat);
+          let yPosReleased =
+            hitArrowObjs["left"].yPos +
+            pixelsPerBeat * this.releasedBeat -
+            pixelsElapsed;
+          // Draw rectangle
+          drawImageToScaleWithHeight(
+            holdMiddleImg,
+            arrow_xPos[this.direction],
+            yPosReleased + 40,
+            rectangleHeight
+          );
+          // Draw arrow at end of rectangle
+          drawImageToScale(
+            holdEndImgs[this.direction],
+            arrow_xPos[this.direction],
+            yPosReleased + rectangleHeight
+          );
+          // Draw arrow at hit pos
+          drawImageToScale(
+            arrowImgs[this.direction],
+            arrow_xPos[this.direction],
+            yPosReleased
+          );
+          p.tint(255, 255);
+          // If you're still holding down...
+        } else if (this.isHit && this.completedHold) {
+          // case 3: hit first note, held to completion... show nothing!
+        } else if (!this.isHit) {
+          // last case: the note is not hit, either passed over or upcoming...
+          if (passedOver) {
+            p.tint(255, 127);
+          }
+          rectangleHeight = pixelsPerBeat * (this.endBeat - this.startBeat);
+          drawImageToScaleWithHeight(
+            holdMiddleImg,
+            arrow_xPos[this.direction],
+            yPos + 40,
+            rectangleHeight
+          );
+          drawImageToScale(
+            arrowImgs[this.direction],
+            arrow_xPos[this.direction],
+            yPos
+          );
+          drawImageToScale(
+            holdEndImgs[this.direction],
+            arrow_xPos[this.direction],
+            yPos + rectangleHeight
+          );
+          if (passedOver) {
+            p.tint(255, 255);
+          }
+        }
+      }
+    }
+  }
+
   class Score {
     constructor() {
       this.miss = 0;
@@ -769,7 +793,7 @@ var arrowScene = function (p) {
       let gradientToDraw = gradientImg.get(
         this.tick % 254,
         0,
-        254 * this.amountFilled,
+        Math.max(1, 254 * this.amountFilled),
         32
       );
       let dw = this.animate ? Math.sin(this.tick * 0.05) * 3 : 0;
@@ -1060,3 +1084,16 @@ var arrowScene = function (p) {
 };
 
 new p5(arrowScene, "arrow-canvas");
+
+// Prompt user to select a Joy-Con device.
+// const [device] = await navigator.hid.requestDevice({ filters });
+
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("dom content loaded");
+  let devices = await navigator.hid.getDevices();
+  console.log(navigator);
+  console.log(devices);
+  devices.forEach((device) => {
+    console.log(`HID: ${device.productName}`);
+  });
+});
