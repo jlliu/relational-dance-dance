@@ -297,7 +297,7 @@ let getDirection = function (arrowIndex) {
   }
 };
 
-let parseSong = function (songText, offsetId) {
+let parseSong = function (songText, offsetId, bpm, delay) {
   console.log(songText);
   let measures = songText.split(/\s+,\s+/);
   console.log(measures);
@@ -421,15 +421,24 @@ let parseSong = function (songText, offsetId) {
   // console.log(measureData);
   // return measureData;
   console.log(JSON.stringify(measureData));
-  return JSON.stringify(measureData);
+  let songData = {
+    measureData: measureData,
+    bpm: bpm,
+    delay: delay,
+  };
+  return JSON.stringify(songData);
 };
 
 let parseButton = document.querySelector("#parseButton");
 let inputSong = document.querySelector("#inputSong");
 let numberInput = document.querySelector("#number");
+let bpmInput = document.querySelector("#bpm");
+let delayInput = document.querySelector("#delay");
 let resultTextarea = document.querySelector("#results");
 parseButton.addEventListener("click", function () {
   let offsetVal = parseInt(numberInput.value);
-  let results = parseSong(inputSong.value, offsetVal);
+  let bpmVal = parseFloat(bpmInput.value);
+  let delayVal = parseFloat(delay.value);
+  let results = parseSong(inputSong.value, offsetVal, bpmVal, delayVal);
   resultTextarea.innerHTML = results;
 });

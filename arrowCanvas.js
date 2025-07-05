@@ -5,20 +5,10 @@ let canvasWidth = 640;
 let canvasHeight = 480;
 
 let track = document.querySelector("audio");
+let startSongButton = document.querySelector("#startSong");
 
-//relevantNotes stores an array of note objects
-let relevantNotes = [];
-
-let songData;
-
-let scoreSpan = document.querySelector("#score");
-let feedback = document.querySelector("#feedback");
-
-let feedbackObj;
-let comboObj;
-
-let scoreData;
-let healthBar;
+// const songPlayer = new Tone.Player("assets/audio/Heaven.OGG").toDestination();
+const songPlayer = new Tone.Player("assets/audio/Curry Up.mp3").toDestination();
 
 var arrowScene = function (p) {
   let thisCanvas;
@@ -27,9 +17,7 @@ var arrowScene = function (p) {
   let mouse_y;
 
   let hitArrowImgs;
-
   let hitPos = { x: 160, y: 50 };
-
   let arrow_xPos = {
     left: 160,
     down: 160 + 80,
@@ -37,18 +25,39 @@ var arrowScene = function (p) {
     right: 160 + 80 * 3,
   };
 
-  let hitArrowObjs = {};
-
   let holdMiddleImg;
   let holdEndImgs;
-
   let comboTextImg;
-
   let healthBarFrameImg;
   let greenGradientImg;
   let rainbowGradientImg;
-
   let hitGlowImg;
+
+  //relevantNotes stores an array of note objects
+  let relevantNotes = [];
+  let hitMargin = 70;
+  let measureData;
+  let songBpm;
+  let songDelay;
+  let secondsPerBeat;
+
+  let hitArrowObjs = {};
+  let feedbackObj;
+  let comboObj;
+  let scoreData;
+  let healthBar;
+  let scoreSpan = document.querySelector("#score");
+
+  // current batch num is the measure of the current batch
+  let batchSize = 2;
+  let currentBatchStartMeasure = 0;
+  let currentMeasure = -1;
+  let t = 0;
+  let currentBeat = 0;
+  let pixelsElapsed = 0;
+  let pixelsPerBeat = 100;
+
+  let clock = new Tone.Clock((time) => {}, 1);
 
   p.preload = function () {
     //Preload a background here
@@ -93,7 +102,12 @@ var arrowScene = function (p) {
     thisCanvas = arrowCanvas;
     p.noSmooth();
 
-    songData = JSON.parse(songJson);
+    // let songData = JSON.parse(heavenSongData);
+    let songData = JSON.parse(curryup);
+    measureData = songData.measureData;
+    songBpm = songData.bpm;
+    songDelay = songData.delay;
+    secondsPerBeat = 1 / (songBpm / 60);
 
     hitArrowObjs = {
       left: new HitArrow("left", hitPos.x, hitPos.y),
@@ -115,20 +129,9 @@ var arrowScene = function (p) {
     Object.values(holdEndImgs).forEach(function (imgObj) {
       imgObj.loadPixels();
     });
-    // arrowImgs["left"].loadPixels();
 
-    // setupNavigation();
-
-    // cursor = new Cursor();
-
-    //Initialize Game N Sprites
-
-    //Initialize the font sprites!!
-
-    // Get and store image object for character
+    // Setup fonts
     setupFont("mainYellow");
-
-    // Get and store image object for digits
     setupFont("pinkDigits");
   };
 
@@ -147,33 +150,16 @@ var arrowScene = function (p) {
     if (startDrawingArrows) {
       drawArrows();
     }
-    // drawText("PERFECT!");
-    // if (showingFeedback) {
 
     feedbackObj.display();
     comboObj.display();
     healthBar.display();
   };
 
-  let batchSize = 2;
-
-  // current batch num is the measure of the current batch
-  let currentBatchStartMeasure = 0;
-  let bpm = 138;
-  let currentMeasure = -1;
-
-  let t = 0;
-  let secondsPerBeat = 1 / (bpm / 60);
-  let currentBeat = 0;
-
-  let pixelsElapsed = 0;
-
   function updateNotes() {
     //Keep a queue of relevantNotes
-    t = track.currentTime - 1.147;
-
+    t = clock.seconds;
     //Given current time, what is the current measure?
-
     currentBeat = t / secondsPerBeat;
     let thisMeasure = Math.floor(currentBeat / 4);
     if (thisMeasure > currentMeasure) {
@@ -182,7 +168,7 @@ var arrowScene = function (p) {
 
       //Initialize start of song
       if (currentMeasure == 0) {
-        let measuresInBatch = songData.slice(
+        let measuresInBatch = measureData.slice(
           currentBatchStartMeasure,
           currentBatchStartMeasure + batchSize
         );
@@ -218,7 +204,7 @@ var arrowScene = function (p) {
         relevantNotes = remainingNotes;
         //Load in next batch notes
         currentBatchStartMeasure += batchSize;
-        let measuresInBatch = songData.slice(
+        let measuresInBatch = measureData.slice(
           currentBatchStartMeasure,
           currentBatchStartMeasure + batchSize
         );
@@ -235,23 +221,37 @@ var arrowScene = function (p) {
     }
   }
 
-  document.body.addEventListener("click", function () {
-    track.play();
-
-    setTimeout(function () {
+  startSongButton.addEventListener("click", function () {
+    //For negative songDelays, start song before notes
+    if (songDelay < 0) {
+      songPlayer.start();
+      setTimeout(function () {
+        setInterval(function () {
+          updateNotes();
+          updateArrowRainbow();
+        }, 10);
+        startDrawingArrows = true;
+        //Start a tone.js clock to keep time
+        clock.start();
+      }, -songDelay * 1000);
+    } else {
+      // For positive songDelays, startNotes before song
       setInterval(function () {
         updateNotes();
         updateArrowRainbow();
       }, 10);
       startDrawingArrows = true;
-    }, 1.147 * 1000);
+      //Start a tone.js clock to keep time
+      clock.start();
+
+      setTimeout(function () {
+        songPlayer.start();
+      }, songDelay * 1000);
+    }
   });
 
   //Create arrows takes the relevant notes array and then creates objects for them
-  function createArrows() {}
 
-  let hitMargin = 70;
-  let pixelsPerBeat = 100;
   function drawArrows() {
     relevantNotes.forEach(function (note) {
       let direction = note.direction;
@@ -285,7 +285,6 @@ var arrowScene = function (p) {
         }
         note.isHitCandidate = false;
       }
-
       //Should this arrow, if a hold, be considered completed if we're still holding?
       let end_yPos =
         hitArrowObjs["left"].yPos +
@@ -298,7 +297,6 @@ var arrowScene = function (p) {
       ) {
         updateHit("ok", note);
       }
-
       note.display(yPos, passedOver);
     });
   }
@@ -345,13 +343,6 @@ var arrowScene = function (p) {
     }
     // console.log("updating pixels");
     imgObj.updatePixels();
-  }
-
-  function hsl2rgb(h, s, l) {
-    let a = s * Math.min(l, 1 - l);
-    let f = (n, k = (n + h / 30) % 12) =>
-      l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return [f(0), f(8), f(4)];
   }
 
   function setupFont(fontName) {
@@ -444,7 +435,7 @@ var arrowScene = function (p) {
         //Determine quality of hit
         //TOO LATE - failed
         if (
-          yPos > hitArrowObjs["left"].yPos - 70 &&
+          yPos > hitArrowObjs["left"].yPos - hitMargin &&
           yPos < hitArrowObjs["left"].yPos - 50
         ) {
           updateMiss("late", note);
@@ -492,7 +483,7 @@ var arrowScene = function (p) {
         // TOO EARLY - Failed
         else if (
           yPos >= hitArrowObjs["left"].yPos + 60 &&
-          yPos < hitArrowObjs["left"].yPos + 70
+          yPos < hitArrowObjs["left"].yPos + hitMargin
         ) {
           updateMiss("early", note);
         }
@@ -536,12 +527,10 @@ var arrowScene = function (p) {
     let hitSuccessful = assessHit(direction, "press");
     hitArrowObjs[direction].press(hitSuccessful);
   }
-
   function padOrKeyrelease(direction) {
     hitArrowObjs[direction].release();
     assessHit(direction, "lift");
   }
-
   window.addEventListener("padPress", function (e) {
     let direction = e.detail.direction;
     padOrKeypress(direction);
@@ -550,6 +539,7 @@ var arrowScene = function (p) {
     let direction = e.detail.direction;
     padOrKeyrelease(direction);
   });
+
   window.addEventListener("keydown", function (e) {
     //Ignore repeated keydown
     if (e.repeat) {
@@ -604,21 +594,21 @@ var arrowScene = function (p) {
   // -------------- SCENES --------------- //
   //////////////////////////////////////////
 
-  // Game 1
-  function displayGame() {
-    //Do things we need to do when entered minigame
-    if (gameEntered && !gameStarted) {
-      console.log("GAME ENTERED!");
-      gameStarted = true;
-    }
-    p.image(bg, 0, 0, canvasWidth, canvasHeight);
+  // // Game 1
+  // function displayGame() {
+  //   //Do things we need to do when entered minigame
+  //   if (gameEntered && !gameStarted) {
+  //     console.log("GAME ENTERED!");
+  //     gameStarted = true;
+  //   }
+  //   p.image(bg, 0, 0, canvasWidth, canvasHeight);
 
-    // Display Sprites
+  //   // Display Sprites
 
-    // Navigation
-    rightButton.display();
-    leftButton.display();
-  }
+  //   // Navigation
+  //   rightButton.display();
+  //   leftButton.display();
+  // }
 
   // CLASSES
 
@@ -1093,16 +1083,3 @@ var arrowScene = function (p) {
 };
 
 new p5(arrowScene, "arrow-canvas");
-
-// Prompt user to select a Joy-Con device.
-// const [device] = await navigator.hid.requestDevice({ filters });
-
-document.addEventListener("DOMContentLoaded", async () => {
-  console.log("dom content loaded");
-  let devices = await navigator.hid.getDevices();
-  console.log(navigator);
-  console.log(devices);
-  devices.forEach((device) => {
-    console.log(`HID: ${device.productName}`);
-  });
-});

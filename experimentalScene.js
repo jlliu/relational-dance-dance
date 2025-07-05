@@ -159,15 +159,11 @@ var arrows = function (p) {
   function pauseTimer() {
     timerPaused = true;
     clock.pause();
-    // beatPlayer.stop();
-    // Tone.Transport.pause();
   }
 
   function unpauseTimer() {
     timerPaused = false;
     clock.start();
-    // beatPlayer.start();
-    // Tone.Transport.start();
   }
   function updateNotes(songData) {
     if (!timerPaused) {

@@ -40,7 +40,11 @@
   <!-- <button id="goToEnding">Go to ending</button> -->
    <label>Offset Ids by:</label>
   <input id="number" type="number" value="0" /><br>
-   <label>Input SM file (without header data and comments):</label>
+  <label>bpm:</label>
+  <input id="bpm" type="number" value="120" step="any"/><br><br>
+  <label>delay (in seconds, add negative if relevant):</label>
+  <input id="delay" type="number" value="0" step="any"/><br><br>
+   <label>Input SM file (without header data and comments):</label><br>
   <textarea id="inputSong" placeholder="input .sm file"></textarea><br>
   <button id="parseButton">Parse Song</button><br>
 
