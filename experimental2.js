@@ -8,7 +8,10 @@ let track = document.querySelector("audio");
 let startSongButton = document.querySelector("#startSong");
 
 // const songPlayer = new Tone.Player("assets/audio/Heaven.OGG").toDestination();
-const songPlayer = new Tone.Player("assets/audio/Curry Up.mp3").toDestination();
+const songPlayer = new Tone.Player(
+  "assets/audio/RDD_p1_ambience_loop.mp3"
+).toDestination();
+songPlayer.loop = true;
 
 var arrowScene = function (p) {
   let thisCanvas;
@@ -17,7 +20,8 @@ var arrowScene = function (p) {
   let mouse_y;
 
   let hitArrowImgs;
-  let hitPos = { x: 160, y: 50 };
+  let hitPos = { x: 160, y: 200 };
+  let hitPosFinal = { x: 160, y: 50 };
   let arrow_xPos = {
     left: 160,
     down: 160 + 80,
@@ -58,6 +62,19 @@ var arrowScene = function (p) {
   let pixelsPerBeat = 100;
 
   let clock = new Tone.Clock((time) => {}, 1);
+
+  let reverseClock = new Tone.Clock((time) => {}, 1);
+
+  //Experimental scene variables
+  let waitForHit = true;
+  let timerPaused = false;
+  let t_holdLeftStart;
+  let t_holdRightStart;
+  let t_holdsFinished;
+  let t_released;
+  let attemptedHoldsOnce = false;
+  let leftHoldNote;
+  let rightHoldNote;
 
   p.preload = function () {
     //Preload a background here
@@ -103,11 +120,15 @@ var arrowScene = function (p) {
     p.noSmooth();
 
     // let songData = JSON.parse(heavenSongData);
-    let songData = JSON.parse(curryup);
+    let songData = JSON.parse(part1);
     measureData = songData.measureData;
-    songBpm = songData.bpm;
+    // songBpm = songData.bpm;
+    songBpm = 300;
     songDelay = songData.delay;
     secondsPerBeat = 1 / (songBpm / 60);
+    t_holdLeftStart = secondsPerBeat * 4 * 26;
+    t_holdRightStart = secondsPerBeat * 4 * 27;
+    t_holdsFinished = secondsPerBeat * 4 * 34;
 
     hitArrowObjs = {
       left: new HitArrow("left", hitPos.x, hitPos.y),
@@ -138,7 +159,7 @@ var arrowScene = function (p) {
   let startDrawingArrows = false;
 
   p.draw = function () {
-    p.background("pink");
+    p.background("white");
 
     Object.values(hitArrowObjs).forEach(function (arrowObj) {
       arrowObj.displayGlow();
@@ -156,9 +177,53 @@ var arrowScene = function (p) {
     healthBar.display();
   };
 
+  function pauseTimer() {
+    timerPaused = true;
+    clock.pause();
+  }
+
+  function unpauseTimer() {
+    timerPaused = false;
+    clock.start();
+  }
+
+  function startReverseTimer() {
+    reverseClock.start();
+    t_released = t;
+  }
+
+  // we have repressed after originally reversing
+  function resetReverseTimer() {
+    reverseClock.stop();
+  }
+
+  function resetHoldNote(noteObj) {
+    noteObj.isHolding = false;
+    noteObj.isHit = false;
+    noteObj.completedHold = false;
+  }
+
   function updateNotes() {
     //Keep a queue of relevantNotes
-    t = clock.seconds;
+
+    if (reverseClock.seconds > 0) {
+      t = t_released - reverseClock.seconds;
+      if (t < t_holdRightStart) {
+        resetHoldNote(rightHoldNote);
+      }
+      if (t < t_holdLeftStart) {
+        resetHoldNote(leftHoldNote);
+        t = t_holdLeftStart;
+        // We always want to get back to this start position if released early...
+        resetReverseTimer();
+        clock.stop();
+        attemptedHoldsOnce = true;
+      }
+    } else if (attemptedHoldsOnce) {
+      t = clock.seconds + t_holdLeftStart;
+    } else {
+      t = clock.seconds;
+    }
     //Given current time, what is the current measure?
     currentBeat = t / secondsPerBeat;
     let thisMeasure = Math.floor(currentBeat / 4);
@@ -214,6 +279,12 @@ var arrowScene = function (p) {
             measure.forEach(function (note) {
               let newNote = new Note(note);
               relevantNotes.push(newNote);
+              if (newNote.id == 44) {
+                leftHoldNote = newNote;
+              }
+              if (newNote.id == 45) {
+                rightHoldNote = newNote;
+              }
             });
           }
         });
@@ -264,27 +335,44 @@ var arrowScene = function (p) {
         pixelsPerBeat * note.startBeat -
         pixelsElapsed;
       note.currentY = yPos;
-
-      // Should this arrow be considered as a hit candidate?
-      if (
-        yPos > hitArrowObjs["left"].yPos - hitMargin &&
-        yPos < hitArrowObjs["left"].yPos + hitMargin
-      ) {
-        //Note within our hit window!
-        note.isHitCandidate = true;
-      } else if (yPos < hitArrowObjs["left"].yPos - hitMargin) {
-        passedOver = true;
-
-        //The note is passed over for the first time! THIS IS A MISS....
-        if (note.hasPassedOver == null) {
-          note.hasPassedOver = true;
-          //If it's first time passing over a NOT hit note, reset combo
-          if (!note.isHit) {
-            updateMiss("miss", note);
-          }
+      if (waitForHit) {
+        if (yPos < hitArrowObjs["left"].yPos && !note.isHit) {
+          pauseTimer();
         }
-        note.isHitCandidate = false;
+        // For experimental... note is a hit candidate only if it's within range and UNHIT
+        if (
+          yPos > -Infinity &&
+          yPos < hitArrowObjs["left"].yPos + hitMargin &&
+          !note.isHit
+        ) {
+          //Note within our hit window!
+          note.isHitCandidate = true;
+        } else {
+          note.isHitCandidate = false;
+        }
+      } else {
+        // Should this arrow be considered as a hit candidate?
+        if (
+          yPos > hitArrowObjs["left"].yPos - hitMargin &&
+          yPos < hitArrowObjs["left"].yPos + hitMargin
+        ) {
+          //Note within our hit window!
+          note.isHitCandidate = true;
+        } else if (yPos < hitArrowObjs["left"].yPos - hitMargin) {
+          passedOver = true;
+
+          //The note is passed over for the first time! THIS IS A MISS....
+          if (note.hasPassedOver == null) {
+            note.hasPassedOver = true;
+            //If it's first time passing over a NOT hit note, reset combo
+            if (!note.isHit) {
+              updateMiss("miss", note);
+            }
+          }
+          note.isHitCandidate = false;
+        }
       }
+
       //Should this arrow, if a hold, be considered completed if we're still holding?
       let end_yPos =
         hitArrowObjs["left"].yPos +
@@ -390,22 +478,25 @@ var arrowScene = function (p) {
     });
   }
   function updateMiss(score, note) {
-    feedbackObj.updateState(score);
+    // feedbackObj.updateState(score);
     comboObj.resetCombo();
     scoreData.update("miss");
   }
   function updateHit(score, note) {
     //Is this the first time hitting this note?
     if (!note.isHit) {
-      comboObj.incrementCombo();
+      if (timerPaused) {
+        unpauseTimer();
+      }
+      // comboObj.incrementCombo();
       note.isHit = true;
       let scoreScale = 1;
       if (score === "ok") {
-        feedbackObj.updateState("ok", true);
+        // feedbackObj.updateState("ok", true);
       } else if (score === "great") {
-        feedbackObj.updateState("great", true);
+        // feedbackObj.updateState("great", true);
       } else if (score === "perfect") {
-        feedbackObj.updateState("perfect", true);
+        // feedbackObj.updateState("perfect", true);
       }
       scoreData.update(score);
     }
@@ -420,10 +511,28 @@ var arrowScene = function (p) {
     }
   }
 
+  function allHoldsUnpaused() {
+    let isAnyHoldPaused = false;
+    relevantNotes.forEach(function (note) {
+      if (
+        note.noteType == "hold" &&
+        note.isHolding == true &&
+        !note.completedHold &&
+        note.holdPaused == true
+      ) {
+        isAnyHoldPaused = true;
+      }
+    });
+    return !isAnyHoldPaused;
+  }
+
+  // move hit arrows gradually over the course of 16s if both holds are being held....
+
   function assessHit(direction, hitType) {
     let hitSuccessful = false;
     relevantNotes.forEach(function (note) {
       //Assess notes that are the START of either instant or holds
+
       if (
         hitType == "press" &&
         note.isHitCandidate &&
@@ -435,8 +544,15 @@ var arrowScene = function (p) {
         //Determine quality of hit
         //TOO LATE - failed
         if (
+          yPos > -Infinity &&
+          yPos < hitArrowObjs["left"].yPos - 50 &&
+          waitForHit
+        ) {
+          updateHit("ok", note);
+        } else if (
           yPos > hitArrowObjs["left"].yPos - hitMargin &&
-          yPos < hitArrowObjs["left"].yPos - 50
+          yPos < hitArrowObjs["left"].yPos - 50 &&
+          !waitForHit
         ) {
           updateMiss("late", note);
         }
@@ -514,11 +630,34 @@ var arrowScene = function (p) {
           yPos >= hitArrowObjs["left"].yPos + 40 &&
           yPos < hitArrowObjs["left"].yPos + Infinity
         ) {
-          feedbackObj.updateState("early");
-          note.isHolding = false;
-          note.completedHold = false;
+          if (waitForHit) {
+            pauseTimer();
+            console.log(reverseClock.seconds);
+            if (reverseClock.seconds == 0) {
+              startReverseTimer();
+            }
+            note.holdPaused = true;
+          } else {
+            note.isHolding = false;
+            note.completedHold = false;
+          }
         }
       }
+      // add another case for re-pressing a hold
+      // else if (
+      //   hitType == "press" &&
+      //   note.noteType == "hold" &&
+      //   note.isHolding &&
+      //   note.direction == direction
+      // ) {
+      //   //unpause timer if BOTH holds are holding...
+      //   // timerPaused = false;
+      //   note.holdPaused = false;
+      //   // if (allHoldsUnpaused()) {
+      //   //   unpauseTimer();
+      //   // }
+      //   unpauseTimer();
+      // }
     });
     return hitSuccessful;
   }
@@ -626,26 +765,31 @@ var arrowScene = function (p) {
     }
     display(yPos, passedOver) {
       // Draw instant notes
+
       if (this.noteType == "instant" && !this.isHit) {
-        if (passedOver) {
-          //Draw passed over notes greyed out
-          p.tint(255, 127);
+        if (waitForHit) {
           drawImageToScale(
             arrowImgs[this.direction],
             arrow_xPos[this.direction],
-            yPos
+            Math.max(hitArrowObjs["left"].yPos, yPos)
           );
-          p.tint(255, 255);
         } else {
-          //Draw upcoming notes iwth rainbow
-          // p.tint(255, 0, 0);
-          // arrowImgs[note.direction].filter(p.INVERT);
-          drawImageToScale(
-            arrowImgs[this.direction],
-            arrow_xPos[this.direction],
-            yPos
-          );
-          // p.tint(255, 255, 255);
+          if (passedOver) {
+            //Draw passed over notes greyed out
+            p.tint(255, 127);
+            drawImageToScale(
+              arrowImgs[this.direction],
+              arrow_xPos[this.direction],
+              yPos
+            );
+            p.tint(255, 255);
+          } else {
+            drawImageToScale(
+              arrowImgs[this.direction],
+              arrow_xPos[this.direction],
+              yPos
+            );
+          }
         }
       } else if (this.noteType == "hold") {
         // Draw holds
@@ -874,6 +1018,14 @@ var arrowScene = function (p) {
       this.pressed = false;
     }
     display() {
+      // Move hit arrows
+      if (t > t_holdRightStart && t < t_holdsFinished) {
+        let timeElapsed = t - t_holdRightStart;
+        let percentageElapsed =
+          timeElapsed / (t_holdsFinished - t_holdRightStart);
+        let yPos = p.map(percentageElapsed, 0, 1, hitPos.y, hitPosFinal.y);
+        this.yPos = yPos;
+      }
       //Draw arrow at scale
       let d = (this.imgToDraw.width * (1 - this.scale)) / 2;
       drawImageToScale(

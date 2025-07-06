@@ -98,7 +98,7 @@ var arrows = function (p) {
     thisCanvas = arrowCanvas;
     p.noSmooth();
 
-    songData = JSON.parse(songJson);
+    songData = JSON.parse(part1);
     songData2 = JSON.parse(part2);
 
     hitArrowObjs = {
@@ -191,7 +191,7 @@ var arrows = function (p) {
 
         //Initialize
         if (currentMeasure == 0) {
-          let measuresInBatch = songData.slice(
+          let measuresInBatch = songData.measureData.slice(
             currentBatchStartMeasure,
             currentBatchStartMeasure + batchSize
           );
@@ -223,7 +223,7 @@ var arrows = function (p) {
           relevantNotes = remainingNotes;
           //Load in next batch notes
           currentBatchStartMeasure += batchSize;
-          let measuresInBatch = songData.slice(
+          let measuresInBatch = songData.measureData.slice(
             currentBatchStartMeasure,
             currentBatchStartMeasure + batchSize
           );
@@ -277,7 +277,6 @@ var arrows = function (p) {
 
   let margin = 50;
 
-  let pauseMargin = 1;
   let pixelsPerBeat = 100;
   function drawArrows() {
     relevantNotes.forEach(function (note) {
@@ -310,18 +309,6 @@ var arrows = function (p) {
           note.isHitCandidate = false;
         }
       } else {
-        //First of all check if this is note 47, when the beat drops
-        // I don't think this is the best place for this...
-        // if (
-        //   parseInt(note.id) == 47 &&
-        //   yPos < hitArrowObjs["left"].yPos &&
-        //   !beatStarted
-        // ) {
-        //   ambientPlayer.stop();
-        //   beatStarted = true;
-        //   beatPlayer.start();
-        // }
-
         if (
           yPos > hitArrowObjs["left"].yPos - margin &&
           yPos < hitArrowObjs["left"].yPos + margin
@@ -568,6 +555,7 @@ var arrows = function (p) {
         note.isHitCandidate &&
         note.direction == direction
       ) {
+        console.log("assess hit");
         let yPos = note.currentY;
 
         //Determine quality of hit
