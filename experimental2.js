@@ -7,11 +7,22 @@ let canvasHeight = 480;
 let track = document.querySelector("audio");
 let startSongButton = document.querySelector("#startSong");
 
+let enableStartButton = function () {
+  startSongButton.innerHTML = "Click to start";
+  startSongButton.disabled = false;
+};
+
 // const songPlayer = new Tone.Player("assets/audio/Heaven.OGG").toDestination();
-const songPlayer = new Tone.Player(
-  "assets/audio/RDD_p1_ambience_loop.mp3"
+const part1_bg_player = new Tone.Player(
+  "assets/audio/RDD_p1_ambience_loop.mp3",
+  enableStartButton
 ).toDestination();
-songPlayer.loop = true;
+part1_bg_player.loop = true;
+
+const part2_bg_player = new Tone.Player(
+  "assets/audio/RDD_p2_background.mp3"
+).toDestination();
+part2_bg_player.loop = false;
 
 var arrowScene = function (p) {
   let thisCanvas;
@@ -76,6 +87,16 @@ var arrowScene = function (p) {
   let leftHoldNote;
   let rightHoldNote;
 
+  let cueCount = 0;
+
+  let animationIntervals = 50;
+
+  //Is a list of text objects
+  let narrativeTextObjs = [];
+  let showingNarrativeHoldText = false;
+  let part1HoldsDone = false;
+  let part2Started = false;
+
   p.preload = function () {
     //Preload a background here
     //Preload whatever needs to be preloaded
@@ -122,8 +143,8 @@ var arrowScene = function (p) {
     // let songData = JSON.parse(heavenSongData);
     let songData = JSON.parse(part1);
     measureData = songData.measureData;
-    // songBpm = songData.bpm;
-    songBpm = 300;
+    songBpm = songData.bpm;
+    // songBpm = 300;
     songDelay = songData.delay;
     secondsPerBeat = 1 / (songBpm / 60);
     t_holdLeftStart = secondsPerBeat * 4 * 26;
@@ -159,7 +180,10 @@ var arrowScene = function (p) {
   let startDrawingArrows = false;
 
   p.draw = function () {
-    p.background("white");
+    if (showingNarrativeHoldText) {
+    } else {
+      p.background("white");
+    }
 
     Object.values(hitArrowObjs).forEach(function (arrowObj) {
       arrowObj.displayGlow();
@@ -173,8 +197,15 @@ var arrowScene = function (p) {
     }
 
     feedbackObj.display();
-    comboObj.display();
-    healthBar.display();
+    // comboObj.display();
+    // healthBar.display();
+
+    //draw narrative text
+    narrativeTextObjs.forEach(function (textObj) {
+      if (textObj.showing) {
+        textObj.display();
+      }
+    });
   };
 
   function pauseTimer() {
@@ -206,25 +237,31 @@ var arrowScene = function (p) {
   function updateNotes() {
     //Keep a queue of relevantNotes
 
-    if (reverseClock.seconds > 0) {
-      t = t_released - reverseClock.seconds;
-      if (t < t_holdRightStart) {
-        resetHoldNote(rightHoldNote);
+    if (!part2Started) {
+      if (reverseClock.seconds > 0) {
+        t = t_released - reverseClock.seconds;
+        if (t < t_holdRightStart) {
+          resetHoldNote(rightHoldNote);
+        }
+        if (t < t_holdLeftStart) {
+          resetHoldNote(leftHoldNote);
+          t = t_holdLeftStart;
+          // We always want to get back to this start position if released early...
+          resetReverseTimer();
+          clock.stop();
+          attemptedHoldsOnce = true;
+        }
+      } else if (attemptedHoldsOnce) {
+        t = clock.seconds + t_holdLeftStart;
+      } else {
+        t = clock.seconds;
       }
-      if (t < t_holdLeftStart) {
-        resetHoldNote(leftHoldNote);
-        t = t_holdLeftStart;
-        // We always want to get back to this start position if released early...
-        resetReverseTimer();
-        clock.stop();
-        attemptedHoldsOnce = true;
-      }
-    } else if (attemptedHoldsOnce) {
-      t = clock.seconds + t_holdLeftStart;
     } else {
       t = clock.seconds;
     }
+
     //Given current time, what is the current measure?
+
     currentBeat = t / secondsPerBeat;
     let thisMeasure = Math.floor(currentBeat / 4);
     if (thisMeasure > currentMeasure) {
@@ -233,6 +270,7 @@ var arrowScene = function (p) {
 
       //Initialize start of song
       if (currentMeasure == 0) {
+        console.log("initializing");
         let measuresInBatch = measureData.slice(
           currentBatchStartMeasure,
           currentBatchStartMeasure + batchSize
@@ -295,7 +333,7 @@ var arrowScene = function (p) {
   startSongButton.addEventListener("click", function () {
     //For negative songDelays, start song before notes
     if (songDelay < 0) {
-      songPlayer.start();
+      part1_bg_player.start();
       setTimeout(function () {
         setInterval(function () {
           updateNotes();
@@ -316,7 +354,7 @@ var arrowScene = function (p) {
       clock.start();
 
       setTimeout(function () {
-        songPlayer.start();
+        part1_bg_player.start();
       }, songDelay * 1000);
     }
   });
@@ -384,9 +422,46 @@ var arrowScene = function (p) {
         !note.completedHold
       ) {
         updateHit("ok", note);
+        hideHoldTexts(note.id + 1);
+
+        //Add logic for resetting for part 2
+        if (!part1HoldsDone && cueCount == 46) {
+          // Can we set a timer for the beat to start?
+          hideHoldTexts();
+          resetForPart2();
+        }
       }
       note.display(yPos, passedOver);
     });
+  }
+
+  function resetForPart2() {
+    part1HoldsDone = true;
+    waitForHit = false;
+    part2Started = true;
+
+    part1_bg_player.stop();
+    clock.stop();
+
+    // Lets try resetting everything here!
+    relevantNotes = [];
+    currentBatchStartMeasure = 0;
+    currentMeasure = -1;
+    currentBeat = 0;
+    pixelsElapsed = 0;
+
+    let songData = JSON.parse(part2);
+    measureData = songData.measureData;
+    songBpm = songData.bpm;
+    songDelay = songData.delay;
+    secondsPerBeat = 1 / (songBpm / 60);
+    animationIntervals = 10;
+    let measuresUntilBeat = 1;
+    let delayForBeat = measuresUntilBeat * 4 * secondsPerBeat;
+    clock.start();
+    setTimeout(function () {
+      part2_bg_player.start();
+    }, delayForBeat * 1000);
   }
 
   function updateArrowRainbow() {
@@ -477,10 +552,37 @@ var arrowScene = function (p) {
       );
     });
   }
+
+  //if no cue, hides all
+  function hideHoldTexts(cue) {
+    console.log("hide hold text");
+
+    if (cue) {
+      narrativeTextObjs.map(function (textObj) {
+        if (
+          textObj.cue == cue &&
+          textObj.showing &&
+          textObj.animationType == "hold"
+        ) {
+          textObj.hideHoldText();
+        }
+      });
+    } else {
+      narrativeTextObjs.map(function (textObj) {
+        if (textObj.showing && textObj.animationType == "hold") {
+          textObj.hideHoldText();
+        }
+      });
+    }
+  }
   function updateMiss(score, note) {
     // feedbackObj.updateState(score);
     comboObj.resetCombo();
     scoreData.update("miss");
+
+    if (note.noteType == "hold") {
+      hideHoldTexts(note.id + 1);
+    }
   }
   function updateHit(score, note) {
     //Is this the first time hitting this note?
@@ -491,6 +593,8 @@ var arrowScene = function (p) {
       // comboObj.incrementCombo();
       note.isHit = true;
       let scoreScale = 1;
+      cueCount = parseInt(note.id) + 1;
+      triggerNarrative(cueCount);
       if (score === "ok") {
         // feedbackObj.updateState("ok", true);
       } else if (score === "great") {
@@ -632,7 +736,6 @@ var arrowScene = function (p) {
         ) {
           if (waitForHit) {
             pauseTimer();
-            console.log(reverseClock.seconds);
             if (reverseClock.seconds == 0) {
               startReverseTimer();
             }
@@ -642,6 +745,8 @@ var arrowScene = function (p) {
             note.completedHold = false;
           }
         }
+        // Fade out any narrative texts for holds, for this cue
+        hideHoldTexts(note.id + 1);
       }
       // add another case for re-pressing a hold
       // else if (
@@ -1008,18 +1113,18 @@ var arrowScene = function (p) {
           }
           _this.gradientOpacity = gradientOpacity;
         }
-      }, 10);
+      }, animationIntervals);
 
       this.animationTimeout = setTimeout(function () {
         clearInterval(_this.animationInterval);
-      }, 500);
+      }, animationIntervals * 10);
     }
     release() {
       this.pressed = false;
     }
     display() {
-      // Move hit arrows
-      if (t > t_holdRightStart && t < t_holdsFinished) {
+      // Move hit arrows if time passes in part 2
+      if (!part2Started && t > t_holdRightStart && t < t_holdsFinished) {
         let timeElapsed = t - t_holdRightStart;
         let percentageElapsed =
           timeElapsed / (t_holdsFinished - t_holdRightStart);
@@ -1075,7 +1180,7 @@ var arrowScene = function (p) {
             newScale = 1;
           }
           _this.scale = newScale;
-        }, 10);
+        }, animationIntervals);
 
         this.hideTimeout = setTimeout(function () {
           _this.showing = false;
@@ -1145,7 +1250,7 @@ var arrowScene = function (p) {
             newScale = 1;
           }
           _this.scale = newScale;
-        }, 10);
+        }, animationIntervals);
       }
 
       this.hideTimeout = setTimeout(function () {
@@ -1156,6 +1261,86 @@ var arrowScene = function (p) {
     display() {
       if (this.showing) {
         drawText(this.text, "mainYellow", this.scale, null, 150);
+      }
+    }
+  }
+
+  class NarrativeText {
+    //Default animation type is bounce
+    constructor(cue, text, xPos, yPos, animationType) {
+      this.cue = cue;
+      this.showing = false;
+      this.text = text;
+      this.scale = 1;
+      this.opacity = 1;
+      this.animationIndex = 0;
+      this.animationInterval;
+      this.hideTimeout;
+      this.xPos = xPos;
+      this.yPos = yPos;
+      if (animationType) {
+        this.animationType = animationType;
+      } else {
+        this.animationType = "bounce";
+      }
+    }
+
+    animate() {
+      if (!narrativeTextObjs.includes(this)) {
+        narrativeTextObjs.push(this);
+      }
+      clearTimeout(this.hideTimeout);
+      clearInterval(this.animationInterval);
+      this.showing = true;
+      this.animationIndex = 0;
+      this.scale = 1;
+      let _this = this;
+
+      this.animationInterval = setInterval(function () {
+        _this.animationIndex++;
+        let newScale = hitAnimationTimings[_this.animationIndex];
+        if (newScale == null) {
+          newScale = 1;
+        }
+        _this.scale = newScale;
+      }, animationIntervals);
+
+      if (this.animationType == "bounce") {
+        this.hideTimeout = setTimeout(function () {
+          _this.showing = false;
+          clearInterval(_this.animationInterval);
+        }, 2000);
+      }
+    }
+    hideHoldText() {
+      clearTimeout(this.hideTimeout);
+      clearInterval(this.animationInterval);
+      this.showing = true;
+      this.animationIndex = 0;
+      let _this = this;
+
+      this.animationInterval = setInterval(function () {
+        _this.animationIndex++;
+        let newScale = fadeOutTiming[_this.animationIndex];
+        let newOpacity = fadeOutTiming[_this.animationIndex];
+        if (newScale == null) {
+          newScale = 1;
+          newOpacity = 0;
+        }
+        _this.scale = newScale;
+        _this.opacity = newOpacity;
+      }, animationIntervals);
+
+      this.hideTimeout = setTimeout(function () {
+        _this.showing = false;
+        clearInterval(_this.animationInterval);
+      }, animationIntervals * 8);
+    }
+    display() {
+      if (this.showing) {
+        p.tint(255, this.opacity * 255);
+        drawText(this.text, "mainYellow", this.scale, this.xPos, this.yPos);
+        p.tint(255, 255);
       }
     }
   }
@@ -1232,6 +1417,250 @@ var arrowScene = function (p) {
       canvasHeight = p.windowWidth / canvasRatio;
     }
     scaleRatio = canvasWidth / 640;
+  }
+
+  function triggerNarrative(cueCount) {
+    if (cueCount == 1) {
+      let newText = new NarrativeText(cueCount, "I");
+      newText.animate();
+    }
+    if (cueCount == 2) {
+      let newText = new NarrativeText(cueCount, "find");
+      newText.animate();
+    }
+    if (cueCount == 3) {
+      let newText = new NarrativeText(cueCount, "myself");
+      newText.animate();
+    }
+    if (cueCount == 4) {
+      let newText = new NarrativeText(cueCount, "replaying");
+      newText.animate();
+    }
+    if (cueCount == 5) {
+      let newText = new NarrativeText(cueCount, "these");
+      newText.animate();
+    }
+    if (cueCount == 6) {
+      let newText = new NarrativeText(cueCount, "familiar");
+      newText.animate();
+    }
+    if (cueCount == 7) {
+      let newText = new NarrativeText(cueCount, "old");
+      newText.animate();
+    }
+    if (cueCount == 8) {
+      let newText = new NarrativeText(cueCount, "stories.");
+      newText.animate();
+    }
+    if (cueCount == 9) {
+      let newText = new NarrativeText(cueCount, "My", 100);
+      newText.animate();
+    }
+    if (cueCount == 10) {
+      let newText = new NarrativeText(cueCount, "mind", 300);
+      newText.animate();
+    }
+    if (cueCount == 11) {
+      let newText = new NarrativeText(cueCount, "for", 200);
+      newText.animate();
+    }
+    if (cueCount == 12) {
+      let newText = new NarrativeText(cueCount, "gets", 300);
+      newText.animate();
+    }
+    if (cueCount == 13) {
+      let newText = new NarrativeText(cueCount, "My", 200);
+      newText.animate();
+    }
+    if (cueCount == 14) {
+      let newText = new NarrativeText(cueCount, "body", 300);
+      newText.animate();
+    }
+    if (cueCount == 15) {
+      let newText = new NarrativeText(cueCount, "re", 230);
+      newText.animate();
+    }
+    if (cueCount == 16) {
+      let newText = new NarrativeText(cueCount, "members", 300);
+      newText.animate();
+    }
+    if (cueCount == 17) {
+      let newText = new NarrativeText(cueCount, "I", 44, 75);
+      newText.animate();
+    }
+    if (cueCount == 18) {
+      let newText = new NarrativeText(cueCount, "used", 97, 124);
+      newText.animate();
+    }
+    if (cueCount == 19) {
+      let newText = new NarrativeText(cueCount, "to", 284, 88);
+      newText.animate();
+    }
+    if (cueCount == 20) {
+      let newText = new NarrativeText(cueCount, "be", 321, 153);
+      newText.animate();
+    }
+    if (cueCount == 21) {
+      let newText = new NarrativeText(cueCount, "lieve", 401, 153);
+      newText.animate();
+    }
+    if (cueCount == 22) {
+      let newText = new NarrativeText(cueCount, "I", 117, 221);
+      newText.animate();
+    }
+    if (cueCount == 23) {
+      let newText = new NarrativeText(cueCount, "was", 177, 259);
+      newText.animate();
+    }
+
+    if (cueCount == 24) {
+      let newText = new NarrativeText(cueCount, "emp", 321, 234);
+      newText.animate();
+    }
+    if (cueCount == 25) {
+      let newText = new NarrativeText(cueCount, "ty,", 441, 234);
+      newText.animate();
+    }
+
+    if (cueCount == 26) {
+      let newText = new NarrativeText(cueCount, "a", 86, 355);
+      newText.animate();
+    }
+
+    if (cueCount == 27) {
+      let newText = new NarrativeText(cueCount, "blank", 156, 374);
+      newText.animate();
+    }
+
+    if (cueCount == 28) {
+      let newText = new NarrativeText(cueCount, "slate", 380, 339);
+      newText.animate();
+    }
+
+    if (cueCount == 29) {
+      let newText = new NarrativeText(cueCount, "I", 60, 132);
+      newText.animate();
+    }
+
+    if (cueCount == 30) {
+      let newText = new NarrativeText(cueCount, "was", 140, 132);
+      newText.animate();
+    }
+
+    if (cueCount == 31) {
+      let newText = new NarrativeText(cueCount, "looking", 300, 132);
+      newText.animate();
+    }
+    if (cueCount == 32) {
+      let newText = new NarrativeText(cueCount, "for", 60, 210);
+      newText.animate();
+    }
+    if (cueCount == 33) {
+      let newText = new NarrativeText(cueCount, "a", 220, 210);
+      newText.animate();
+    }
+    if (cueCount == 34) {
+      let newText = new NarrativeText(cueCount, "witness", 300, 210);
+      newText.animate();
+    }
+    if (cueCount == 35) {
+      let newText = new NarrativeText(cueCount, "all", 140, 289);
+      newText.animate();
+    }
+    if (cueCount == 36) {
+      let newText = new NarrativeText(cueCount, "along", 300, 289);
+      newText.animate();
+    }
+    if (cueCount == 37) {
+      let newText = new NarrativeText(cueCount, "I");
+      newText.animate();
+    }
+    if (cueCount == 38) {
+      let newText = new NarrativeText(cueCount, "have");
+      newText.animate();
+    }
+    if (cueCount == 39) {
+      let newText = new NarrativeText(cueCount, "learned");
+      newText.animate();
+    }
+    if (cueCount == 40) {
+      let newText = new NarrativeText(cueCount, "to");
+      newText.animate();
+    }
+    if (cueCount == 41) {
+      let newText = new NarrativeText(cueCount, "stay");
+      newText.animate();
+    }
+    if (cueCount == 42) {
+      let newText = new NarrativeText(cueCount, "in");
+      newText.animate();
+    }
+    if (cueCount == 43) {
+      let newText = new NarrativeText(cueCount, "constant");
+      newText.animate();
+    }
+    if (cueCount == 44) {
+      let newText = new NarrativeText(cueCount, "motion");
+      newText.animate();
+    }
+    if (cueCount == 45) {
+      let text1 = new NarrativeText(cueCount, "but to", 34, 171, "hold");
+
+      let text2 = new NarrativeText(cueCount, "hold", 65, 256, "hold");
+
+      text1.animate();
+      text2.animate();
+    }
+    if (cueCount == 46) {
+      let text1 = new NarrativeText(cueCount, "is to be", 320, 171, "hold");
+      let text2 = new NarrativeText(cueCount, "held", 400, 256, "hold");
+      text1.animate();
+      text2.animate();
+    }
+
+    // PART 2
+
+    if (cueCount == 47) {
+      let text1 = new NarrativeText(cueCount, "I");
+      text1.animate();
+    }
+
+    if (cueCount == 48) {
+      let text1 = new NarrativeText(cueCount, "can");
+      text1.animate();
+    }
+    if (cueCount == 49) {
+      let text1 = new NarrativeText(cueCount, "be-");
+      text1.animate();
+    }
+    if (cueCount == 50) {
+      let text1 = new NarrativeText(cueCount, "-lieve");
+      text1.animate();
+    }
+    if (cueCount == 51) {
+      let text1 = new NarrativeText(cueCount, "in");
+      text1.animate();
+    }
+    if (cueCount == 52) {
+      let text1 = new NarrativeText(cueCount, "the");
+      text1.animate();
+    }
+    if (cueCount == 53) {
+      let text1 = new NarrativeText(cueCount, "truth");
+      text1.animate();
+    }
+    if (cueCount == 54) {
+      let text1 = new NarrativeText(cueCount, "of");
+      text1.animate();
+    }
+    if (cueCount == 55) {
+      let text1 = new NarrativeText(cueCount, "sen-");
+      text1.animate();
+    }
+    if (cueCount == 56) {
+      let text1 = new NarrativeText(cueCount, "-sations");
+      text1.animate();
+    }
   }
 };
 

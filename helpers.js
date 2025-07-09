@@ -31,6 +31,17 @@ const hitAnimationTimings = {
   5: 1.05,
 };
 
+const fadeOutTiming = {
+  1: 1,
+  2: 0.95,
+  3: 0.9,
+  4: 0.8,
+  5: 0.65,
+  6: 0.4,
+  7: 0.1,
+  8: 0,
+};
+
 const arrowHitSizeTimings = {
   1: 0.85,
   2: 0.8,
