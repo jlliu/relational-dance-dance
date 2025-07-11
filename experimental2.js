@@ -1306,10 +1306,14 @@ var arrowScene = function (p) {
       }, animationIntervals);
 
       if (this.animationType == "bounce") {
+        let hideAfter = 2000;
+        if (part2Started) {
+          hideAfter = secondsPerBeat * 1000;
+        }
         this.hideTimeout = setTimeout(function () {
           _this.showing = false;
           clearInterval(_this.animationInterval);
-        }, 2000);
+        }, hideAfter);
       }
     }
     hideHoldText() {
@@ -1660,6 +1664,249 @@ var arrowScene = function (p) {
     if (cueCount == 56) {
       let text1 = new NarrativeText(cueCount, "-sations");
       text1.animate();
+    }
+    // There are clues in the hunch of my shoulders
+    if (cueCount == 57) {
+      let text1 = new NarrativeText(cueCount, "There");
+      text1.animate();
+    }
+    if (cueCount == 58) {
+      let text1 = new NarrativeText(cueCount, "are");
+      text1.animate();
+    }
+    if (cueCount == 59) {
+      let text1 = new NarrativeText(cueCount, "clues");
+      text1.animate();
+    }
+    if (cueCount == 60) {
+      let text1 = new NarrativeText(cueCount, "in");
+      text1.animate();
+    }
+    if (cueCount == 61) {
+      let text1 = new NarrativeText(cueCount, "the");
+      text1.animate();
+    }
+    if (cueCount == 62) {
+      let text1 = new NarrativeText(cueCount, "hunch");
+      text1.animate();
+    }
+    if (cueCount == 63) {
+      let text1 = new NarrativeText(cueCount, "of");
+      text1.animate();
+    }
+    if (cueCount == 64) {
+      let text1 = new NarrativeText(cueCount, "my");
+      text1.animate();
+    }
+    if (cueCount == 65) {
+      let text1 = new NarrativeText(cueCount, "shoul", 143, 211, "hold");
+      text1.animate();
+    }
+    if (cueCount == 66) {
+      let text1 = new NarrativeText(cueCount, "ders", 343, 211, "hold");
+      text1.animate();
+    }
+    //There is wisdom in the sinking of my chest
+    if (cueCount == 67) {
+      let text1 = new NarrativeText(cueCount, "There");
+      text1.animate();
+    }
+    if (cueCount == 68) {
+      let text1 = new NarrativeText(cueCount, "is");
+      text1.animate();
+    }
+    if (cueCount == 69) {
+      let text1 = new NarrativeText(cueCount, "wisdom");
+      text1.animate();
+    }
+    if (cueCount == 70) {
+      let text1 = new NarrativeText(cueCount, "in");
+      text1.animate();
+    }
+    if (cueCount == 71) {
+      let text1 = new NarrativeText(cueCount, "the");
+      text1.animate();
+    }
+    if (cueCount == 72) {
+      let text1 = new NarrativeText(cueCount, "sinking");
+      text1.animate();
+    }
+    if (cueCount == 73) {
+      let text1 = new NarrativeText(cueCount, "of");
+      text1.animate();
+    }
+    if (cueCount == 74) {
+      let text1 = new NarrativeText(cueCount, "my");
+      text1.animate();
+    }
+    if (cueCount == 75) {
+      let text1 = new NarrativeText(cueCount, "che", 223, 211, "hold");
+      text1.animate();
+    }
+    if (cueCount == 76) {
+      let text1 = new NarrativeText(cueCount, "st", 343, 211, "hold");
+      text1.animate();
+    }
+    //There is wisdom in the sinking of my chest
+    if (cueCount == 77) {
+      let text1 = new NarrativeText(cueCount, "There");
+      text1.animate();
+    }
+    if (cueCount == 78) {
+      let text1 = new NarrativeText(cueCount, "are");
+      text1.animate();
+    }
+    if (cueCount == 79) {
+      let text1 = new NarrativeText(cueCount, "signs");
+      text1.animate();
+    }
+    if (cueCount == 80) {
+      let text1 = new NarrativeText(cueCount, "in");
+      text1.animate();
+    }
+    if (cueCount == 81) {
+      let text1 = new NarrativeText(cueCount, "the");
+      text1.animate();
+    }
+    if (cueCount == 82) {
+      let text1 = new NarrativeText(cueCount, "clench");
+      text1.animate();
+    }
+    if (cueCount == 83) {
+      let text1 = new NarrativeText(cueCount, "of");
+      text1.animate();
+    }
+    if (cueCount == 84) {
+      let text1 = new NarrativeText(cueCount, "my");
+      text1.animate();
+    }
+    if (cueCount == 85) {
+      let text1 = new NarrativeText(cueCount, "ja", 240, 211, "hold");
+      text1.animate();
+    }
+    if (cueCount == 86) {
+      let text1 = new NarrativeText(cueCount, "ws", 320, 211, "hold");
+      text1.animate();
+    }
+    //There is wisdom in the sinking of my chest
+    if (cueCount == 87) {
+      let text1 = new NarrativeText(cueCount, "There");
+      text1.animate();
+    }
+    if (cueCount == 88) {
+      let text1 = new NarrativeText(cueCount, "is");
+      text1.animate();
+    }
+    if (cueCount == 89) {
+      let text1 = new NarrativeText(cueCount, "life");
+      text1.animate();
+    }
+    if (cueCount == 90) {
+      let text1 = new NarrativeText(cueCount, "in");
+      text1.animate();
+    }
+    if (cueCount == 91) {
+      let text1 = new NarrativeText(cueCount, "the");
+      text1.animate();
+    }
+    if (cueCount == 92) {
+      let text1 = new NarrativeText(cueCount, "ache");
+      text1.animate();
+    }
+    if (cueCount == 93) {
+      let text1 = new NarrativeText(cueCount, "of");
+      text1.animate();
+    }
+    if (cueCount == 94) {
+      let text1 = new NarrativeText(cueCount, "my");
+      text1.animate();
+    }
+    if (cueCount == 95) {
+      let text1 = new NarrativeText(cueCount, "hea", 223, 211, "hold");
+      text1.animate();
+    }
+    if (cueCount == 96) {
+      let text1 = new NarrativeText(cueCount, "rt", 343, 211, "hold");
+      text1.animate();
+    }
+    //What do I want
+    if (cueCount == 97) {
+      let text1 = new NarrativeText(
+        cueCount,
+        "What do I want?",
+        null,
+        null,
+        "hold"
+      );
+      text1.animate();
+    }
+    if (cueCount == 98) {
+      let text1 = new NarrativeText(
+        cueCount,
+        "In this body",
+        null,
+        171,
+        "hold"
+      );
+      let text2 = new NarrativeText(cueCount, "of mine?", null, 250, "hold");
+      text1.animate();
+      text2.animate();
+    }
+    //I want to rupture
+    if (cueCount == 99) {
+      let text1 = new NarrativeText(cueCount, "I want to", null, 171, "hold");
+      let text2 = new NarrativeText(cueCount, "rupture", null, 250, "hold");
+      text1.animate();
+      text2.animate();
+    }
+    //I want to repair
+    if (cueCount == 100) {
+      let text1 = new NarrativeText(cueCount, "I want to", null, 171, "hold");
+      let text2 = new NarrativeText(cueCount, "repair", null, 250, "hold");
+      text1.animate();
+      text2.animate();
+    }
+    //I want to hurt
+    if (cueCount == 101) {
+      let text1 = new NarrativeText(cueCount, "I want to", null, 171, "hold");
+      let text2 = new NarrativeText(cueCount, "hurt", null, 250, "hold");
+      text1.animate();
+      text2.animate();
+    }
+    //I want to heal
+    if (cueCount == 102) {
+      let text1 = new NarrativeText(cueCount, "I want to", null, 171, "hold");
+      let text2 = new NarrativeText(cueCount, "heal", null, 250, "hold");
+      text1.animate();
+      text2.animate();
+    }
+    //I want to be won
+    if (cueCount == 103) {
+      let text1 = new NarrativeText(cueCount, "I want to", null, 171, "hold");
+      let text2 = new NarrativeText(cueCount, "be won", null, 250, "hold");
+      text1.animate();
+      text2.animate();
+    }
+    //I want to be lost
+    if (cueCount == 104) {
+      let text1 = new NarrativeText(cueCount, "I want to", null, 171, "hold");
+      let text2 = new NarrativeText(cueCount, "be lost", null, 250, "hold");
+      text1.animate();
+      text2.animate();
+    }
+    //I want to be held
+    if (cueCount == 105) {
+      let text1 = new NarrativeText(cueCount, "I want to", null, 171, "hold");
+      let text2 = new NarrativeText(cueCount, "be held", null, 250, "hold");
+      text1.animate();
+      text2.animate();
+    }
+    //I want to be released
+    if (cueCount == 106) {
+      let text1 = new NarrativeText(cueCount, "I want to", null, 171, "hold");
+      let text2 = new NarrativeText(cueCount, "be released", null, 250, "hold");
+      text1.animate();
+      text2.animate();
     }
   }
 };
