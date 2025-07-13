@@ -5,22 +5,64 @@ let digitString = "1234567890";
 
 let digitList = digitString.split("");
 
+let mainPinkCharacters = `ABCDEFGHIJKLNOPQRSTUVXYZabcdefghijklnopqrstuvxyz1234567890.,?!-"'()[] `;
+
+let widePinkCharacters = `MWmw`;
+
 let fonts = {
   mainYellow: {
-    src: "assets/font-spritesheet.png",
-    charSet: characterList,
-    size: { width: 40, height: 58 },
+    sets: [
+      {
+        src: "assets/font-spritesheet.png",
+        charSet: characterString.split(""),
+        size: { width: 40, height: 58 },
+
+        imgObj: null,
+      },
+    ],
+
     charsToImgs: {},
-    imgObj: null,
   },
 
-  pinkDigits: {
-    src: "assets/combo-number-spritesheet.png",
-    charSet: digitList,
-    size: { width: 64, height: 72 },
+  // pinkDigits: {
+  //   src: "assets/combo-number-spritesheet.png",
+  //   charSet: digitString.split(""),
+  //   size: { width: 64, height: 72 },
+  //   charsToImgs: {},
+  //   imgObj: null,
+  // },
+
+  pink: {
+    sets: [
+      {
+        src: "assets/main-pink-character-spritesheet.png",
+        charSet: mainPinkCharacters.split(""),
+        size: { width: 60, height: 84 },
+      },
+      {
+        src: "assets/wide-pink-character-spritesheet.png",
+        charSet: widePinkCharacters.split(""),
+        size: { width: 84, height: 84 },
+        imgObj: null,
+      },
+    ],
     charsToImgs: {},
-    imgObj: null,
+    // src: "assets/assets/main-pink-character-spritesheet.png",
+    // charSet: mainPinkCharacters.split(""),
+    // size: { width: 60, height: 84 },
+    // charsToImgs: {},
+    // imgObj: null,
   },
+
+  // widePink: {
+  //   src: "assets/assets/wide-pink-character-spritesheet.png",
+  //   charSet: widePinkCharacters.split(""),
+  //   size: { width: 84, height: 84 },
+  //   charsToImgs: {},
+  //   imgObj: null,
+  // },
+
+  // pin
 };
 
 const hitAnimationTimings = {

@@ -7,8 +7,8 @@ let canvasHeight = 480;
 let track = document.querySelector("audio");
 let startSongButton = document.querySelector("#startSong");
 
-// const songPlayer = new Tone.Player("assets/audio/Heaven.OGG").toDestination();
-const songPlayer = new Tone.Player("assets/audio/Curry Up.mp3").toDestination();
+const songPlayer = new Tone.Player("assets/audio/Heaven.OGG").toDestination();
+// const songPlayer = new Tone.Player("assets/audio/Curry Up.mp3").toDestination();
 
 var arrowScene = function (p) {
   let thisCanvas;
@@ -59,6 +59,8 @@ var arrowScene = function (p) {
 
   let clock = new Tone.Clock((time) => {}, 1);
 
+  let fontsToLoad = ["mainYellow", "pink"];
+
   p.preload = function () {
     //Preload a background here
     //Preload whatever needs to be preloaded
@@ -82,8 +84,13 @@ var arrowScene = function (p) {
       down: p.loadImage("assets/arrow-down.png"),
     };
 
-    fonts.mainYellow.imgObj = p.loadImage(fonts.mainYellow.src);
-    fonts.pinkDigits.imgObj = p.loadImage(fonts.pinkDigits.src);
+    fontsToLoad.forEach(function (fontName) {
+      fonts[fontName].sets.forEach(function (fontSet) {
+        fontSet.imgObj = p.loadImage(fontSet.src);
+      });
+    });
+    // fonts.mainYellow.imgObj = p.loadImage(fonts.mainYellow.src);
+    // fonts.pinkDigits.imgObj = p.loadImage(fonts.pinkDigits.src);
     comboTextImg = p.loadImage("assets/comboText.png");
     healthBarFrameImg = p.loadImage("assets/healthBarFrame.png");
     greenGradientImg = p.loadImage("assets/greenGradient.png");
@@ -103,7 +110,7 @@ var arrowScene = function (p) {
     p.noSmooth();
 
     // let songData = JSON.parse(heavenSongData);
-    let songData = JSON.parse(curryup);
+    let songData = JSON.parse(heaven);
     measureData = songData.measureData;
     songBpm = songData.bpm;
     songDelay = songData.delay;
@@ -132,7 +139,7 @@ var arrowScene = function (p) {
 
     // Setup fonts
     setupFont("mainYellow");
-    setupFont("pinkDigits");
+    setupFont("pink");
   };
 
   let startDrawingArrows = false;
@@ -346,15 +353,22 @@ var arrowScene = function (p) {
   }
 
   function setupFont(fontName) {
-    fonts[fontName].charSet.forEach(function (character, index) {
-      let size = fonts[fontName].size;
-      let imgObj = fonts[fontName].imgObj;
+    let fontSets = fonts[fontName].sets;
+    fontSets.forEach(function (fontSet) {
+      let size = fontSet.size;
+      let imgObj = fontSet.imgObj;
       let columns = imgObj.width / size.width;
       let rows = imgObj.height / size.height;
-      let startingX = (index % columns) * size.width;
-      let startingY = Math.floor(index / columns) * size.height;
-      let charImg = imgObj.get(startingX, startingY, size.width, size.height);
-      fonts[fontName].charsToImgs[character] = charImg;
+      fontSet.charSet.forEach(function (character, index) {
+        let startingX = (index % columns) * size.width;
+        let startingY = Math.floor(index / columns) * size.height;
+        let charImg = imgObj.get(startingX, startingY, size.width, size.height);
+        fonts[fontName].charsToImgs[character] = charImg;
+        fonts[fontName].charsToImgs[character].size = {
+          width: size.width,
+          height: size.height,
+        };
+      });
     });
   }
 
@@ -365,8 +379,17 @@ var arrowScene = function (p) {
     }
     //Automatically center if position not specified
     let charsToDraw = textToDraw.split("");
-    let wordWidth = charsToDraw.length * fonts[fontName].size.width;
-    let wordHeight = fonts[fontName].size.height;
+    //Calculate width based on width of each char
+    // let wordWidth = charsToDraw.length * fonts[fontName].size.width;
+    let wordWidth = 0;
+    let wordHeight = 0;
+    let char_xPositions = [];
+    charsToDraw.forEach(function (char) {
+      char_xPositions.push(wordWidth);
+      wordWidth += fonts[fontName].charsToImgs[char].size.width;
+      wordHeight = fonts[fontName].charsToImgs[char].size.height;
+    });
+
     if (start_xPos == null) {
       start_xPos = (canvasSizeOriginal.width - wordWidth * scaleFactor) / 2;
     } else {
@@ -380,7 +403,7 @@ var arrowScene = function (p) {
       start_yPos -= dy;
     }
     charsToDraw.forEach(function (char, index) {
-      let xPos = start_xPos + index * fonts[fontName].size.width * scaleFactor;
+      let xPos = start_xPos + char_xPositions[index] * scaleFactor;
       drawImageToScale(
         fonts[fontName].charsToImgs[char],
         xPos,
@@ -938,18 +961,19 @@ var arrowScene = function (p) {
     display() {
       //Calculate offset between number and comboTextImg
       let numberWidth;
+      let digitWidth = fonts.pink.charsToImgs["1"].size.width;
       if (this.count < 10) {
-        numberWidth = fonts.pinkDigits.size.width;
+        numberWidth = digitWidth;
       } else if (this.count < 100) {
-        numberWidth = fonts.pinkDigits.size.width * 2;
+        numberWidth = digitWidth * 2;
       } else if (this.count >= 100) {
-        numberWidth = fonts.pinkDigits.size.width * 3;
+        numberWidth = digitWidth * 3;
       }
       let xPos =
         (canvasSizeOriginal.width - (numberWidth + comboTextImg.width + 5)) / 2;
       if (this.showing && this.count >= 2) {
         drawImageToScale(comboTextImg, xPos + numberWidth + 5, 267, this.scale);
-        drawText(this.count.toString(), "pinkDigits", this.scale, xPos, 240);
+        drawText(this.count.toString(), "pink", this.scale, xPos, 240);
       }
     }
   }

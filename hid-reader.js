@@ -210,7 +210,7 @@ const handleInputReport = (event) => {
     press("down");
   }
   // Up+Down
-  if (buffer == "01 0C 000") {
+  if (buffer == "01 0C 00") {
     release("left");
     release("right");
     press("up");
