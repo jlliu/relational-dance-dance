@@ -187,7 +187,8 @@ var arrowScene = function (p) {
   p.draw = function () {
     if (showingNarrativeHoldText) {
     } else {
-      p.background("white");
+      // p.background("white");
+      p.clear();
     }
 
     Object.values(hitArrowObjs).forEach(function (arrowObj) {
