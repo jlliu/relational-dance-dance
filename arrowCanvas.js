@@ -890,6 +890,7 @@ var arrowScene = function (p) {
       }, 10);
 
       this.animationTimeout = setTimeout(function () {
+        _this.glowing = false;
         clearInterval(_this.animationInterval);
       }, 500);
     }

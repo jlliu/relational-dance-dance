@@ -41,6 +41,22 @@ canvas {
 audio{
   display:none;
 }
+
+#arrowCanvas{
+  display:none;
+  opacity:0;
+  transition: 3s opacity;
+}
+
+#titleCanvas{
+  opacity:1;
+  transition: 3s opacity;
+}
+
+#backgroundCanvas{
+  opacity:1;
+  transition: 3s opacity;
+}
 /* .gameCanvas{
   z-index:-1;
   visibility: hidden;

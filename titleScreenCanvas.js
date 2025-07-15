@@ -1,6 +1,16 @@
-// Game N: Template for any game number
+// Code for title screen
 
-var background = function (p) {
+const title_player = new Tone.Player(
+  "assets/audio/RDD_p2_drum_loop.mp3",
+  startSong
+).toDestination();
+title_player.loop = true;
+title_player.fadeOut = 4;
+
+function startSong() {
+  title_player.start();
+}
+var title = function (p) {
   let thisCanvas;
 
   let canvasSizeOriginal = { width: 640, height: 480 };
@@ -14,7 +24,7 @@ var background = function (p) {
   let rightButton;
   let leftButton;
 
-  let backgroundCanvas;
+  let titleCanvas;
 
   let button_r_up, button_r_down, button_l_up, button_l_down;
 
@@ -27,46 +37,39 @@ var background = function (p) {
   let gameEntered = false;
   let gameStarted = false;
 
-  let shader;
+  let logoImg;
+  let startTextImg;
+
+  let numCanvasesLoaded = 0;
+  let allCanvasesLoaded = false;
+  // let shader;
 
   let clock = new Tone.Clock((time) => {}, 1);
-
-  let percentageElapsed = 0;
-
-  let transitionStarted = 0;
-
-  let narrativeCue = 0;
 
   p.preload = function () {
     //Preload a background here
     //Preload whatever needs to be preloaded
 
-    shader = p.loadShader("shaders/basic.vert", "shaders/pinkGlow.frag");
+    // shader = p.loadShader("shaders/basic.vert", "shaders/basic.frag");
+    logoImg = p.loadImage("assets/RDD-logo.png");
+    startTextImg = p.loadImage("assets/startText.png");
   };
 
   p.setup = function () {
     // put setup code here
-    p.pixelDensity(1);
+    p.pixelDensity(3);
     calculateCanvasDimensions(p);
 
-    backgroundCanvas = p.createCanvas(
-      canvasSizeOriginal.width,
-      canvasSizeOriginal.height,
-      p.WEBGL
-    ).elt;
-    backgroundCanvas.classList.add("gameCanvas");
-    backgroundCanvas.id = "backgroundCanvas";
+    titleCanvas = p.createCanvas(canvasWidth, canvasHeight).elt;
+    titleCanvas.classList.add("gameCanvas");
+    titleCanvas.id = "titleCanvas";
 
-    thisCanvas = backgroundCanvas;
+    thisCanvas = titleCanvas;
     p.noSmooth();
 
     p.noStroke();
 
-    // setupNavigation();
-    resizeBackgroundCanvas();
     clock.start();
-
-    //Initialize Game N Sprites
 
     const canvasLoadedEvent = new Event("canvasLoaded");
 
@@ -74,69 +77,102 @@ var background = function (p) {
   };
 
   p.draw = function () {
+    p.clear();
     mouse_x = p.mouseX;
     mouse_y = p.mouseY;
-    //Cursor is default unless otherwise specified
-    // cursorState = "default";
-    // displayGame();
 
-    shader.setUniform("u_resolution", [canvasWidth, canvasHeight]);
-    // console.log(clock.seconds);
-    shader.setUniform("u_time", clock.seconds);
+    drawImageToScale(logoImg, 94, 176);
 
-    shader.setUniform("u_percentageElapsed", percentageElapsed);
-
-    shader.setUniform("u_transitionStarted", transitionStarted);
-    // shader.setUniform("u_scale", scaleRatio);
-
-    shader.setUniform("u_narrativeCue", narrativeCue);
-
-    // shader() sets the active shader with our shader
-    p.shader(shader);
-
-    // rect gives us some geometry on the screen
-    p.rect(0, 0, 640, 480);
+    if (Math.floor(clock.seconds) % 2 == 0 && allCanvasesLoaded) {
+      drawImageToScale(startTextImg, 92, 420);
+    }
   };
 
   ////////////////////////////////////////////
   // -------------- SCENES --------------- //
   //////////////////////////////////////////
-  window.addEventListener("startGame", (e) => {
-    let canvasToHide = document.querySelector("#backgroundCanvas");
-    canvasToHide.style.opacity = 0;
-    setTimeout(function () {
-      canvasToHide.style.display = "none";
-    }, 3000);
-  });
 
-  window.addEventListener("backgroundTransition", (e) => {
-    let canvasToShow = document.querySelector("#backgroundCanvas");
-    canvasToShow.style.display = "block";
-    canvasToShow.style.opacity = 1;
-    percentageElapsed = e.detail;
-    transitionStarted = 1;
-  });
-
-    window.addEventListener("backgroundCue", (e) => {
-    narrativeCue = e.detail;
-
-  });
-
-  // Game 1
-  function displayGame() {
-    //Do things we need to do when entered minigame
-    if (gameEntered && !gameStarted) {
-      console.log("GAME ENTERED!");
-      gameStarted = true;
+  window.addEventListener("canvasLoaded", function () {
+    numCanvasesLoaded++;
+    if (numCanvasesLoaded == 3) {
+      allCanvasesLoaded = true;
     }
-    // p.image(bg, 0, 0, canvasWidth, canvasHeight);
+  });
 
-    // Display Sprites
-
-    p.background("pink");
-
-    // Navigation
+  function padOrKeypress(direction) {
+    // let hitSuccessful = assessHit(direction, "press");
+    // hitArrowObjs[direction].press(hitSuccessful);
+    if (!gameStarted && allCanvasesLoaded) {
+      const startGameEvent = new Event("startGame");
+      window.dispatchEvent(startGameEvent);
+      gameStarted = true;
+      thisCanvas.style.opacity = 0;
+      title_player.stop();
+      setTimeout(function () {
+        thisCanvas.style.display = "none";
+      }, 3000);
+    }
   }
+  function padOrKeyrelease(direction) {
+    // hitArrowObjs[direction].release();
+    // assessHit(direction, "lift");
+  }
+  window.addEventListener("padPress", function (e) {
+    let direction = e.detail.direction;
+    padOrKeypress(direction);
+  });
+  window.addEventListener("padRelease", function (e) {
+    let direction = e.detail.direction;
+    padOrKeyrelease(direction);
+  });
+
+  window.addEventListener("keydown", function (e) {
+    //Ignore repeated keydown
+    if (e.repeat) {
+      return;
+    }
+    if (
+      e.code == "ArrowLeft" ||
+      e.code == "ArrowRight" ||
+      e.code == "ArrowUp" ||
+      e.code == "ArrowDown"
+    ) {
+      if (e.code == "ArrowLeft") {
+        padOrKeypress("left");
+      }
+      if (e.code == "ArrowRight") {
+        padOrKeypress("right");
+      }
+      if (e.code == "ArrowUp") {
+        padOrKeypress("up");
+      }
+      if (e.code == "ArrowDown") {
+        padOrKeypress("down");
+      }
+    }
+  });
+
+  window.addEventListener("keyup", function (e) {
+    if (
+      e.code == "ArrowLeft" ||
+      e.code == "ArrowRight" ||
+      e.code == "ArrowUp" ||
+      e.code == "ArrowDown"
+    ) {
+      if (e.code == "ArrowLeft") {
+        padOrKeyrelease("left");
+      }
+      if (e.code == "ArrowRight") {
+        padOrKeyrelease("right");
+      }
+      if (e.code == "ArrowUp") {
+        padOrKeyrelease("up");
+      }
+      if (e.code == "ArrowDown") {
+        padOrKeyrelease("down");
+      }
+    }
+  });
 
   // CLASSES
 
@@ -370,15 +406,15 @@ var background = function (p) {
 
   p.windowResized = function () {
     calculateCanvasDimensions();
-    // p.resizeCanvas(canvasWidth, canvasHeight);
-    resizeBackgroundCanvas();
+    p.resizeCanvas(canvasWidth, canvasHeight);
+    // resizeBackgroundCanvas();
   };
 
-  function resizeBackgroundCanvas() {
-    // console.log(backgroundCanvas);
-    let thisCanvas = document.querySelector("#backgroundCanvas");
-    thisCanvas.style.transform = `translate(-50%, -50%) scale(${scaleRatio})`;
-  }
+  // function resizeBackgroundCanvas() {
+  //   // console.log(backgroundCanvas);
+  //   let thisCanvas = document.querySelector("#titleCanvas");
+  //   thisCanvas.style.transform = `translate(-50%, -50%) scale(${scaleRatio})`;
+  // }
 
   // Animates a sprite given the images as frames, based on a certain interval, with optional callback
   function intervalAnimation(sprite, frames, interval, callback) {
@@ -418,8 +454,8 @@ var background = function (p) {
       canvasWidth = p.windowWidth;
       canvasHeight = p.windowWidth / canvasRatio;
     }
-    scaleRatio = canvasWidth / canvasSizeOriginal.width;
+    scaleRatio = canvasWidth / 640;
   }
 };
 
-new p5(background, "background-canvas-container");
+new p5(title, "title-canvas-container");

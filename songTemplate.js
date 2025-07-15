@@ -16,18 +16,11 @@
   <!-- Uncomment for installation mode -->
   <!-- <script src="refreshIdle.js" defer></script> -->
    <!-- <script src="songParser.js" defer></script> -->
-
-
-     <script src="hid-reader.js" defer></script>
-  <script src="experimentalSong.js" defer></script>
-  <script src="backgroundCanvas.js" defer></script>
-  <script src="titleScreenCanvas.js" defer></script>
-  <script src="experimentalCanvas.js" defer></script>
-
-  <!-- <script src="songs/curryup.js" defer></script>
-  <script src="songs/heaven.js" defer></script> -->
+      <script src="hid-reader.js" defer></script>
+        <script src="songs/curryup.js" defer></script>
+  <script src="songs/heaven.js" defer></script>
   <script src="helpers.js" defer></script>
-  <!-- <script src="arrowCanvas.js" defer></script> -->
+  <script src="arrowCanvas.js" defer></script>
   <!-- <script src="game1.js" defer></script>
   <script src="game2.js" defer></script>
   <script src="game3.js" defer></script>
@@ -42,27 +35,20 @@
 <body>
   <!-- <button id="goToEnding">Go to ending</button> -->
   <main>
-    <!-- <button id="startSong">
+    <button id="startSong">
       Click to start
-    </button> -->
+    </button>
 
 <button onclick="connectDevice()">Connect</button>
 <select id="deviceSelect" oninput="deviceSelectionChanged()"></select>
 <br />
 <!-- <textarea id="inputReport" cols="100" rows="5" disabled></textarea><br /> -->
 
-    <!-- <p >Score: <span id="score">0</span></p> -->
-    <!-- <h1 id="feedback"></h1> -->
-    <!-- <div id="arrow-canvas"></div> -->
+    <p >Score: <span id="score">0</span></p>
+    <h1 id="feedback"></h1>
+    <div id="arrow-canvas"></div>
     <!-- <audio controls src="assets/song.mp3"></audio> -->
-    <!-- <audio controls src="assets/audio/Heaven.OGG"></audio> -->
-
-
-    <div id="background-canvas-container"></div>
-    <div id="title-canvas-container"></div>
-    <div id="experimental-canvas-container"></div>
-
-
+    <audio controls src="assets/audio/Heaven.OGG"></audio>
   </main>
 
 
