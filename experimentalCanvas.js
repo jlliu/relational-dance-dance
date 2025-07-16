@@ -752,6 +752,11 @@ var arrowScene = function (p) {
           yPos < hitArrowObjs["left"].yPos + 40
         ) {
           updateHit("ok", note);
+          if (!part1HoldsDone && cueCount == 46) {
+            // Can we set a timer for the beat to start?
+            hideHoldTexts();
+            resetForPart2();
+          }
         }
 
         // Lift is TOO EARLY - Failed

@@ -46,9 +46,10 @@
       Click to start
     </button> -->
 
-<button onclick="connectDevice()">Connect</button>
-<select id="deviceSelect" oninput="deviceSelectionChanged()"></select>
-<br />
+    <!-- <button onclick="connectDevice()">Connect</button>
+<select id="deviceSelect" oninput="deviceSelectionChanged()"></select> -->
+
+
 <!-- <textarea id="inputReport" cols="100" rows="5" disabled></textarea><br /> -->
 
     <!-- <p >Score: <span id="score">0</span></p> -->
@@ -61,6 +62,15 @@
     <div id="background-canvas-container"></div>
     <div id="title-canvas-container"></div>
     <div id="experimental-canvas-container"></div>
+
+
+    <div id="connectDevice-overlay">
+      <h1>Connect to the game pad!</h1>
+      <h2>Select "L-Tek Dance Pad PRO"</h2>
+      <button onclick="connectDevice()">Connect</button>
+      <select id="deviceSelect" oninput="deviceSelectionChanged()"></select>
+      <br />
+    </div>
 
 
   </main>

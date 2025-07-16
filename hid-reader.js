@@ -24,6 +24,11 @@ const addDevice = async (device) => {
   console.log(`device connected: ${device.productName}`);
   if (selectedDevice === null) await selectDevice(device);
   // updateDeviceMenu();
+
+  if (device.productName == `L-TEK Dance Pad PRO`) {
+    hideOverlay();
+    selectDevice(device);
+  }
 };
 
 // Removes |device| from |connectedDevices|.
@@ -34,6 +39,9 @@ const removeDevice = (device) => {
       connectedDevices.splice(i, 1);
       console.log(`device disconnected: ${device.productName}`);
       // updateDeviceMenu();
+      if (device.productName == `L-TEK Dance Pad PRO`) {
+        showOverlay();
+      }
     }
   }
 };
@@ -230,4 +238,26 @@ window.onload = async () => {
   // Fetch the list of connected devices.
   const devices = await navigator.hid.getDevices();
   for (let device of devices) await addDevice(device);
+
+  console.log(connectedDevices);
+
+  if (connectedDevices.length) {
+    // make you connect if nothing is connected
+    connectedDevices.forEach(function (device) {
+      if (device.productName == `L-TEK Dance Pad PRO`) {
+        // We are connected to L-Tek already
+        hideOverlay();
+      }
+    });
+  }
 };
+
+function hideOverlay() {
+  let connectOverlay = document.querySelector("#connectDevice-overlay");
+  connectOverlay.style.display = "none";
+}
+
+function showOverlay() {
+  let connectOverlay = document.querySelector("#connectDevice-overlay");
+  connectOverlay.style.display = "flex";
+}
