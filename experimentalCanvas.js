@@ -21,7 +21,7 @@ part1_bg_player.loop = true;
 part1_bg_player.fadeIn = 2;
 
 const part2_bg_player = new Tone.Player(
-  "assets/audio/RDD_p2_background.mp3"
+  "assets/audio/RDD_p2_background_v2.mp3"
 ).toDestination();
 part2_bg_player.loop = false;
 
@@ -1475,19 +1475,17 @@ var arrowScene = function (p) {
     scaleRatio = canvasWidth / 640;
   }
 
-  function sendBackgroundCueEvent (cueCount){
-            let backgroundCueEvent = new CustomEvent(
-          "backgroundCue",
-          { detail: cueCount }
-        );
-        window.dispatchEvent(backgroundCueEvent);
+  function sendBackgroundCueEvent(cueCount) {
+    let backgroundCueEvent = new CustomEvent("backgroundCue", {
+      detail: cueCount,
+    });
+    window.dispatchEvent(backgroundCueEvent);
   }
 
   function triggerNarrative(cueCount) {
     if (cueCount == 1) {
       let newText = new NarrativeText(cueCount, "I");
       newText.animate();
-
     }
     if (cueCount == 2) {
       let newText = new NarrativeText(cueCount, "find");
@@ -1566,7 +1564,6 @@ var arrowScene = function (p) {
     if (cueCount == 17) {
       let newText = new NarrativeText(cueCount, "I", 44, 75);
       newText.animate();
-
     }
     if (cueCount == 18) {
       let newText = new NarrativeText(cueCount, "used", 97, 124);
@@ -1798,7 +1795,6 @@ var arrowScene = function (p) {
       let text1 = new NarrativeText(cueCount, "There");
       text1.animate();
       sendBackgroundCueEvent(cueCount);
-
     }
     if (cueCount == 68) {
       let text1 = new NarrativeText(cueCount, "is");
@@ -1930,6 +1926,7 @@ var arrowScene = function (p) {
         "hold"
       );
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 98) {
       let text1 = new NarrativeText(
@@ -1942,6 +1939,7 @@ var arrowScene = function (p) {
       let text2 = new NarrativeText(cueCount, "of mine?", null, 250, "hold");
       text1.animate();
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     //I want to rupture
     if (cueCount == 99) {
@@ -1956,6 +1954,7 @@ var arrowScene = function (p) {
       );
       text1.animate();
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     //I want to repair
     if (cueCount == 100) {
@@ -1970,6 +1969,7 @@ var arrowScene = function (p) {
       );
       text1.animate();
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     //I want to hurt
     if (cueCount == 101) {
@@ -1984,6 +1984,7 @@ var arrowScene = function (p) {
       );
       text1.animate();
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     //I want to heal
     if (cueCount == 102) {
@@ -1998,6 +1999,7 @@ var arrowScene = function (p) {
       );
       text1.animate();
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     //I want to be won
     if (cueCount == 103) {
@@ -2011,6 +2013,7 @@ var arrowScene = function (p) {
       let text2 = new NarrativeText(cueCount, "won", null, 250, "hold", "pink");
       text1.animate();
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     //I want to be lost
     if (cueCount == 104) {
@@ -2031,6 +2034,7 @@ var arrowScene = function (p) {
       );
       text1.animate();
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     //I want to be held
     if (cueCount == 105) {
@@ -2051,6 +2055,7 @@ var arrowScene = function (p) {
       );
       text1.animate();
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     //I want to be released
     if (cueCount == 106) {
@@ -2071,6 +2076,7 @@ var arrowScene = function (p) {
       );
       text1.animate();
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     // I wanted to become an artist
     if (cueCount == 107) {
@@ -2084,6 +2090,8 @@ var arrowScene = function (p) {
       );
       text1.animate();
       text2.animate();
+
+      sendBackgroundCueEvent(cueCount);
     }
     // I wanted redemption
     if (cueCount == 108) {
@@ -2091,6 +2099,8 @@ var arrowScene = function (p) {
       let text2 = new NarrativeText(cueCount, "redemption", null, 250, "hold");
       text1.animate();
       text2.animate();
+
+      sendBackgroundCueEvent(cueCount);
     }
     // To make something
     if (cueCount == 109) {
@@ -2098,34 +2108,46 @@ var arrowScene = function (p) {
       let text2 = new NarrativeText(cueCount, "something", null, 250, "hold");
       text1.animate();
       text2.animate();
+
+      sendBackgroundCueEvent(cueCount);
     }
-    // To make something
+    // from nothing
     if (cueCount == 110) {
       let text1 = new NarrativeText(cueCount, "From", null, 171, "hold");
       let text2 = new NarrativeText(cueCount, "nothing", null, 250, "hold");
       text1.animate();
       text2.animate();
+
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Now I see I've been
     if (cueCount == 111) {
       let text1 = new NarrativeText(cueCount, "Now", 40, 10);
       text1.animate();
+
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 112) {
       let text1 = new NarrativeText(cueCount, "Now I", 40, 10);
       text1.animate();
+
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 113) {
       let text1 = new NarrativeText(cueCount, "Now I see", 40, 10);
       text1.animate();
+
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 114) {
       let text1 = new NarrativeText(cueCount, "Now I see I've", 40, 10);
       text1.animate();
+
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 115) {
@@ -2133,6 +2155,8 @@ var arrowScene = function (p) {
       text1.animate();
       let text2 = new NarrativeText(cueCount, "been", 160, 95);
       text2.animate();
+
+      sendBackgroundCueEvent(cueCount);
     }
 
     // The con sis tent and
@@ -2142,6 +2166,7 @@ var arrowScene = function (p) {
       text1.animate();
       let text2 = new NarrativeText(cueCount, "been the", 160, 95);
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 117) {
@@ -2151,6 +2176,7 @@ var arrowScene = function (p) {
       text2.animate();
       let text3 = new NarrativeText(cueCount, "con", 40, 171);
       text3.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 118) {
       let text1 = new NarrativeText(cueCount, "Now I see I've", 40, 10);
@@ -2159,6 +2185,7 @@ var arrowScene = function (p) {
       text2.animate();
       let text3 = new NarrativeText(cueCount, "consis", 40, 171);
       text3.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 119) {
       let text1 = new NarrativeText(cueCount, "Now I see I've", 40, 10);
@@ -2167,6 +2194,7 @@ var arrowScene = function (p) {
       text2.animate();
       let text3 = new NarrativeText(cueCount, "consistent", 40, 171);
       text3.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 120) {
       let text1 = new NarrativeText(cueCount, "Now I see I've", 40, 10);
@@ -2175,6 +2203,7 @@ var arrowScene = function (p) {
       text2.animate();
       let text3 = new NarrativeText(cueCount, "consistent and", 40, 171);
       text3.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     //re lia ble per son
 
@@ -2187,6 +2216,7 @@ var arrowScene = function (p) {
       text3.animate();
       let text4 = new NarrativeText(cueCount, "re", 160, 250);
       text4.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 122) {
@@ -2198,6 +2228,7 @@ var arrowScene = function (p) {
       text3.animate();
       let text4 = new NarrativeText(cueCount, "relia", 160, 250);
       text4.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 123) {
@@ -2209,6 +2240,7 @@ var arrowScene = function (p) {
       text3.animate();
       let text4 = new NarrativeText(cueCount, "reliable", 160, 250);
       text4.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 124) {
@@ -2222,6 +2254,7 @@ var arrowScene = function (p) {
       text4.animate();
       let text5 = new NarrativeText(cueCount, "per", 60, 308);
       text5.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 125) {
@@ -2235,6 +2268,7 @@ var arrowScene = function (p) {
       text4.animate();
       let text5 = new NarrativeText(cueCount, "person", 60, 308);
       text5.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // I've nee ded all along
@@ -2250,6 +2284,7 @@ var arrowScene = function (p) {
       text4.animate();
       let text5 = new NarrativeText(cueCount, "person I've", 100, 308);
       text5.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 127) {
@@ -2265,6 +2300,7 @@ var arrowScene = function (p) {
       text5.animate();
       let text6 = new NarrativeText(cueCount, "need", 0, 384);
       text6.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 128) {
@@ -2280,6 +2316,7 @@ var arrowScene = function (p) {
       text5.animate();
       let text6 = new NarrativeText(cueCount, "needed", 0, 384);
       text6.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 129) {
       let text1 = new NarrativeText(cueCount, "Now I see I've", 40, 10);
@@ -2294,6 +2331,7 @@ var arrowScene = function (p) {
       text5.animate();
       let text6 = new NarrativeText(cueCount, "needed all", 0, 384);
       text6.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     if (cueCount == 130) {
@@ -2309,6 +2347,7 @@ var arrowScene = function (p) {
       text5.animate();
       let text6 = new NarrativeText(cueCount, "need all along", 0, 384);
       text6.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // I create
@@ -2316,12 +2355,14 @@ var arrowScene = function (p) {
       let text1 = new NarrativeText(cueCount, "I create to", null, 171, "hold");
 
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // to see
     if (cueCount == 132) {
       let text1 = new NarrativeText(cueCount, "see", null, 250, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // I create
@@ -2329,6 +2370,7 @@ var arrowScene = function (p) {
       let text1 = new NarrativeText(cueCount, "I create to", null, 171, "hold");
 
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     //to be seen
@@ -2343,6 +2385,7 @@ var arrowScene = function (p) {
       );
 
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Can you see me?
@@ -2350,18 +2393,22 @@ var arrowScene = function (p) {
     if (cueCount == 135) {
       let text1 = new NarrativeText(cueCount, "Can", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 136) {
       let text1 = new NarrativeText(cueCount, "Can you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 137) {
       let text1 = new NarrativeText(cueCount, "see", 180, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 138) {
       let text1 = new NarrativeText(cueCount, "me?", 340, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Can you see you?
@@ -2369,18 +2416,22 @@ var arrowScene = function (p) {
     if (cueCount == 139) {
       let text1 = new NarrativeText(cueCount, "Can", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 140) {
       let text1 = new NarrativeText(cueCount, "Can you", 340);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 141) {
       let text1 = new NarrativeText(cueCount, "see", 160, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 142) {
       let text1 = new NarrativeText(cueCount, "you?", 320, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Can you reach me?
@@ -2388,18 +2439,22 @@ var arrowScene = function (p) {
     if (cueCount == 143) {
       let text1 = new NarrativeText(cueCount, "Can", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 144) {
       let text1 = new NarrativeText(cueCount, "Can you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 145) {
       let text1 = new NarrativeText(cueCount, "reach", 143, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 146) {
       let text1 = new NarrativeText(cueCount, "me?", 383, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Can you reach you?
@@ -2407,37 +2462,45 @@ var arrowScene = function (p) {
     if (cueCount == 147) {
       let text1 = new NarrativeText(cueCount, "Can", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 148) {
       let text1 = new NarrativeText(cueCount, "Can you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 149) {
       let text1 = new NarrativeText(cueCount, "reach", 120, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 150) {
       let text1 = new NarrativeText(cueCount, "you?", 360, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     // Can you feel me?
 
     if (cueCount == 151) {
       let text1 = new NarrativeText(cueCount, "Can", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 152) {
       let text1 = new NarrativeText(cueCount, "Can you", 180);
 
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 153) {
       let text1 = new NarrativeText(cueCount, "feel", 160, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 154) {
       let text1 = new NarrativeText(cueCount, "me?", 360, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Can you feel you?
@@ -2445,18 +2508,22 @@ var arrowScene = function (p) {
     if (cueCount == 155) {
       let text1 = new NarrativeText(cueCount, "Can", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 156) {
       let text1 = new NarrativeText(cueCount, "Can you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 157) {
       let text1 = new NarrativeText(cueCount, "feel", 140, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 158) {
       let text1 = new NarrativeText(cueCount, "you?", 340, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Can you know ne?
@@ -2464,63 +2531,77 @@ var arrowScene = function (p) {
     if (cueCount == 159) {
       let text1 = new NarrativeText(cueCount, "Can", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 160) {
       let text1 = new NarrativeText(cueCount, "Can you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 161) {
       let text1 = new NarrativeText(cueCount, "know", 140, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 162) {
       let text1 = new NarrativeText(cueCount, "me?", 360, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Can you feel you?
     if (cueCount == 163) {
       let text1 = new NarrativeText(cueCount, "Can", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 164) {
       let text1 = new NarrativeText(cueCount, "Can you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 165) {
       let text1 = new NarrativeText(cueCount, "know", 140, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 166) {
       let text1 = new NarrativeText(cueCount, "you?", 340, null, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Will you run?
     if (cueCount == 167) {
       let text1 = new NarrativeText(cueCount, "Will", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 168) {
       let text1 = new NarrativeText(cueCount, "Will you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 169) {
       let text1 = new NarrativeText(cueCount, "run", 240, null, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 170) {
       let text1 = new NarrativeText(cueCount, "?", 360, null, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     // Will you stay?
     if (cueCount == 171) {
       let text1 = new NarrativeText(cueCount, "Will", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 172) {
       let text1 = new NarrativeText(cueCount, "Will you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 173) {
       let text1 = new NarrativeText(
@@ -2532,19 +2613,23 @@ var arrowScene = function (p) {
         "pink"
       );
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 174) {
       let text1 = new NarrativeText(cueCount, "?", 380, null, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     // Will you stop?
     if (cueCount == 175) {
       let text1 = new NarrativeText(cueCount, "Will", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 176) {
       let text1 = new NarrativeText(cueCount, "Will you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 177) {
       let text1 = new NarrativeText(
@@ -2556,19 +2641,23 @@ var arrowScene = function (p) {
         "pink"
       );
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 178) {
       let text1 = new NarrativeText(cueCount, "?", 380, null, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     // Will you play?
     if (cueCount == 179) {
       let text1 = new NarrativeText(cueCount, "Will", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 180) {
       let text1 = new NarrativeText(cueCount, "Will you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 181) {
       let text1 = new NarrativeText(
@@ -2580,19 +2669,23 @@ var arrowScene = function (p) {
         "pink"
       );
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 182) {
       let text1 = new NarrativeText(cueCount, "?", 380, null, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     // Will you fight?
     if (cueCount == 183) {
       let text1 = new NarrativeText(cueCount, "Will", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 184) {
       let text1 = new NarrativeText(cueCount, "Will you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 185) {
       let text1 = new NarrativeText(
@@ -2604,19 +2697,24 @@ var arrowScene = function (p) {
         "pink"
       );
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 186) {
       let text1 = new NarrativeText(cueCount, "?", 400, null, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
+
     // Will you flee?
     if (cueCount == 187) {
       let text1 = new NarrativeText(cueCount, "Will", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 188) {
       let text1 = new NarrativeText(cueCount, "Will you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 189) {
       let text1 = new NarrativeText(
@@ -2628,19 +2726,23 @@ var arrowScene = function (p) {
         "pink"
       );
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 190) {
       let text1 = new NarrativeText(cueCount, "?", 380, null, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     // Will you fawn?
     if (cueCount == 191) {
       let text1 = new NarrativeText(cueCount, "Will", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 192) {
       let text1 = new NarrativeText(cueCount, "Will you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 193) {
       let text1 = new NarrativeText(
@@ -2652,19 +2754,23 @@ var arrowScene = function (p) {
         "pink"
       );
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 194) {
       let text1 = new NarrativeText(cueCount, "?", 380, null, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     // Will you freeze?
     if (cueCount == 195) {
       let text1 = new NarrativeText(cueCount, "Will", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 196) {
       let text1 = new NarrativeText(cueCount, "Will you", 180);
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 197) {
       let text1 = new NarrativeText(
@@ -2676,16 +2782,19 @@ var arrowScene = function (p) {
         "pink"
       );
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 198) {
       let text1 = new NarrativeText(cueCount, "?", 420, null, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Lose me
     if (cueCount == 199) {
       let text1 = new NarrativeText(cueCount, "Lose", null, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 200) {
       let text1 = new NarrativeText(
@@ -2699,24 +2808,28 @@ var arrowScene = function (p) {
       text1.animate();
       let text2 = new NarrativeText(cueCount, "me", null, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Win me
     if (cueCount == 201) {
       let text1 = new NarrativeText(cueCount, "Win", null, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 202) {
       let text1 = new NarrativeText(cueCount, "Win", null, null, "hold");
       text1.animate();
       let text2 = new NarrativeText(cueCount, "me", null, 250);
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Hurt me
     if (cueCount == 203) {
       let text1 = new NarrativeText(cueCount, "Hurt", null, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 204) {
       let text1 = new NarrativeText(
@@ -2730,100 +2843,119 @@ var arrowScene = function (p) {
       text1.animate();
       let text2 = new NarrativeText(cueCount, "me", null, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Heal me
     if (cueCount == 205) {
       let text1 = new NarrativeText(cueCount, "Heal", null, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 206) {
       let text1 = new NarrativeText(cueCount, "Heal", null, 171, "hold");
       text1.animate();
       let text2 = new NarrativeText(cueCount, "me", null, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Love me
     if (cueCount == 207) {
       let text1 = new NarrativeText(cueCount, "Lo", 240, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 208) {
       let text1 = new NarrativeText(cueCount, "ve", 320, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 209) {
       let text1 = new NarrativeText(cueCount, "Lo", 240, 171, "hold", "pink");
       text1.animate();
       let text2 = new NarrativeText(cueCount, "m", 280, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 210) {
       let text1 = new NarrativeText(cueCount, "ve", 320, 171, "hold", "pink");
       text1.animate();
       let text2 = new NarrativeText(cueCount, "e", 320, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Fear me
     if (cueCount == 211) {
       let text1 = new NarrativeText(cueCount, "Fe", 240, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 212) {
       let text1 = new NarrativeText(cueCount, "ar", 320, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 213) {
       let text1 = new NarrativeText(cueCount, "Fe", 240, 171, "hold", "pink");
       text1.animate();
       let text2 = new NarrativeText(cueCount, "m", 280, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 214) {
       let text1 = new NarrativeText(cueCount, "ar", 320, 171, "hold", "pink");
       text1.animate();
       let text2 = new NarrativeText(cueCount, "e", 320, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Hold me
     if (cueCount == 215) {
       let text1 = new NarrativeText(cueCount, "Ho", 240, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 216) {
       let text1 = new NarrativeText(cueCount, "ld", 320, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 217) {
       let text1 = new NarrativeText(cueCount, "Ho", 240, 171, "hold", "pink");
       text1.animate();
       let text2 = new NarrativeText(cueCount, "m", 280, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 218) {
       let text1 = new NarrativeText(cueCount, "ld", 320, 171, "hold", "pink");
       text1.animate();
       let text2 = new NarrativeText(cueCount, "e", 320, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
 
     // Release me
     if (cueCount == 219) {
       let text1 = new NarrativeText(cueCount, "Re", 180, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 220) {
       let text1 = new NarrativeText(cueCount, "lease", 260, 171, null, "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 221) {
       let text1 = new NarrativeText(cueCount, "Re", 180, 171, "hold", "pink");
       text1.animate();
+      sendBackgroundCueEvent(cueCount);
       let text2 = new NarrativeText(cueCount, "m", 280, 250, "hold");
       text2.animate();
+      sendBackgroundCueEvent(cueCount);
     }
     if (cueCount == 222) {
       let text1 = new NarrativeText(

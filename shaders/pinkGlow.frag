@@ -12,17 +12,19 @@ vec2 resolution = vec2(640,480);
 
 vec4 pink = vec4(1.0, 0, .35, 1.0);
 
-vec4 yellow = vec4(235./255., 255./255., 82./255., 1.0);
+vec4 white = vec4(1.0, 1.0, 1.0, 1.0);
 
-vec4 blue = vec4(85./255., 229./255., 255./255., 1.0);
+vec4 yellow = vec4(220./255., 249./255., 82./255., 1.0);
+
+vec4 blue = vec4(0./255., 192./255., 226./255., 1.0);
 
 vec4 purple = vec4(91./255., 22./255., 201./255., 1.0);
 
-vec4 green = vec4(0./255., 255./255., 89./255., 1.0);
+vec4 green = vec4(0./255., 210./255., 35./255., 1.0);
 
 vec4 dark = vec4(12./255., 15./255., 68./255., 1.0);
 
-vec4 gold = vec4(255./255., 192./255., 19./255., 1.0);
+vec4 orange = vec4(231./255., 131./255., 0./255., 1.0);
 
 uniform int u_transitionStarted;
 
@@ -33,6 +35,8 @@ uniform int u_narrativeCue;
 vec2 pixelated_resolution = vec2(64,48);
 
 vec4 baseColor = pink;
+
+float m_r = 1.0; float m_g = 1.0; float m_b = 1.0;
 
 
 float random (vec2 st) {
@@ -63,7 +67,7 @@ float distanceFromCenter(vec2 uv){
 
 }
 
-void respondToNarrativeCue(){
+void respondToNarrativeCue(vec2 uv){
 //I
   if (u_narrativeCue == 47){
     baseColor = yellow;
@@ -87,12 +91,12 @@ void respondToNarrativeCue(){
 
   //in
    else  if (u_narrativeCue == 51){
-    baseColor = dark;
+    baseColor = pink;
   }
 
   //the
     else if (u_narrativeCue == 52){
-    baseColor = gold;
+    baseColor = orange;
   }
 
   //truth
@@ -131,29 +135,162 @@ void respondToNarrativeCue(){
 
 // clench jaws
  else  if (u_narrativeCue == 77){
-    baseColor = yellow;
+    baseColor = purple;
 }
 
 // ache of heart
  else  if (u_narrativeCue == 87){
-    baseColor = dark;
+    baseColor = pink;
 }
 
 
 // What do I want
  else  if (u_narrativeCue == 97){
+    baseColor = dark;
+  }
+
+  // In this body of mine
+ else  if (u_narrativeCue == 98){
+    baseColor = dark;
+  }
+
+   // I want to...
+ else  if (u_narrativeCue == 99){
     baseColor = pink;
   }
 
-  // ache of heart
- else  if (u_narrativeCue == 98){
-    baseColor = gold;
+   else  if (u_narrativeCue == 100){
+    baseColor = purple;
+  }
+
+   else  if (u_narrativeCue == 101){
+    baseColor = green;
+  }
+
+   else  if (u_narrativeCue == 102){
+    baseColor = blue;
+  }
+
+   else  if (u_narrativeCue == 103){
+    baseColor = orange;
+  }
+   else  if (u_narrativeCue == 104){
+    baseColor = pink;
+  }
+   else  if (u_narrativeCue == 105){
+    baseColor = yellow;
+  }
+   else  if (u_narrativeCue == 106){
+    baseColor = purple;
+  }
+
+  // i wanted to become an artist
+  else if (u_narrativeCue >= 107 && u_narrativeCue <=110){
+
+    int stepsToEnd = 110 - u_narrativeCue;
+    float brightness = .5-(float(stepsToEnd) / float(4));
+    baseColor = vec4(brightness,brightness,brightness,1.0)+dark;
+  }
+
+
+  // now i see .. all laong
+  else if (u_narrativeCue >= 111 && u_narrativeCue <=130){
+    int stepsToEnd = 130 - u_narrativeCue;
+    float brightness = float(stepsToEnd) / float(29);
+    baseColor = vec4(brightness,brightness,brightness,1.0)+pink;
+  }
+ else  if (u_narrativeCue >= 131 && u_narrativeCue <=134){
+  baseColor = pink;
+  }
+
+  // Can you part 1
+  else  if (u_narrativeCue >= 135 && u_narrativeCue <=138){
+
+  baseColor = pink;
+  baseColor.x = sin(u_time*2.0);
+  }
+
+   else  if (u_narrativeCue >= 139 && u_narrativeCue <=142){
+
+  baseColor = blue;
+  baseColor.y = sin(u_time*2.0);
+  }
+
+
+   else  if (u_narrativeCue >= 143 && u_narrativeCue <=146){
+
+  baseColor = purple;
+  baseColor.y = sin(u_time*2.0);
+  }
+
+  else  if (u_narrativeCue >= 147 && u_narrativeCue <=150){
+
+  baseColor = green;
+  baseColor.z = sin(u_time*2.0);
+  }
+
+  // Can you pt 2
+  else  if (u_narrativeCue >= 151 && u_narrativeCue <=154){
+  baseColor = vec4(uv.x-.2, uv.y-.2, 0.8, 1.0);
+  }
+
+    else  if (u_narrativeCue >= 155 && u_narrativeCue <=158){
+  baseColor = vec4(0.8, uv.x-.2, uv.y-.2, 1.0);
+  }
+
+     else  if (u_narrativeCue >= 159 && u_narrativeCue <=162){
+  baseColor = vec4(uv.y-.2, 0.8, uv.x-.2, 1.0);
+  }
+
+  else  if (u_narrativeCue >= 163 && u_narrativeCue <=166){
+  baseColor = vec4(uv.x-.2, 0.8, (1.0-uv.x), 1.0);
+  }
+
+  // Will you..
+
+  else  if (u_narrativeCue >= 167 && u_narrativeCue <=170){
+  baseColor = vec4(sin(u_time*2.), uv.x, uv.y, 1.0);
+  }
+
+  else  if (u_narrativeCue >= 171 && u_narrativeCue <=174){
+   baseColor = vec4(uv.x,sin(u_time*2.), uv.y, 1.0);
+  }
+
+
+  else  if (u_narrativeCue >= 175 && u_narrativeCue <=178){
+   baseColor = vec4(uv.y,uv.x, sin(u_time*2.), 1.0);
+  }
+
+
+  else  if (u_narrativeCue >= 179 && u_narrativeCue <=182){
+   baseColor = vec4(uv.y,sin(u_time*2.), uv.x, 1.0);
+  }
+
+  // Will you part 2
+  else  if (u_narrativeCue >= 183 && u_narrativeCue <=186){
+   baseColor = vec4(sin(u_time*2.), uv.x, uv.y, 1.0);
+  }
+
+
+  else  if (u_narrativeCue >= 187 && u_narrativeCue <=190){
+   baseColor = vec4(uv.x,sin(u_time*2.), uv.y, 1.0);
+  }
+
+    else  if (u_narrativeCue >= 191 && u_narrativeCue <=194){
+  baseColor = vec4(uv.y,uv.x, sin(u_time*2.), 1.0);
+  }
+
+      else  if (u_narrativeCue >= 195 && u_narrativeCue <=198){
+   baseColor = vec4(uv.y,sin(u_time*2.), uv.x, 1.0);
+  }
+
+  //lose me
+   else  if (u_narrativeCue >= 199 && u_narrativeCue <=222){
+   baseColor = vec4(cos(u_time*.2),sin(u_time*.5), sin(u_time*.1+3.), 1.0);
   }
 }
 
 void main() {
-
-
 
   vec2 uv = gl_FragCoord.xy / resolution;
 	uv.y = 1.0 - uv.y;
@@ -188,20 +325,25 @@ void main() {
 
 
   if (u_transitionStarted == 1){
+    baseColor = dark;
     transitionBrightness =  0.8-0.8*u_percentageElapsed;
 
   }
 
-  respondToNarrativeCue();
+  respondToNarrativeCue(uv);
 
 
 
    radialBrightness = (1.0-distanceFromCenter(uv))*.7;
 
 
-  float r = baseColor.x + rays1.x*.2 + rays2.x*.3 + radialBrightness + transitionBrightness;
-  float g = baseColor.y + rays1.y*.2 + rays2.y*.3 + radialBrightness + transitionBrightness;
-  float b = baseColor.z + rays1.z*.2 + rays2.z*.3 + radialBrightness + transitionBrightness;
+
+
+
+
+  float r = m_r*baseColor.x + rays1.x*.2 + rays2.x*.3 + radialBrightness + transitionBrightness;
+  float g = m_g*baseColor.y + rays1.y*.2 + rays2.y*.3 + radialBrightness + transitionBrightness;
+  float b = m_b*baseColor.z + rays1.z*.2 + rays2.z*.3 + radialBrightness + transitionBrightness;
 
   float a = 1.0;
 
