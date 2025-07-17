@@ -18,24 +18,8 @@
    <!-- <script src="songParser.js" defer></script> -->
 
 
-     <script src="hid-reader.js" defer></script>
-  <script src="experimentalSong.js" defer></script>
-  <script src="backgroundCanvas.js" defer></script>
-  <script src="titleScreenCanvas.js" defer></script>
-  <script src="experimentalCanvas.js" defer></script>
 
-  <!-- <script src="songs/curryup.js" defer></script>
-  <script src="songs/heaven.js" defer></script> -->
-  <script src="helpers.js" defer></script>
-  <!-- <script src="arrowCanvas.js" defer></script> -->
-  <!-- <script src="game1.js" defer></script>
-  <script src="game2.js" defer></script>
-  <script src="game3.js" defer></script>
-  <script src="game4.js" defer></script>
-  <script src="game5.js" defer></script>
-  <script src="game6.js" defer></script>
-  <script src="game7.js" defer></script>
-  <script src="sketch_end.js" defer></script> -->
+
 
 </head>
 
@@ -63,8 +47,12 @@
     <div id="title-canvas-container"></div>
     <div id="experimental-canvas-container"></div>
 
+    <div id="enableAudio-overlay" class="overlay">
+      <h1>Tap spacebar to start</h1>
+      <br />
+    </div>
 
-    <div id="connectDevice-overlay">
+    <div id="connectDevice-overlay" class="overlay">
       <h1>Connect to the game pad!</h1>
       <h2>Select "L-Tek Dance Pad PRO"</h2>
       <button onclick="connectDevice()">Connect</button>
@@ -76,6 +64,13 @@
   </main>
 
 
+
+  <script src="helpers.js" defer></script>
+     <script src="hid-reader.js" defer></script>
+  <script src="experimentalSong.js" defer></script>
+  <script src="backgroundCanvas.js" defer></script>
+  <script src="titleScreenCanvas.js" defer></script>
+  <script src="experimentalCanvas.js" defer></script>
 </body>
 
 </html>

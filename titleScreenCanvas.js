@@ -1,3 +1,5 @@
+const audioCtx = new AudioContext();
+
 // Code for title screen
 
 const title_player = new Tone.Player(
@@ -5,9 +7,11 @@ const title_player = new Tone.Player(
   startSong
 ).toDestination();
 title_player.loop = true;
+title_player.volume.value = -5;
 title_player.fadeOut = 4;
 
 function startSong() {
+  title_player.stop();
   title_player.start();
 }
 var title = function (p) {
@@ -83,6 +87,15 @@ var title = function (p) {
 
     drawImageToScale(logoImg, 94, 176);
 
+    // If auto is not running, display the click to start
+
+    if (audioCtx.state == "running") {
+      let enableAudioOverlay = document.querySelector("#enableAudio-overlay");
+      enableAudioOverlay.style.display = "none";
+    } else {
+      let enableAudioOverlay = document.querySelector("#enableAudio-overlay");
+      enableAudioOverlay.style.display = "flex";
+    }
     if (Math.floor(clock.seconds) % 2 == 0 && allCanvasesLoaded) {
       drawImageToScale(startTextImg, 92, 420);
     }
@@ -102,7 +115,8 @@ var title = function (p) {
   function padOrKeypress(direction) {
     // let hitSuccessful = assessHit(direction, "press");
     // hitArrowObjs[direction].press(hitSuccessful);
-    if (!gameStarted && allCanvasesLoaded) {
+    let songStarted = title_player.state == "started";
+    if (!gameStarted && allCanvasesLoaded && songStarted) {
       const startGameEvent = new Event("startGame");
       window.dispatchEvent(startGameEvent);
       gameStarted = true;
@@ -131,23 +145,36 @@ var title = function (p) {
     if (e.repeat) {
       return;
     }
-    if (
-      e.code == "ArrowLeft" ||
-      e.code == "ArrowRight" ||
-      e.code == "ArrowUp" ||
-      e.code == "ArrowDown"
-    ) {
-      if (e.code == "ArrowLeft") {
-        padOrKeypress("left");
+
+    // Add logic for enabling audio context
+    if (e.code == "Space") {
+      if (audioCtx.state == "suspended") {
+        audioCtx.resume();
+        startSong();
       }
-      if (e.code == "ArrowRight") {
-        padOrKeypress("right");
-      }
-      if (e.code == "ArrowUp") {
-        padOrKeypress("up");
-      }
-      if (e.code == "ArrowDown") {
-        padOrKeypress("down");
+    }
+
+    let songStarted =
+      title_player.state == "started" && audioCtx.state == "running";
+    if (songStarted) {
+      if (
+        e.code == "ArrowLeft" ||
+        e.code == "ArrowRight" ||
+        e.code == "ArrowUp" ||
+        e.code == "ArrowDown"
+      ) {
+        if (e.code == "ArrowLeft") {
+          padOrKeypress("left");
+        }
+        if (e.code == "ArrowRight") {
+          padOrKeypress("right");
+        }
+        if (e.code == "ArrowUp") {
+          padOrKeypress("up");
+        }
+        if (e.code == "ArrowDown") {
+          padOrKeypress("down");
+        }
       }
     }
   });
@@ -238,165 +265,6 @@ var title = function (p) {
       }
     }
   }
-
-  class Draggable {
-    constructor(
-      defaultImg,
-      hoverImg,
-      xPos,
-      yPos,
-      xFinal,
-      yFinal,
-      xRange,
-      yRange
-    ) {
-      this.x = xPos;
-      this.y = yPos;
-      this.buttonDefault = defaultImg;
-      this.buttonHover = hoverImg;
-      this.width = this.buttonDefault.width;
-      this.height = this.buttonDefault.height;
-      this.mouseInBounds = false;
-      this.interactive = true;
-      this.visible = true;
-      this.dragging = false;
-      this.xCurrent = this.x;
-      this.yCurrent = this.y;
-      this.xFinal = xFinal;
-      this.yFinal = yFinal;
-      this.xRange = xRange;
-      this.yRange = yRange;
-      let _this = this;
-
-      //once the single mousedown event, this item drags everywhere until we drop it
-      thisCanvas.addEventListener("mousedown", function (e) {
-        if (_this.mouseInBounds) {
-          _this.dragging = true;
-          currentlyDragging = true;
-          clickedObjects.forEach(function (value) {
-            value.intendingToClick = false;
-            clickedObjects = [];
-          });
-        }
-      });
-
-      thisCanvas.addEventListener("mouseup", function (e) {
-        // If dropped in the target area, then it's done
-        if (_this.mouseInBounds) {
-          _this.dragging = false;
-          currentlyDragging = false;
-          if (
-            mouse_x > xRange[0] * scaleRatio &&
-            mouse_x < xRange[1] * scaleRatio &&
-            mouse_y > yRange[0] * scaleRatio &&
-            mouse_y < yRange[1] * scaleRatio
-          ) {
-            _this.interactive = false;
-            pageFlipSound.start();
-            //Snap it into position if we don't make it disappear
-            if (_this.xFinal && _this.yFinal) {
-              _this.xCurrent = _this.xFinal;
-              _this.yCurrent = _this.yFinal;
-            } else {
-              _this.visible = false;
-            }
-          } else {
-            _this.xCurrent = _this.x;
-            _this.yCurrent = _this.y;
-          }
-        }
-      });
-    }
-
-    addClickEvent(clickFunction) {
-      let _this = this;
-      thisCanvas.addEventListener("click", function (e) {
-        if (_this.isMouseInBounds(e.offsetX, e.offsetY)) {
-          clickFunction();
-        }
-      });
-    }
-    isMouseInBounds() {
-      this.mouseInBounds =
-        !currentlyAnimating &&
-        this.interactive &&
-        mouse_x > this.xCurrent * scaleRatio &&
-        mouse_x < this.xCurrent * scaleRatio + this.width * scaleRatio &&
-        mouse_y > this.yCurrent * scaleRatio &&
-        mouse_y < this.yCurrent * scaleRatio + this.height * scaleRatio;
-      return this.mouseInBounds;
-    }
-
-    display() {
-      let imageToDraw = this.isMouseInBounds()
-        ? this.buttonHover
-        : this.buttonDefault;
-
-      if (this.mouseInBounds && this.interactive) {
-        cursorState = "grab";
-      }
-      if (this.dragging) {
-        cursorState = "hold";
-        this.xCurrent = Math.floor((mouse_x - this.width / 2) / scaleRatio);
-        this.yCurrent = Math.floor((mouse_y - this.height / 2) / scaleRatio);
-      }
-      if (this.visible) {
-        drawImageToScale(imageToDraw, this.xCurrent, this.yCurrent);
-      }
-    }
-  }
-
-  // HELPERS
-
-  // function setupNavigation() {
-  //   p.noLoop();
-  //   document.addEventListener("navigateFwd", (e) => {
-  //     if (currentSceneNum == thisSceneNum) {
-  //       gameEntered = true;
-  //       p.loop();
-  //     }
-  //   });
-  //   document.addEventListener("navigateBack", (e) => {
-  //     if (currentSceneNum == thisSceneNum + 1) {
-  //       gameEntered = true;
-  //       p.loop();
-  //     }
-  //   });
-  //   //Navigation stuff
-  //   rightButton = new Button(button_r_up, button_r_down, 503, 407);
-  //   leftButton = new Button(button_l_up, button_l_down, 37, 407);
-  //   rightButton.addClickEvent(function (e) {
-  //     if (currentlyAnimating == false) {
-  //       currentSceneNum++;
-  //       harpTransitionOutSound.start();
-  //       // We need to hide this.
-  //       storyCanvas.style.visibility = "visible";
-  //       storyCanvas.style.opacity = 1;
-  //       window.setTimeout(function () {
-  //         thisCanvas.style.visibility = "hidden";
-  //         storyMode = true;
-  //         p.noLoop();
-  //         hideCanvas();
-  //       }, 1000);
-  //       storyMode = true;
-  //     }
-  //   });
-  //   leftButton.addClickEvent(function (e) {
-  //     if (currentlyAnimating == false) {
-  //       harpTransitionOutSound.start();
-  //       // We need to hide this.
-  //       storyCanvas.style.visibility = "visible";
-  //       storyCanvas.style.opacity = 1;
-  //       window.setTimeout(function () {
-  //         thisCanvas.style.visibility = "hidden";
-  //         storyMode = true;
-  //         p.noLoop();
-  //         hideCanvas();
-  //       }, 1000);
-  //       storyMode = true;
-  //     }
-  //   });
-  // }
 
   function hideCanvas() {
     //Add things we want to do when we leave this scene

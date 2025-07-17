@@ -243,7 +243,7 @@ void respondToNarrativeCue(vec2 uv){
   }
 
   else  if (u_narrativeCue >= 163 && u_narrativeCue <=166){
-  baseColor = vec4(uv.x-.2, 0.8, (1.0-uv.x), 1.0);
+  baseColor = vec4(uv.x-.2, (1.0-uv.x), 0.4, 1.0);
   }
 
   // Will you..

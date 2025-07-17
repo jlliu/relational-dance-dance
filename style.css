@@ -58,7 +58,7 @@ audio{
   transition: 3s opacity;
 }
 
-#connectDevice-overlay{
+.overlay{
   background: rgba(0,0,0,0.8);
   position:absolute;
   width:100vw;
@@ -69,16 +69,24 @@ audio{
   justify-content:center;
 }
 
-#connectDevice-overlay h1 {
+#enableAudio-overlay{
+  display:none;
+}
+
+#connectDevice-overlay{
+  display:none;
+}
+
+.overlay h1 {
   font-size:6vw;
   font-family:Arial;
 }
-#connectDevice-overlay h2 {
+.overlay h2 {
   font-size:4vw;
   font-weight:normal;
   font-family:Arial;
 }
-#connectDevice-overlay button{
+.overlay button{
   font-size:30px;
   width:400px;
   margin: 30px auto;

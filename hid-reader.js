@@ -1,6 +1,8 @@
 let connectedDevices = [];
 let selectedDevice = null;
 
+let requireDancePad = false;
+
 // Formats an 8-bit integer |value| in hexadecimal with leading zeros.
 const hex8 = (value) => {
   return `00${value.toString(16)}`.substr(-2).toUpperCase();
@@ -239,16 +241,19 @@ window.onload = async () => {
   const devices = await navigator.hid.getDevices();
   for (let device of devices) await addDevice(device);
 
-  console.log(connectedDevices);
-
-  if (connectedDevices.length) {
-    // make you connect if nothing is connected
-    connectedDevices.forEach(function (device) {
-      if (device.productName == `L-TEK Dance Pad PRO`) {
-        // We are connected to L-Tek already
-        hideOverlay();
-      }
-    });
+  if (requireDancePad) {
+    showOverlay();
+    if (connectedDevices.length) {
+      // make you connect if nothing is connected
+      connectedDevices.forEach(function (device) {
+        if (device.productName == `L-TEK Dance Pad PRO`) {
+          // We are connected to L-Tek already
+          hideOverlay();
+        }
+      });
+    }
+  } else {
+    hideOverlay();
   }
 };
 
