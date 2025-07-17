@@ -122,24 +122,24 @@ void respondToNarrativeCue(vec2 uv){
 
 //There is wisdom chest
 
- else  if (u_narrativeCue == 57){
+ else  if (u_narrativeCue >= 57 && u_narrativeCue <67){
     baseColor = green;
 }
 
   //There is wisdom chest
 
- else  if (u_narrativeCue == 67){
+ else  if (u_narrativeCue >= 67 && u_narrativeCue <77){
     baseColor = blue;
 }
 
 
 // clench jaws
- else  if (u_narrativeCue == 77){
+ else  if (u_narrativeCue >= 77 && u_narrativeCue <87){
     baseColor = purple;
 }
 
 // ache of heart
- else  if (u_narrativeCue == 87){
+ else  if (u_narrativeCue >= 87 && u_narrativeCue <97){
     baseColor = pink;
 }
 
@@ -199,8 +199,16 @@ void respondToNarrativeCue(vec2 uv){
     float brightness = float(stepsToEnd) / float(29);
     baseColor = vec4(brightness,brightness,brightness,1.0)+pink;
   }
- else  if (u_narrativeCue >= 131 && u_narrativeCue <=134){
-  baseColor = pink;
+
+
+  // I create to see
+ else  if (u_narrativeCue >= 131 && u_narrativeCue <=132){
+  baseColor = pink + vec4(0.15,0.15,0.15,1.0);
+  }
+
+  // I create to be seen
+   else  if (u_narrativeCue >= 133 && u_narrativeCue <=134){
+  baseColor = pink + vec4(0.3,0.3,0.3,1.0);
   }
 
   // Can you part 1

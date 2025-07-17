@@ -67,6 +67,11 @@ audio{
   display:flex;
   flex-direction:column;
   justify-content:center;
+  font:Arial;
+}
+
+#credits{
+  display:none;
 }
 
 #enableAudio-overlay{
