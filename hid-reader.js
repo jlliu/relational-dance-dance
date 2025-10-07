@@ -1,7 +1,7 @@
 let connectedDevices = [];
 let selectedDevice = null;
 
-let requireDancePad = true;
+let requireDancePad = false;
 
 // Formats an 8-bit integer |value| in hexadecimal with leading zeros.
 const hex8 = (value) => {

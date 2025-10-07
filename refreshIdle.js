@@ -10,8 +10,8 @@ function setIdle(cb, seconds) {
     clearInterval(timer);
     timer = setTimeout(cb, interval);
   }
-  ["keypress", "padPress", "padRelease"].forEach((event) =>
-    document.addEventListener(event, refresh)
+  ["keydown", "padPress", "padRelease"].forEach((event) =>
+    window.addEventListener(event, refresh)
   );
   refresh();
 }
