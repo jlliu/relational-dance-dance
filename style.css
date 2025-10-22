@@ -31,6 +31,11 @@ canvas {
   transition: opacity 1s;
 }
 
+#tutorial, #difficultyCanvas{
+  opacity:0;
+  visibility:hidden;
+}
+
 #feedback{
   position:absolute;
     left: 50%;
@@ -48,15 +53,15 @@ audio{
   transition: 3s opacity;
 }
 
-#titleCanvas{
+/* #titleCanvas{
   opacity:1;
   transition: 3s opacity;
-}
+} */
 
-#backgroundCanvas{
+/* #backgroundCanvas{
   opacity:1;
   transition: 3s opacity;
-}
+} */
 
 .overlay{
   background: rgba(0,0,0,0.8);

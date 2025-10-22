@@ -1,33 +1,13 @@
-const audioCtx = new AudioContext();
-
-// Code for title screen
-
-// const title_player = new Tone.Player(
-//   "assets/audio/RDD_p2_drum_loop.mp3",
-//   startSong
-// ).toDestination();
-// title_player.loop = true;
-// title_player.volume.value = -5;
-// title_player.fadeOut = 4;
-
-function startSong() {
-  title_player.stop();
-  title_player.start();
-}
-var title = function (p) {
+var difficulty = function (p) {
   let canvasSizeOriginal = { width: 640, height: 480 };
   let canvasWidth = canvasSizeOriginal.width;
   let canvasHeight = canvasSizeOriginal.height;
 
   let canvasRatio = canvasWidth / canvasHeight;
   let scaleRatio = 1;
-  let mouse_x;
-  let mouse_y;
-  let rightButton;
-  let leftButton;
 
-  let titleCanvas;
-  let isCurrentScene = true;
+  let difficultyCanvas;
+  let isCurrentScene = false;
 
   let logoImg;
   let startTextImg;
@@ -35,41 +15,23 @@ var title = function (p) {
   let numCanvasesLoaded = 0;
   let allCanvasesLoaded = false;
 
-  let menuVisible = false;
-
   let menuAnimationTimer = 0.0;
 
   let menuItems = [];
-  let selectedMenuItemIndex = 0;
+  let selectedMenuItemIndex = 1;
 
   let clock = new Tone.Clock((time) => {}, 1);
 
-  // Setup all fonts in this file
-  let fontsToLoad = ["mainYellow", "pink", "greenHelper"];
-
-  p.preload = function () {
-    //Preload a background here
-    //Preload whatever needs to be preloaded
-
-    // shader = p.loadShader("shaders/basic.vert", "shaders/basic.frag");
-    logoImg = p.loadImage("assets/RDD-logo.png");
-    startTextImg = p.loadImage("assets/startText.png");
-
-    fontsToLoad.forEach(function (fontName) {
-      fonts[fontName].sets.forEach(function (fontSet) {
-        fontSet.imgObj = p.loadImage(fontSet.src);
-      });
-    });
-  };
+  p.preload = function () {};
 
   p.setup = function () {
     // put setup code here
     p.pixelDensity(3);
     calculateCanvasDimensions(p);
 
-    titleCanvas = p.createCanvas(canvasWidth, canvasHeight).elt;
-    titleCanvas.classList.add("gameCanvas");
-    titleCanvas.id = "titleCanvas";
+    difficultyCanvas = p.createCanvas(canvasWidth, canvasHeight).elt;
+    difficultyCanvas.classList.add("gameCanvas");
+    difficultyCanvas.id = "difficultyCanvas";
 
     p.noSmooth();
 
@@ -77,51 +39,39 @@ var title = function (p) {
 
     clock.start();
 
-    setupFont("mainYellow");
-    setupFont("pink");
-    setupFont("greenHelper");
-
     menuItems = [
-      new menuItem("STORY MODE", null, 80, startStoryMode),
-      new menuItem("ARCADE MODE", null, 160, startArcadeMode),
-      new menuItem("SETTINGS", null, 240, showSettings),
-      new menuItem("CREDITS", null, 320, showCredits),
+      new menuItem("Easy", null, 80, selectDifficulty),
+      new menuItem("Normal", null, 160, selectDifficulty),
+      new menuItem("Hard", null, 240, selectDifficulty),
     ];
 
     window.dispatchEvent(canvasLoadedEvent);
 
-    setupNavigation(titleCanvas);
+    setupNavigation(difficultyCanvas);
   };
 
   p.draw = function () {
     p.clear();
 
-    // If auto is not running, display the click to start
-    if (audioCtx.state == "running") {
-      let enableAudioOverlay = document.querySelector("#enableAudio-overlay");
-      enableAudioOverlay.style.display = "none";
-    } else {
-      let enableAudioOverlay = document.querySelector("#enableAudio-overlay");
-      enableAudioOverlay.style.display = "flex";
-    }
-
     // Start drawing things if all canvases have loaded
     if (allCanvasesLoaded) {
-      drawImageToScale(logoImg, 94, 176);
-      // Draw Title Screen Elements
-      if (!menuVisible) {
-        if (Math.floor(clock.seconds) % 2 == 0) {
-          drawText("PRESS ANY KEY TO START", "greenHelper", 1, null, 430);
-        }
-      } else {
-        // Draw Menu Screen Elements
-        drawMenu();
-        if (Math.floor(clock.seconds) % 2 == 0) {
-          drawText("PRESS ENTER TO SELECT", "greenHelper", 1, null, 430);
-        }
+      drawMenu();
+      if (Math.floor(clock.seconds) % 2 == 0) {
+        drawText("PRESS ENTER TO SELECT", "greenHelper", 1, null, 430);
       }
     }
   };
+
+  function animateMenuIn() {
+    let menuItemToAnimate = 0;
+    let menuItemStaggerTimer = setInterval(function () {
+      menuItems[menuItemToAnimate].startAnimation();
+      menuItemToAnimate++;
+      if (menuItems[menuItemToAnimate] == null) {
+        clearInterval(menuItemStaggerTimer);
+      }
+    }, 150);
+  }
 
   function setupNavigation(thisCanvas) {
     thisCanvas.addEventListener("showScene", (e) => {
@@ -130,6 +80,7 @@ var title = function (p) {
       setTimeout(function () {
         thisCanvas.style.visibility = "visible";
         thisCanvas.style.opacity = 1;
+        animateMenuIn();
       }, sceneTransitionTime);
     });
     thisCanvas.addEventListener("hideScene", (e) => {
@@ -154,69 +105,34 @@ var title = function (p) {
     }
   });
 
-  function showCredits() {
-    console.log("show credits");
-  }
-
-  function showSettings() {
-    console.log("show settings");
-  }
-
-  function startArcadeMode() {
-    console.log("start Arcade mode");
-  }
-
-  function startStoryMode() {
-    console.log("start story mode");
-    document.getElementById("tutorial").dispatchEvent(showSceneEvent);
-    // document.getElementById("difficultyCanvas").dispatchEvent(showSceneEvent);
-    titleCanvas.dispatchEvent(hideSceneEvent);
-    document.getElementById("backgroundCanvas").dispatchEvent(hideSceneEvent);
+  function selectDifficulty(option) {
+    if (option == "Easy") {
+      console.log("selecting Easy");
+    }
+    if (option == "Normal") {
+      console.log("selecting Normal");
+    }
+    if (option == "Hard") {
+      console.log("selecting Hard");
+    }
   }
 
   function handleInput(keyCode) {
-    // let songStarted = title_player.state == "started";
-
-    // if (allCanvasesLoaded && songStarted) {
-    if (allCanvasesLoaded && isCurrentScene) {
-      //Handle case for first key press (Any), which shows menu
-      if (!menuVisible) {
-        //Display menu for the first time
-        menuVisible = true;
-        //Create stagggered animation for menu items
-        let menuItemToAnimate = 0;
-        let menuItemStaggerTimer = setInterval(function () {
-          menuItems[menuItemToAnimate].startAnimation();
-          menuItemToAnimate++;
-          if (menuItems[menuItemToAnimate] == null) {
-            clearInterval(menuItemStaggerTimer);
-          }
-        }, 150);
-
-        // Create timer for animation menu overlay and text
-        let menuFadeInterval = setInterval(function () {
-          menuAnimationTimer += 0.2;
-          if (menuAnimationTimer >= 1.0) {
-            clearInterval(menuFadeInterval);
-            menuAnimationTimer = 1.0;
-          }
-        }, 30);
-      } else {
-        //Handle case for menu navigation
-        if (keyCode == "ArrowDown" || keyCode == "KeyS") {
-          if (selectedMenuItemIndex < menuItems.length - 1) {
-            selectedMenuItemIndex++;
-          }
+    //Handle case for menu navigation
+    if (isCurrentScene) {
+      if (keyCode == "ArrowDown" || keyCode == "KeyS") {
+        if (selectedMenuItemIndex < menuItems.length - 1) {
+          selectedMenuItemIndex++;
         }
-        if (keyCode == "ArrowUp" || keyCode == "KeyW") {
-          if (selectedMenuItemIndex > 0) {
-            selectedMenuItemIndex--;
-          }
+      }
+      if (keyCode == "ArrowUp" || keyCode == "KeyW") {
+        if (selectedMenuItemIndex > 0) {
+          selectedMenuItemIndex--;
         }
-        //Select menu item
-        if (keyCode == "Enter") {
-          menuItems[selectedMenuItemIndex].select();
-        }
+      }
+      //Select menu item
+      if (keyCode == "Enter") {
+        menuItems[selectedMenuItemIndex].select();
       }
     }
   }
@@ -261,18 +177,7 @@ var title = function (p) {
 
     // Add logic for enabling audio context
     if (e.code == "Space") {
-      // if (audioCtx.state == "suspended") {
-      //   audioCtx.resume();
-      //   startSong();
-      // }
     }
-
-    // Handle key press after game load
-    // let songStarted =
-    //   title_player.state == "started" && audioCtx.state == "running";
-    // if (songStarted) {
-    //   handleInput(e.code);
-    // }
 
     handleInput(e.code);
   });
@@ -307,51 +212,26 @@ var title = function (p) {
       p.pop();
     }
     select() {
-      this.action();
+      this.action(this.menuText);
     }
   }
 
   function drawMenu() {
-    let menuOpacity = menuAnimationTimer * 0.5;
-
+    let menuOpacity = 0.4;
     // console.log(menuOpacity);
     let overlayColor = `rgba(0,0,0,${menuOpacity})`;
-
     p.fill(p.color(overlayColor));
-
     p.rect(0, 0, p.width, p.height);
-
     menuItems.forEach(function (menuItem, index) {
       if (index != selectedMenuItemIndex) {
         menuItem.display();
       }
     });
-
     p.rect(0, 0, p.width, p.height);
-
     //Display selected menu item at full brightness
     menuItems[selectedMenuItemIndex].display();
   }
 
-  function setupFont(fontName) {
-    let fontSets = fonts[fontName].sets;
-    fontSets.forEach(function (fontSet) {
-      let size = fontSet.size;
-      let imgObj = fontSet.imgObj;
-      let columns = imgObj.width / size.width;
-      let rows = imgObj.height / size.height;
-      fontSet.charSet.forEach(function (character, index) {
-        let startingX = (index % columns) * size.width;
-        let startingY = Math.floor(index / columns) * size.height;
-        let charImg = imgObj.get(startingX, startingY, size.width, size.height);
-        fonts[fontName].charsToImgs[character] = charImg;
-        fonts[fontName].charsToImgs[character].size = {
-          width: size.width,
-          height: size.height,
-        };
-      });
-    });
-  }
   // Draw text centered on the screen or at a certain position if specified
   function drawText(textToDraw, fontName, scaleFactor, start_xPos, start_yPos) {
     if (scaleFactor == null) {
@@ -447,4 +327,4 @@ var title = function (p) {
   }
 };
 
-new p5(title, "title-canvas-container");
+new p5(difficulty, "difficulty-canvas-container");

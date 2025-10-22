@@ -126,3 +126,11 @@ function hsl2rgb(h, s, l) {
     l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
   return [f(0), f(8), f(4)];
 }
+
+// Navigation helpers
+const canvasLoadedEvent = new Event("canvasLoaded");
+const showSceneEvent = new CustomEvent("showScene");
+const hideSceneEvent = new CustomEvent("hideScene");
+const sceneTransitionTime = 1000;
+
+let totalCanvases = 4;
