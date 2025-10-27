@@ -31,7 +31,7 @@ canvas {
   transition: opacity 1s;
 }
 
-#tutorial, #difficultyCanvas{
+#tutorial, #difficultyCanvas, #songSelectorCanvas{
   opacity:0;
   visibility:hidden;
 }
@@ -80,7 +80,7 @@ audio{
 }
 
 #enableAudio-overlay{
-  display:none;
+  /* display:none; */
 }
 
 #connectDevice-overlay{

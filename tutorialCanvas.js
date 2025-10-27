@@ -154,13 +154,15 @@ var tutorialScene = function (p) {
   };
 
   function setupNavigation(thisCanvas) {
+    p.noLoop();
     thisCanvas.addEventListener("showScene", (e) => {
       p.loop();
-      isCurrentScene = true;
+
       setTimeout(function () {
         thisCanvas.style.visibility = "visible";
         thisCanvas.style.opacity = 1;
         startSong();
+        isCurrentScene = true;
       }, sceneTransitionTime);
     });
     thisCanvas.addEventListener("hideScene", (e) => {

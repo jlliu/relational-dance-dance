@@ -74,13 +74,15 @@ var difficulty = function (p) {
   }
 
   function setupNavigation(thisCanvas) {
+    p.noLoop();
     thisCanvas.addEventListener("showScene", (e) => {
       p.loop();
-      isCurrentScene = true;
+
       setTimeout(function () {
         thisCanvas.style.visibility = "visible";
         thisCanvas.style.opacity = 1;
         animateMenuIn();
+        isCurrentScene = true;
       }, sceneTransitionTime);
     });
     thisCanvas.addEventListener("hideScene", (e) => {
@@ -108,13 +110,23 @@ var difficulty = function (p) {
   function selectDifficulty(option) {
     if (option == "Easy") {
       console.log("selecting Easy");
+      storyModeDifficulty = "Easy";
     }
     if (option == "Normal") {
       console.log("selecting Normal");
+      storyModeDifficulty = "Normal";
     }
     if (option == "Hard") {
       console.log("selecting Hard");
+      storyModeDifficulty = "Hard";
     }
+    //Progress to song selector
+    let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
+    songSelectorCanvas.dispatchEvent(showSceneEvent);
+    document.querySelector("#backgroundCanvas").dispatchEvent(showSceneEvent);
+    console.log("select difficulty action");
+    //Hide this canvas
+    difficultyCanvas.dispatchEvent(hideSceneEvent);
   }
 
   function handleInput(keyCode) {

@@ -1,3 +1,5 @@
+// Global js helpers
+
 let characterString = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890.,?!-"'()[] `;
 let characterList = characterString.split("");
 
@@ -133,4 +135,40 @@ const showSceneEvent = new CustomEvent("showScene");
 const hideSceneEvent = new CustomEvent("hideScene");
 const sceneTransitionTime = 1000;
 
-let totalCanvases = 4;
+// Background, title, tutorial, difficulty, songSelector
+let totalCanvases = 5;
+
+let storyModeDifficulty = "Normal";
+
+let songList = [
+  {
+    bannerImg: `songAssets/song1-banner.png`,
+    title: `Walkin' on Eggshells`,
+    cdImg: `song1-cd.png`,
+  },
+  {
+    bannerImg: `songAssets/song2-banner.png`,
+    title: `Kung Fu Fawning`,
+    cdImg: `song2-cd.png`,
+  },
+  {
+    bannerImg: `songAssets/song3-banner.png`,
+    title: `Chasing Breadcrumbs`,
+    cdImg: `song3-cd.png`,
+  },
+  {
+    bannerImg: `songAssets/song4-banner.png`,
+    title: `Lone Ranger`,
+    cdImg: `song4-cd.png`,
+  },
+  {
+    bannerImg: `songAssets/song5-banner.png`,
+    title: `ENTER THE VOiD`,
+    cdImg: `song5-cd.png`,
+  },
+  {
+    bannerImg: `songAssets/song6-banner.png`,
+    title: `???`,
+    cdImg: `song6-cd.png`,
+  },
+];

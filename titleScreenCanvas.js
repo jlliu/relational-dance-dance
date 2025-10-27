@@ -111,7 +111,7 @@ var title = function (p) {
       // Draw Title Screen Elements
       if (!menuVisible) {
         if (Math.floor(clock.seconds) % 2 == 0) {
-          drawText("PRESS ANY KEY TO START", "greenHelper", 1, null, 430);
+          drawText("PRESS ENTER TO START", "greenHelper", 1, null, 430);
         }
       } else {
         // Draw Menu Screen Elements
@@ -168,8 +168,11 @@ var title = function (p) {
 
   function startStoryMode() {
     console.log("start story mode");
-    document.getElementById("tutorial").dispatchEvent(showSceneEvent);
-    // document.getElementById("difficultyCanvas").dispatchEvent(showSceneEvent);
+
+    // Show tutorial
+    // document.getElementById("tutorial").dispatchEvent(showSceneEvent);
+    // Show difficulty (for testing)
+    document.getElementById("difficultyCanvas").dispatchEvent(showSceneEvent);
     titleCanvas.dispatchEvent(hideSceneEvent);
     document.getElementById("backgroundCanvas").dispatchEvent(hideSceneEvent);
   }
@@ -180,7 +183,7 @@ var title = function (p) {
     // if (allCanvasesLoaded && songStarted) {
     if (allCanvasesLoaded && isCurrentScene) {
       //Handle case for first key press (Any), which shows menu
-      if (!menuVisible) {
+      if (!menuVisible && keyCode == "Enter") {
         //Display menu for the first time
         menuVisible = true;
         //Create stagggered animation for menu items
@@ -261,10 +264,11 @@ var title = function (p) {
 
     // Add logic for enabling audio context
     if (e.code == "Space") {
-      // if (audioCtx.state == "suspended") {
-      //   audioCtx.resume();
-      //   startSong();
-      // }
+      if (audioCtx.state == "suspended") {
+        audioCtx.resume();
+        // startSong();
+        Tone.start();
+      }
     }
 
     // Handle key press after game load
