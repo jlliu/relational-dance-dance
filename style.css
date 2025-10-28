@@ -31,7 +31,7 @@ canvas {
   transition: opacity 1s;
 }
 
-#tutorial, #difficultyCanvas, #songSelectorCanvas{
+#tutorial, #difficultyCanvas, #songSelectorCanvas, #mainSongCanvas{
   opacity:0;
   visibility:hidden;
 }

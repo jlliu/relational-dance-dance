@@ -36,6 +36,9 @@ var songSelector = function (p) {
   const originalCdScales = [0.5, 0.75, 1, 0.75, 0.5];
   let currentCdScales = [0.5, 0.75, 1, 0.75, 0.5];
 
+  let currentlyAnimatingRight = false;
+  let currentlyAnimatingLeft = false;
+
   let clock = new Tone.Clock((time) => {}, 1);
 
   p.preload = function () {
@@ -107,17 +110,6 @@ var songSelector = function (p) {
     }
   };
 
-  // function animateMenuIn() {
-  //   let menuItemToAnimate = 0;
-  //   let menuItemStaggerTimer = setInterval(function () {
-  //     menuItems[menuItemToAnimate].startAnimation();
-  //     menuItemToAnimate++;
-  //     if (menuItems[menuItemToAnimate] == null) {
-  //       clearInterval(menuItemStaggerTimer);
-  //     }
-  //   }, 150);
-  // }
-
   function setupNavigation(thisCanvas) {
     p.noLoop();
     thisCanvas.addEventListener("showScene", (e) => {
@@ -125,7 +117,7 @@ var songSelector = function (p) {
       setTimeout(function () {
         thisCanvas.style.visibility = "visible";
         thisCanvas.style.opacity = 1;
-        // animateMenuIn();
+
         isCurrentScene = true;
       }, sceneTransitionTime);
     });
@@ -151,20 +143,38 @@ var songSelector = function (p) {
     }
   });
 
-  function selectSong(option) {
-    console.log("selecting song: " + option);
+  function selectSong(songId) {
+    console.log("songId: " + songId);
+    console.log("selecting song: " + songList[songId].title);
+    // Go to the correct song
+
+    let selectSongEvent = new CustomEvent("showScene", {
+      detail: {
+        songId: songId,
+      },
+    });
+    document.querySelector("#mainSongCanvas").dispatchEvent(selectSongEvent);
+    songSelectorCanvas.dispatchEvent(hideSceneEvent);
   }
 
   function handleInput(keyCode) {
     //Handle case for menu navigation
     if (isCurrentScene) {
       if (keyCode == "ArrowLeft" || keyCode == "KeyA") {
-        selectedMenuItemIndex--;
+        if (!currentlyAnimatingRight) {
+          animateMenu("left");
+        }
       }
       if (keyCode == "ArrowRight" || keyCode == "KeyD") {
-        console.log("going right");
-        animateMenu("right");
-        //Animate menu to the right
+        if (!currentlyAnimatingLeft) {
+          animateMenu("right");
+        }
+      }
+      if (keyCode == "Enter") {
+        if (!currentlyAnimatingLeft && !currentlyAnimatingRight) {
+          let songId = mod(selectedMenuItemIndex, menuItems.length);
+          menuItems[songId].select();
+        }
       }
     }
   }
@@ -249,7 +259,8 @@ var songSelector = function (p) {
       p.pop();
     }
     select() {
-      this.action(this.menuText);
+      console.log("selecting");
+      this.action(this.songId);
     }
   }
 
@@ -277,11 +288,10 @@ var songSelector = function (p) {
   }
   function drawMenu() {
     p.push();
-    p.translate((640 / 2) * scaleRatio, 320 * scaleRatio);
+    p.translate((640 / 2) * scaleRatio, 335 * scaleRatio);
     //Current position is number 0-4 of visible CD position
     let currentPositionIndex = 0;
     currentCdQueue.forEach(function (cdIndex) {
-      // console.log(cdIndex);
       let xPos_original = currentCdPositions[currentPositionIndex];
 
       let yPos_original = parabolaY(xPos_original);
@@ -298,15 +308,12 @@ var songSelector = function (p) {
     });
 
     p.pop();
-    //Rotatin menu needs to show 3 at a time
-    //This is currentIndex, and the one before, and one after it
-    //We set 3 points of a parabola for these 3 locations...
-    //When right / left button is pressed, trigger animation that shifts the queue right or left, updating the positions of CDs on the parabola
   }
 
   function animateMenu(direction) {
-    if (direction == "right") {
+    if (direction == "left") {
       let menuAnimationInterval = setInterval(function () {
+        currentlyAnimatingLeft = true;
         // calculate the amount this has elapsed by how much the center one has moved
         let amountElapsed =
           (currentCdPositions[2] - originalCdPositions[2]) /
@@ -331,13 +338,46 @@ var songSelector = function (p) {
         });
 
         if (currentCdPositions[0] >= originalCdPositions[1]) {
+          currentlyAnimatingLeft = false;
           selectedMenuItemIndex--;
           resetCdQueue(selectedMenuItemIndex);
           clearInterval(menuAnimationInterval);
         }
       }, 20);
     }
-    if (direction == "left") {
+    if (direction == "right") {
+      let menuAnimationInterval = setInterval(function () {
+        currentlyAnimatingRight = true;
+        // calculate the amount this has elapsed by how much the center one has moved
+        let amountElapsed =
+          (originalCdPositions[2] - currentCdPositions[2]) /
+          originalCdPositions[3];
+        //If we've succcessfully swapped, then cancel the interval and reset the menu
+
+        // Each tick, increment the position and update...
+        currentCdPositions.forEach(function (xPos, index) {
+          currentCdPositions[index] -= 15;
+        });
+        currentCdScales.forEach(function (scale, index) {
+          //Make ones on left get smaller
+          if (index <= 2) {
+            currentCdScales[index] =
+              originalCdScales[index] - amountElapsed * 0.25;
+          }
+          //Make ones on right get bigger
+          if (index >= 3) {
+            currentCdScales[index] =
+              originalCdScales[index] + amountElapsed * 0.25;
+          }
+        });
+
+        if (currentCdPositions[2] <= originalCdPositions[1]) {
+          currentlyAnimatingRight = false;
+          selectedMenuItemIndex++;
+          resetCdQueue(selectedMenuItemIndex);
+          clearInterval(menuAnimationInterval);
+        }
+      }, 20);
     }
   }
 
@@ -440,4 +480,4 @@ var songSelector = function (p) {
   }
 };
 
-new p5(songSelector, "songSelector-canvas-container");
+new p5(songSelector, "song-selector-canvas-container");
