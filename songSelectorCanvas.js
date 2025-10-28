@@ -41,6 +41,8 @@ var songSelector = function (p) {
 
   let clock = new Tone.Clock((time) => {}, 1);
 
+  let songPreviewPlayer;
+
   p.preload = function () {
     songBannersSpritesheet = p.loadImage("songAssets/songBanners.png");
     songCdsSpritesheet = p.loadImage("songAssets/songCds.png");
@@ -117,14 +119,16 @@ var songSelector = function (p) {
       setTimeout(function () {
         thisCanvas.style.visibility = "visible";
         thisCanvas.style.opacity = 1;
-
         isCurrentScene = true;
+
+        changePreviewSong();
       }, sceneTransitionTime);
     });
     thisCanvas.addEventListener("hideScene", (e) => {
       p.noLoop();
       isCurrentScene = false;
       thisCanvas.style.opacity = 0;
+      songPreviewPlayer.stop();
       setTimeout(function () {
         thisCanvas.style.visibility = "hidden";
       }, sceneTransitionTime);
@@ -144,7 +148,6 @@ var songSelector = function (p) {
   });
 
   function selectSong(songId) {
-    console.log("songId: " + songId);
     console.log("selecting song: " + songList[songId].title);
     // Go to the correct song
 
@@ -286,6 +289,22 @@ var songSelector = function (p) {
       mod(index + 2, menuItems.length),
     ];
   }
+  function changePreviewSong() {
+    let songId = mod(selectedMenuItemIndex, menuItems.length);
+    if (songPreviewPlayer) {
+      songPreviewPlayer.stop();
+    }
+
+    console.log("playing: " + songId);
+    console.log(songList[songId]);
+    console.log(songPreviewPlayer);
+    songPreviewPlayer = songList[songId].songPlayer;
+    songPreviewPlayer.loop = true;
+    songPreviewPlayer.loopStart = 10;
+    songPreviewPlayer.loopStart = 20;
+    // songPreviewPlayer.retrigger = true;
+    songPreviewPlayer.start();
+  }
   function drawMenu() {
     p.push();
     p.translate((640 / 2) * scaleRatio, 335 * scaleRatio);
@@ -342,6 +361,7 @@ var songSelector = function (p) {
           selectedMenuItemIndex--;
           resetCdQueue(selectedMenuItemIndex);
           clearInterval(menuAnimationInterval);
+          changePreviewSong();
         }
       }, 20);
     }
@@ -376,6 +396,7 @@ var songSelector = function (p) {
           selectedMenuItemIndex++;
           resetCdQueue(selectedMenuItemIndex);
           clearInterval(menuAnimationInterval);
+          changePreviewSong();
         }
       }, 20);
     }

@@ -1,8 +1,9 @@
-// const thisPlayer = new Tone.Player("assets/audio/Heaven.OGG").toDestination();
-
 var mainScene = function (p) {
   let mainSongCanvas;
   let isCurrentScene = false;
+
+  let thisSongPlayer;
+  let thisSongData;
 
   let canvasSizeOriginal = { width: 640, height: 480 };
   let canvasWidth = canvasSizeOriginal.width;
@@ -54,7 +55,7 @@ var mainScene = function (p) {
   let t = 0;
   let currentBeat = 0;
   let pixelsElapsed = 0;
-  let pixelsPerBeat = 100;
+  let pixelsPerBeat = 200;
 
   let clock = new Tone.Clock((time) => {}, 1);
 
@@ -153,9 +154,14 @@ var mainScene = function (p) {
       setTimeout(function () {
         thisCanvas.style.visibility = "visible";
         thisCanvas.style.opacity = 1;
-        startSong(songId);
+
         isCurrentScene = true;
       }, sceneTransitionTime);
+
+      // Start song a bit after
+      setTimeout(function () {
+        startSong(songId);
+      }, sceneTransitionTime + 2000);
     });
     thisCanvas.addEventListener("hideScene", (e) => {
       p.noLoop();
@@ -235,27 +241,40 @@ var mainScene = function (p) {
     if (thisMeasure > measureData.length) {
       // console.log("song ended!!");
       clock.stop();
+
+      let backgroundCanvas = document.querySelector("#backgroundCanvas");
+      backgroundCanvas.dispatchEvent(showSceneEvent);
+
+      let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
+      songSelectorCanvas.dispatchEvent(showSceneEvent);
+
+      mainSongCanvas.dispatchEvent(hideSceneEvent);
+
+      //Reset at the end
+      window.setTimeout(function () {
+        resetForNewSong();
+      }, 3000);
+
       // tutorialCanvas.dispatchEvent(hideSceneEvent);
       // let difficultyCanvas = document.querySelector("#difficultyCanvas");
       // difficultyCanvas.dispatchEvent(showSceneEvent);
-      // let backgroundCanvas = document.querySelector("#backgroundCanvas");
-      // backgroundCanvas.dispatchEvent(showSceneEvent);
     }
   }
 
   function startSong(songId) {
-    let thisPlayer = songList[songId].songPlayer;
+    thisSongPlayer = songList[songId].songPlayer;
+    thisSongPlayer.loop = false;
 
     //Setup info for the song
-    let songData = JSON.parse(songList[songId].songData);
-    measureData = songData.measureData;
-    songBpm = songData.bpm;
-    songDelay = songData.delay;
+    thisSongData = JSON.parse(songList[songId].songData);
+    measureData = thisSongData.measureData;
+    songBpm = thisSongData.bpm;
+    songDelay = thisSongData.delay;
     secondsPerBeat = 1 / (songBpm / 60);
 
     //For negative songDelays, start song before notes
     if (songDelay < 0) {
-      thisPlayer.start();
+      thisSongPlayer.start();
       setTimeout(function () {
         setInterval(function () {
           updateNotes();
@@ -276,7 +295,7 @@ var mainScene = function (p) {
       clock.start();
 
       setTimeout(function () {
-        thisPlayer.start();
+        thisSongPlayer.start();
       }, songDelay * 1000);
     }
   }
@@ -548,6 +567,18 @@ var mainScene = function (p) {
       }
     });
     return hitSuccessful;
+  }
+
+  function resetForNewSong() {
+    thisSongPlayer.stop();
+    clock.stop();
+
+    // Lets try resetting everything here!
+    relevantNotes = [];
+    currentBatchStartMeasure = 0;
+    currentMeasure = -1;
+    currentBeat = 0;
+    pixelsElapsed = 0;
   }
 
   function padOrKeypress(direction) {

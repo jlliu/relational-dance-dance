@@ -165,30 +165,28 @@ let songList = [
     bannerImg: `songAssets/song3-banner.png`,
     title: `Chasing Breadcrumbs`,
     cdImg: `song3-cd.png`,
-    songData: eggshells,
-    songFile: `songAssets/Music/walking_on_sunshine.mp3`,
+    songData: barbie,
+    songFile: `songAssets/Music/barbie_girl.mp3`,
     songPlayer: new Tone.Player(
-      `songAssets/Music/walking_on_sunshine.mp3`
+      `songAssets/Music/barbie_girl.mp3`
     ).toDestination(),
   },
   {
     bannerImg: `songAssets/song4-banner.png`,
     title: `Lone Ranger`,
     cdImg: `song4-cd.png`,
-    songData: eggshells,
-    songFile: `songAssets/Music/walking_on_sunshine.mp3`,
-    songPlayer: new Tone.Player(
-      `songAssets/Music/walking_on_sunshine.mp3`
-    ).toDestination(),
+    songData: cowgirl,
+    songFile: `songAssets/Music/cowgirl.ogg`,
+    songPlayer: new Tone.Player(`songAssets/Music/cowgirl.ogg`).toDestination(),
   },
   {
     bannerImg: `songAssets/song5-banner.png`,
     title: `ENTER THE VOiD`,
     cdImg: `song5-cd.png`,
-    songData: eggshells,
-    songFile: `songAssets/Music/walking_on_sunshine.mp3`,
+    songData: sandstorm,
+    songFile: `songAssets/Music/sandstorm.ogg`,
     songPlayer: new Tone.Player(
-      `songAssets/Music/walking_on_sunshine.mp3`
+      `songAssets/Music/Sandstorm.ogg`
     ).toDestination(),
   },
   {
