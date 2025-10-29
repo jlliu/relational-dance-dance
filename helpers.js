@@ -146,20 +146,24 @@ let songList = [
     title: `Walkin' on Eggshells`,
     cdImg: `song1-cd.png`,
     songData: eggshells,
-    songFile: `songAssets/Music/walking_on_sunshine.mp3`,
+    songFile: `songAssets/Music/walking_on_sunshine.ogg`,
     songPlayer: new Tone.Player(
-      `songAssets/Music/walking_on_sunshine.mp3`
+      `songAssets/Music/walking_on_sunshine.ogg`
     ).toDestination(),
+    sampleStart: 57.784,
+    sampleLength: 15,
+    songVideoEl: document.querySelector("#cowgirlVideo"),
   },
   {
     bannerImg: `songAssets/song2-banner.png`,
     title: `Kung Fu Fawning`,
     cdImg: `song2-cd.png`,
     songData: curryup,
-    songFile: `songAssets/Music/curry_up.mp3`,
-    songPlayer: new Tone.Player(
-      `songAssets/Music/curry_up.mp3`
-    ).toDestination(),
+    songFile: `songAssets/Music/kungfu.ogg`,
+    songPlayer: new Tone.Player(`songAssets/Music/kungfu.ogg`).toDestination(),
+    sampleStart: 42.713,
+    sampleLength: 15,
+    songVideoEl: document.querySelector("#cowgirlVideo"),
   },
   {
     bannerImg: `songAssets/song3-banner.png`,
@@ -170,6 +174,9 @@ let songList = [
     songPlayer: new Tone.Player(
       `songAssets/Music/barbie_girl.mp3`
     ).toDestination(),
+    sampleStart: 78.21,
+    sampleLength: 11.0,
+    songVideoEl: document.querySelector("#cowgirlVideo"),
   },
   {
     bannerImg: `songAssets/song4-banner.png`,
@@ -178,6 +185,9 @@ let songList = [
     songData: cowgirl,
     songFile: `songAssets/Music/cowgirl.ogg`,
     songPlayer: new Tone.Player(`songAssets/Music/cowgirl.ogg`).toDestination(),
+    sampleStart: 41.74,
+    sampleLength: 15.0,
+    songVideoEl: document.querySelector("#cowgirlVideo"),
   },
   {
     bannerImg: `songAssets/song5-banner.png`,
@@ -188,15 +198,19 @@ let songList = [
     songPlayer: new Tone.Player(
       `songAssets/Music/Sandstorm.ogg`
     ).toDestination(),
+    sampleStart: 36.54,
+    sampleLength: 12.0,
+    songVideoEl: document.querySelector("#cowgirlVideo"),
   },
   {
     bannerImg: `songAssets/song6-banner.png`,
     title: `???`,
     cdImg: `song6-cd.png`,
     songData: eggshells,
-    songFile: `songAssets/Music/walking_on_sunshine.mp3`,
-    songPlayer: new Tone.Player(
-      `songAssets/Music/walking_on_sunshine.mp3`
-    ).toDestination(),
+    songFile: null,
+    songPlayer: null,
+    sampleStart: null,
+    sampleLength: null,
+    songVideoEl: document.querySelector("#cowgirlVideo"),
   },
 ];

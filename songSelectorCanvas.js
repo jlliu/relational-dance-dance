@@ -158,6 +158,8 @@ var songSelector = function (p) {
     });
     document.querySelector("#mainSongCanvas").dispatchEvent(selectSongEvent);
     songSelectorCanvas.dispatchEvent(hideSceneEvent);
+
+    document.querySelector("#backgroundCanvas").dispatchEvent(hideSceneEvent);
   }
 
   function handleInput(keyCode) {
@@ -295,14 +297,12 @@ var songSelector = function (p) {
       songPreviewPlayer.stop();
     }
 
-    console.log("playing: " + songId);
-    console.log(songList[songId]);
-    console.log(songPreviewPlayer);
-    songPreviewPlayer = songList[songId].songPlayer;
+    let song = songList[songId];
+    songPreviewPlayer = song.songPlayer;
     songPreviewPlayer.loop = true;
-    songPreviewPlayer.loopStart = 10;
-    songPreviewPlayer.loopStart = 20;
-    // songPreviewPlayer.retrigger = true;
+    songPreviewPlayer.loopStart = song.sampleStart;
+    songPreviewPlayer.loopEnd = song.sampleStart + song.sampleLength;
+
     songPreviewPlayer.start();
   }
   function drawMenu() {

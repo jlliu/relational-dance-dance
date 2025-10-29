@@ -128,7 +128,8 @@ var mainScene = function (p) {
   let startDrawingArrows = false;
 
   p.draw = function () {
-    p.background("pink");
+    // p.background("pink");
+    p.clear();
 
     Object.values(hitArrowObjs).forEach(function (arrowObj) {
       arrowObj.displayGlow();
@@ -150,12 +151,26 @@ var mainScene = function (p) {
     p.noLoop();
     thisCanvas.addEventListener("showScene", (e) => {
       songId = e.detail.songId;
+      //Load video
+
+      let video = songList[songId].songVideoEl;
+      video.load();
+      video.addEventListener(
+        "canplaythrough",
+        function () {
+          // Video is loaded and can be played through
+          video.play();
+        },
+        false
+      );
       p.loop();
       setTimeout(function () {
         thisCanvas.style.visibility = "visible";
         thisCanvas.style.opacity = 1;
 
         isCurrentScene = true;
+
+        //Setup video
       }, sceneTransitionTime);
 
       // Start song a bit after
@@ -249,6 +264,9 @@ var mainScene = function (p) {
       songSelectorCanvas.dispatchEvent(showSceneEvent);
 
       mainSongCanvas.dispatchEvent(hideSceneEvent);
+
+      thisSongPlayer.stop();
+      thisSongPlayer.loop = true;
 
       //Reset at the end
       window.setTimeout(function () {
