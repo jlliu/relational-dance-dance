@@ -38,6 +38,20 @@ let fonts = {
     charsToImgs: {},
   },
 
+  whitePixel: {
+    sets: [
+      {
+        src: "assets/white-pixel-font-spritesheet.png",
+        charSet: characterString.split(""),
+        size: { width: 24, height: 35 },
+
+        imgObj: null,
+      },
+    ],
+
+    charsToImgs: {},
+  },
+
   // pinkDigits: {
   //   src: "assets/combo-number-spritesheet.png",
   //   charSet: digitString.split(""),

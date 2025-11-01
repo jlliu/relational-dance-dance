@@ -22,6 +22,8 @@ var background = function (p) {
 
   let narrativeCue = 0;
 
+  let myBuffer;
+
   p.preload = function () {
     //Preload shaders here
     shader = p.loadShader("shaders/basic.vert", "shaders/pinkGlow.frag");
@@ -50,6 +52,8 @@ var background = function (p) {
 
     window.dispatchEvent(canvasLoadedEvent);
     setupNavigation(document.querySelector("#backgroundCanvas"));
+
+    myBuffer = p.createFramebuffer();
   };
 
   p.draw = function () {

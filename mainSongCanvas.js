@@ -92,6 +92,7 @@ var mainScene = function (p) {
   p.setup = function () {
     // put setup code here
     p.pixelDensity(3);
+    p.frameRate(200);
     calculateCanvasDimensions(p);
     mainSongCanvas = p.createCanvas(canvasWidth, canvasHeight).elt;
     mainSongCanvas.classList.add("gameCanvas");
@@ -588,9 +589,6 @@ var mainScene = function (p) {
   }
 
   function resetForNewSong() {
-    thisSongPlayer.stop();
-    clock.stop();
-
     // Lets try resetting everything here!
     relevantNotes = [];
     currentBatchStartMeasure = 0;

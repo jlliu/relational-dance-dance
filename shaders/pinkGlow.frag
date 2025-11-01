@@ -32,8 +32,6 @@ uniform float u_percentageElapsed;
 
 uniform int u_narrativeCue;
 
-vec2 pixelated_resolution = vec2(64,48);
-
 vec4 baseColor = pink;
 
 float m_r = 1.0; float m_g = 1.0; float m_b = 1.0;
@@ -298,12 +296,21 @@ void respondToNarrativeCue(vec2 uv){
   }
 }
 
+
+float round(float value){
+  return floor(value + 0.5);
+
+}
+
 void main() {
 
   vec2 uv = gl_FragCoord.xy / resolution;
 	uv.y = 1.0 - uv.y;
 	vec2 coord = vec2(gl_FragCoord.x, resolution.y - gl_FragCoord.y);
 
+  float pixelationAmount = u_resolution.x/resolution.x *2.0;
+
+  vec2  coord_pixelated = vec2(round(coord.x/pixelationAmount) *pixelationAmount, round(coord.y/pixelationAmount) * pixelationAmount);
 
 	// Set the parameters of the sun rays
 	vec2 rayPos1 = vec2(resolution.x * 0.5, resolution.y *0.5);
@@ -321,11 +328,11 @@ void main() {
 	// Calculate the colour of the sun rays on the current fragment
 	vec4 rays1 =
 		vec4(1.0, 1.0, 1.0, 1.0) *
-		rayStrength(rayPos1, rayRefDir1, coord, raySeedA1, raySeedB1, raySpeed1);
+		rayStrength(rayPos1, rayRefDir1, coord_pixelated, raySeedA1, raySeedB1, raySpeed1);
 
 	vec4 rays2 =
 		vec4(1.0, 1.0, 1.0, 1.0) *
-		rayStrength(rayPos2, rayRefDir2, coord, raySeedA2, raySeedB2, raySpeed2);
+		rayStrength(rayPos2, rayRefDir2, coord_pixelated, raySeedA2, raySeedB2, raySpeed2);
 
 
     float transitionBrightness = 0.0;
