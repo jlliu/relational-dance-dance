@@ -154,7 +154,7 @@ var mainScene = function (p) {
       songId = e.detail.songId;
       //Load video
 
-      let video = songList[songId].songVideoEl;
+      let video = document.querySelector("#songVideo");
       video.load();
       video.addEventListener(
         "canplaythrough",
@@ -164,10 +164,13 @@ var mainScene = function (p) {
         },
         false
       );
+
       p.loop();
       setTimeout(function () {
         thisCanvas.style.visibility = "visible";
         thisCanvas.style.opacity = 1;
+        video.style.visibility = "visible";
+        video.style.opacity = 1;
 
         isCurrentScene = true;
 
@@ -183,8 +186,11 @@ var mainScene = function (p) {
       p.noLoop();
       isCurrentScene = false;
       thisCanvas.style.opacity = 0;
+      let video = document.querySelector("#songVideo");
+      video.style.opacity = 0;
       setTimeout(function () {
         thisCanvas.style.visibility = "hidden";
+        video.style.visibility = "hidden";
       }, sceneTransitionTime);
     });
   }
@@ -261,8 +267,28 @@ var mainScene = function (p) {
       let backgroundCanvas = document.querySelector("#backgroundCanvas");
       backgroundCanvas.dispatchEvent(showSceneEvent);
 
-      let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
-      songSelectorCanvas.dispatchEvent(showSceneEvent);
+      let showRevelationSceneEvent = new CustomEvent("showScene", {
+        detail: {
+          songIndex: songId,
+        },
+      });
+
+      document
+        .getElementById("revelationCanvas")
+        .dispatchEvent(showRevelationSceneEvent);
+      let showBackgroundShaderEvent = new CustomEvent("showScene", {
+        detail: {
+          shaderType: "radialGlow",
+          songIndex: songId,
+        },
+      });
+
+      document
+        .getElementById("backgroundCanvas")
+        .dispatchEvent(showBackgroundShaderEvent);
+
+      // let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
+      // songSelectorCanvas.dispatchEvent(showSceneEvent);
 
       mainSongCanvas.dispatchEvent(hideSceneEvent);
 

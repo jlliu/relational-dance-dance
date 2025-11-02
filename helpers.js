@@ -147,6 +147,7 @@ function hsl2rgb(h, s, l) {
 const canvasLoadedEvent = new Event("canvasLoaded");
 const showSceneEvent = new CustomEvent("showScene");
 const hideSceneEvent = new CustomEvent("hideScene");
+const endRevelationSceneEvent = new CustomEvent("endRevelationScene");
 const sceneTransitionTime = 1000;
 
 // Background, title, tutorial, difficulty, songSelector, mainSong
@@ -228,3 +229,7 @@ let songList = [
     songVideoEl: document.querySelector("#cowgirlVideo"),
   },
 ];
+
+// Revelation scene
+
+let revelationGlowTime = 5;

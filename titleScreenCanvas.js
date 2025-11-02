@@ -172,11 +172,23 @@ var title = function (p) {
     // Show tutorial
     // document.getElementById("tutorial").dispatchEvent(showSceneEvent);
     // Show difficulty (for testing)
-    // document.getElementById("difficultyCanvas").dispatchEvent(showSceneEvent);
+    document.getElementById("difficultyCanvas").dispatchEvent(showSceneEvent);
 
-    document.getElementById("revelationCanvas").dispatchEvent(showSceneEvent);
     titleCanvas.dispatchEvent(hideSceneEvent);
-    document.getElementById("backgroundCanvas").dispatchEvent(hideSceneEvent);
+
+    // document.getElementById("revelationCanvas").dispatchEvent(showSceneEvent);
+    // let showBackgroundShaderEvent = new CustomEvent("showScene", {
+    //   detail: {
+    //     shaderType: "radialGlow",
+    //     songIndex: 2,
+    //   },
+    // });
+
+    // document
+    //   .getElementById("backgroundCanvas")
+    //   .dispatchEvent(showBackgroundShaderEvent);
+
+    // document.getElementById("backgroundCanvas").dispatchEvent(hideSceneEvent);
   }
 
   function handleInput(keyCode) {

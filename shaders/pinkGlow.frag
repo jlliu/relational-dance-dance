@@ -299,7 +299,6 @@ void respondToNarrativeCue(vec2 uv){
 
 float round(float value){
   return floor(value + 0.5);
-
 }
 
 void main() {

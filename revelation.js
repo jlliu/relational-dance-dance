@@ -90,26 +90,34 @@ var revelation = function (p) {
   };
 
   function animateScene() {
-    // let menuItemToAnimate = 0;
-    let lines = revelations[thisSongIndex];
-
-    let typingAnimationTimer = setInterval(function () {
-      charsInLineShown++;
-      //Reach the end of line, increment line shown
-      if (charsInLineShown == lines[lineShown].length) {
-        lineShown++;
-        charsInLineShown = 0;
-        if (lineShown == lines.length) {
-          // END OF TYPING ANIMATION
-          clearInterval(typingAnimationTimer);
+    setTimeout(function () {
+      let lines = revelations[thisSongIndex];
+      let typingAnimationTimer = setInterval(function () {
+        charsInLineShown++;
+        //Reach the end of line, increment line shown
+        if (charsInLineShown == lines[lineShown].length) {
+          lineShown++;
+          charsInLineShown = 0;
+          if (lineShown == lines.length) {
+            // END OF TYPING ANIMATION
+            clearInterval(typingAnimationTimer);
+            document
+              .querySelector("#backgroundCanvas")
+              .dispatchEvent(endRevelationSceneEvent);
+            setTimeout(function () {
+              revelationCanvas.dispatchEvent(hideSceneEvent);
+            }, 2000);
+          }
         }
-      }
-    }, 110);
+      }, 110);
+    }, revelationGlowTime * 1000);
   }
 
   function setupNavigation(thisCanvas) {
     p.noLoop();
     thisCanvas.addEventListener("showScene", (e) => {
+      thisSongIndex = e.detail.songIndex;
+
       p.loop();
 
       setTimeout(function () {

@@ -20,7 +20,7 @@ body#experimental{
   color:black;
 }
 
-canvas {
+canvas, video {
   margin: auto;
   visibility: visible;
   position:absolute;
@@ -31,7 +31,7 @@ canvas {
   transition: opacity 1s;
 }
 
-#tutorial, #difficultyCanvas, #songSelectorCanvas, #mainSongCanvas, #revelationCanvas{
+video, #tutorial, #difficultyCanvas, #songSelectorCanvas, #mainSongCanvas, #revelationCanvas{
   opacity:0;
   visibility:hidden;
 }

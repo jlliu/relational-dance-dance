@@ -22,11 +22,17 @@ var background = function (p) {
 
   let narrativeCue = 0;
 
+  let glowAmount = 1.0;
+  let glowSongIndex = 0;
+
   let myBuffer;
+
+  let shaderType = "mainGlow";
 
   p.preload = function () {
     //Preload shaders here
-    shader = p.loadShader("shaders/basic.vert", "shaders/pinkGlow.frag");
+    mainGlow = p.loadShader("shaders/basic.vert", "shaders/pinkGlow.frag");
+    radialGlow = p.loadShader("shaders/basic.vert", "shaders/radialGlow.frag");
   };
 
   p.setup = function () {
@@ -61,13 +67,30 @@ var background = function (p) {
     // cursorState = "default";
     // displayGame();
 
-    shader.setUniform("u_resolution", [canvasWidth, canvasHeight]);
-    shader.setUniform("u_time", clock.seconds);
-    shader.setUniform("u_percentageElapsed", percentageElapsed);
-    shader.setUniform("u_transitionStarted", transitionStarted);
-    shader.setUniform("u_narrativeCue", narrativeCue);
+    mainGlow.setUniform("u_resolution", [canvasWidth, canvasHeight]);
+    mainGlow.setUniform("u_time", clock.seconds);
+    mainGlow.setUniform("u_percentageElapsed", percentageElapsed);
+    mainGlow.setUniform("u_transitionStarted", transitionStarted);
+    mainGlow.setUniform("u_narrativeCue", narrativeCue);
 
-    p.shader(shader);
+    radialGlow.setUniform("u_resolution", [canvasWidth, canvasHeight]);
+    radialGlow.setUniform("u_glowAmount", glowAmount);
+
+    radialGlow.setUniform("u_songIndex", glowSongIndex);
+
+    let glowPosition = Math.min(
+      (clock.seconds / revelationGlowTime) * 0.5,
+      0.5
+    );
+
+    radialGlow.setUniform("u_time", clock.seconds);
+    radialGlow.setUniform("u_glowPosition", glowPosition);
+
+    if (shaderType == "mainGlow") {
+      p.shader(mainGlow);
+    } else {
+      p.shader(radialGlow);
+    }
 
     // rect gives us some geometry on the screen
     p.rect(0, 0, 640, 480);
@@ -79,6 +102,20 @@ var background = function (p) {
 
   function setupNavigation(thisCanvas) {
     thisCanvas.addEventListener("showScene", (e) => {
+      if (e.detail.shaderType) {
+        shaderType = e.detail.shaderType;
+        //Animate in.revelation radio glow
+        if (shaderType == "radialGlow") {
+          glowSongIndex = parseInt(e.detail.songIndex);
+          clock.stop();
+          setTimeout(function () {
+            clock.start();
+          }, sceneTransitionTime);
+        }
+      } else {
+        shaderType = "mainGlow";
+      }
+      songId = e.detail.songId;
       p.loop();
       thisCanvas.style.visibility = "visible";
       thisCanvas.style.opacity = 1;
@@ -90,6 +127,25 @@ var background = function (p) {
       setTimeout(function () {
         thisCanvas.style.visibility = "hidden";
       }, sceneTransitionTime);
+    });
+
+    thisCanvas.addEventListener("endRevelationScene", (e) => {
+      setTimeout(function () {
+        let explodeGlowInterval = setInterval(function () {
+          glowAmount *= 1.03;
+          if (glowAmount >= 100.0) {
+            clearInterval(explodeGlowInterval);
+            console.log("hide background");
+            setTimeout(function () {
+              p.noLoop();
+              thisCanvas.style.opacity = 0;
+              setTimeout(function () {
+                thisCanvas.style.visibility = "hidden";
+              }, sceneTransitionTime);
+            }, 2000);
+          }
+        }, 10);
+      }, 2000);
     });
   }
 
