@@ -101,6 +101,18 @@ const hitAnimationTimings = {
   5: 1.05,
 };
 
+const codeGlowTimings = {
+  1: 0,
+  2: 0.2,
+  3: 0.6,
+  4: 0.9,
+  5: 1.5,
+  6: 1.3,
+  7: 1.15,
+  8: 1.1,
+  9: 1,
+};
+
 const fadeOutTiming = {
   1: 1,
   2: 0.95,
@@ -150,8 +162,8 @@ const hideSceneEvent = new CustomEvent("hideScene");
 const endRevelationSceneEvent = new CustomEvent("endRevelationScene");
 const sceneTransitionTime = 1000;
 
-// Background, title, tutorial, difficulty, songSelector, mainSong
-let totalCanvases = 6;
+// Background, title, tutorial, difficulty, songSelector, mainSong, unlockCanvas,
+let totalCanvases = 7;
 
 let storyModeDifficulty = "Normal";
 
@@ -168,17 +180,19 @@ let songList = [
     sampleStart: 57.784,
     sampleLength: 15,
     songVideoEl: document.querySelector("#cowgirlVideo"),
+    cleared: false,
   },
   {
     bannerImg: `songAssets/song2-banner.png`,
     title: `Kung Fu Fawning`,
     cdImg: `song2-cd.png`,
-    songData: curryup,
+    songData: kungfu,
     songFile: `songAssets/Music/kungfu.ogg`,
     songPlayer: new Tone.Player(`songAssets/Music/kungfu.ogg`).toDestination(),
     sampleStart: 42.713,
     sampleLength: 15,
     songVideoEl: document.querySelector("#cowgirlVideo"),
+    cleared: false,
   },
   {
     bannerImg: `songAssets/song3-banner.png`,
@@ -192,6 +206,7 @@ let songList = [
     sampleStart: 78.21,
     sampleLength: 11.0,
     songVideoEl: document.querySelector("#cowgirlVideo"),
+    cleared: false,
   },
   {
     bannerImg: `songAssets/song4-banner.png`,
@@ -203,6 +218,7 @@ let songList = [
     sampleStart: 41.74,
     sampleLength: 15.0,
     songVideoEl: document.querySelector("#cowgirlVideo"),
+    cleared: false,
   },
   {
     bannerImg: `songAssets/song5-banner.png`,
@@ -216,6 +232,7 @@ let songList = [
     sampleStart: 36.54,
     sampleLength: 12.0,
     songVideoEl: document.querySelector("#cowgirlVideo"),
+    cleared: false,
   },
   {
     bannerImg: `songAssets/song6-banner.png`,
@@ -227,6 +244,7 @@ let songList = [
     sampleStart: null,
     sampleLength: null,
     songVideoEl: document.querySelector("#cowgirlVideo"),
+    cleared: false,
   },
 ];
 

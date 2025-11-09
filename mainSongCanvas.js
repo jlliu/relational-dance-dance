@@ -3,7 +3,10 @@ var mainScene = function (p) {
   let isCurrentScene = false;
 
   let thisSongPlayer;
+
   let thisSongData;
+
+  let updateArrowsInterval;
 
   let canvasSizeOriginal = { width: 640, height: 480 };
   let canvasWidth = canvasSizeOriginal.width;
@@ -58,6 +61,8 @@ var mainScene = function (p) {
   let pixelsPerBeat = 200;
 
   let clock = new Tone.Clock((time) => {}, 1);
+
+  let startDrawingArrows = false;
 
   p.preload = function () {
     //Preload a background here
@@ -125,8 +130,6 @@ var mainScene = function (p) {
     window.dispatchEvent(canvasLoadedEvent);
     setupNavigation(mainSongCanvas);
   };
-
-  let startDrawingArrows = false;
 
   p.draw = function () {
     // p.background("pink");
@@ -261,42 +264,47 @@ var mainScene = function (p) {
 
     //Handle case for song end
     if (thisMeasure > measureData.length) {
-      // console.log("song ended!!");
+      console.log("song ended!!");
       clock.stop();
+      thisSongPlayer.stop();
+      // thisSongPlayer.loop = true;
 
       let backgroundCanvas = document.querySelector("#backgroundCanvas");
       backgroundCanvas.dispatchEvent(showSceneEvent);
 
-      let showRevelationSceneEvent = new CustomEvent("showScene", {
-        detail: {
-          songIndex: songId,
-        },
-      });
+      if (!songList[songId].cleared) {
+        // If first time cleared, show revelation scene
+        songList[songId].cleared = true;
+        let showRevelationSceneEvent = new CustomEvent("showScene", {
+          detail: {
+            songIndex: songId,
+          },
+        });
+        document
+          .getElementById("revelationCanvas")
+          .dispatchEvent(showRevelationSceneEvent);
 
-      document
-        .getElementById("revelationCanvas")
-        .dispatchEvent(showRevelationSceneEvent);
-      let showBackgroundShaderEvent = new CustomEvent("showScene", {
-        detail: {
-          shaderType: "radialGlow",
-          songIndex: songId,
-        },
-      });
-
-      document
-        .getElementById("backgroundCanvas")
-        .dispatchEvent(showBackgroundShaderEvent);
+        let showBackgroundShaderEvent = new CustomEvent("showScene", {
+          detail: {
+            shaderType: "radialGlow",
+            songIndex: songId,
+          },
+        });
+        document
+          .getElementById("backgroundCanvas")
+          .dispatchEvent(showBackgroundShaderEvent);
+      } else {
+        // Show Score scene
+      }
 
       // let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
       // songSelectorCanvas.dispatchEvent(showSceneEvent);
 
       mainSongCanvas.dispatchEvent(hideSceneEvent);
 
-      thisSongPlayer.stop();
-      thisSongPlayer.loop = true;
-
       //Reset at the end
       window.setTimeout(function () {
+        console.log("resetting for new song");
         resetForNewSong();
       }, 3000);
 
@@ -321,7 +329,7 @@ var mainScene = function (p) {
     if (songDelay < 0) {
       thisSongPlayer.start();
       setTimeout(function () {
-        setInterval(function () {
+        updateArrowsInterval = setInterval(function () {
           updateNotes();
           updateArrowRainbow();
         }, 10);
@@ -331,7 +339,7 @@ var mainScene = function (p) {
       }, -songDelay * 1000);
     } else {
       // For positive songDelays, startNotes before song
-      setInterval(function () {
+      updateArrowsInterval = setInterval(function () {
         updateNotes();
         updateArrowRainbow();
       }, 10);
@@ -621,6 +629,13 @@ var mainScene = function (p) {
     currentMeasure = -1;
     currentBeat = 0;
     pixelsElapsed = 0;
+    startDrawingArrows = false;
+    clearInterval(updateArrowsInterval);
+    measureData = null;
+    songBpm = null;
+    songDelay = null;
+    secondsPerBeat = null;
+    t = 0;
   }
 
   function padOrKeypress(direction) {

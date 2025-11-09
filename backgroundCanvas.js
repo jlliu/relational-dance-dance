@@ -102,10 +102,11 @@ var background = function (p) {
 
   function setupNavigation(thisCanvas) {
     thisCanvas.addEventListener("showScene", (e) => {
-      if (e.detail.shaderType) {
+      if (e.detail && e.detail.shaderType) {
         shaderType = e.detail.shaderType;
         //Animate in.revelation radio glow
         if (shaderType == "radialGlow") {
+          glowAmount = 1.0;
           glowSongIndex = parseInt(e.detail.songIndex);
           clock.stop();
           setTimeout(function () {
@@ -115,7 +116,6 @@ var background = function (p) {
       } else {
         shaderType = "mainGlow";
       }
-      songId = e.detail.songId;
       p.loop();
       thisCanvas.style.visibility = "visible";
       thisCanvas.style.opacity = 1;
@@ -141,6 +141,8 @@ var background = function (p) {
               thisCanvas.style.opacity = 0;
               setTimeout(function () {
                 thisCanvas.style.visibility = "hidden";
+                //Show canvas again for unlock scene
+                thisCanvas.dispatchEvent(showSceneEvent);
               }, sceneTransitionTime);
             }, 2000);
           }

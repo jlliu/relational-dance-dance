@@ -149,17 +149,30 @@ var songSelector = function (p) {
 
   function selectSong(songId) {
     console.log("selecting song: " + songList[songId].title);
-    // Go to the correct song
+    if (songId == 5) {
+      // Show unlock mode for ???
+      let showUnlockFromSongSelector = new CustomEvent("showScene", {
+        detail: {
+          prevScene: "songSelector",
+        },
+      });
+      document
+        .querySelector("#unlockCanvas")
+        .dispatchEvent(showUnlockFromSongSelector);
+      songSelectorCanvas.dispatchEvent(hideSceneEvent);
+    } else {
+      // Show normal songs
 
-    let selectSongEvent = new CustomEvent("showScene", {
-      detail: {
-        songId: songId,
-      },
-    });
-    document.querySelector("#mainSongCanvas").dispatchEvent(selectSongEvent);
-    songSelectorCanvas.dispatchEvent(hideSceneEvent);
+      let selectSongEvent = new CustomEvent("showScene", {
+        detail: {
+          songId: songId,
+        },
+      });
+      document.querySelector("#mainSongCanvas").dispatchEvent(selectSongEvent);
+      songSelectorCanvas.dispatchEvent(hideSceneEvent);
 
-    document.querySelector("#backgroundCanvas").dispatchEvent(hideSceneEvent);
+      document.querySelector("#backgroundCanvas").dispatchEvent(hideSceneEvent);
+    }
   }
 
   function handleInput(keyCode) {
@@ -298,12 +311,13 @@ var songSelector = function (p) {
     }
 
     let song = songList[songId];
-    songPreviewPlayer = song.songPlayer;
-    songPreviewPlayer.loop = true;
-    songPreviewPlayer.loopStart = song.sampleStart;
-    songPreviewPlayer.loopEnd = song.sampleStart + song.sampleLength;
-
-    songPreviewPlayer.start();
+    if (song.songPlayer) {
+      songPreviewPlayer = song.songPlayer;
+      songPreviewPlayer.loop = true;
+      songPreviewPlayer.loopStart = song.sampleStart;
+      songPreviewPlayer.loopEnd = song.sampleStart + song.sampleLength;
+      songPreviewPlayer.start();
+    }
   }
   function drawMenu() {
     p.push();

@@ -34,7 +34,7 @@ var revelation = function (p) {
     // 3. Lone Ranger
     ['"Thank you for', "wanting to soften", 'the pain"'],
     // 4. Filling the Void
-    ['"Thank you for', "keeping me", 'moving forward"'],
+    ['"Thank you for', "trying to keep me", 'moving forward"'],
   ];
 
   p.preload = function () {};
@@ -105,7 +105,22 @@ var revelation = function (p) {
               .querySelector("#backgroundCanvas")
               .dispatchEvent(endRevelationSceneEvent);
             setTimeout(function () {
-              revelationCanvas.dispatchEvent(hideSceneEvent);
+              // Transition to UNLOCK scene
+              let unlockCanvas = document.querySelector("#unlockCanvas");
+
+              // Hide revelation scene
+              setTimeout(function () {
+                revelationCanvas.dispatchEvent(hideSceneEvent);
+              }, 2000);
+              //Show unlock scene after background transition
+              setTimeout(function () {
+                let showUnlockFromRevelation = new CustomEvent("showScene", {
+                  detail: {
+                    prevScene: "revelation",
+                  },
+                });
+                unlockCanvas.dispatchEvent(showUnlockFromRevelation);
+              }, 4000);
             }, 2000);
           }
         }
@@ -131,8 +146,13 @@ var revelation = function (p) {
       p.noLoop();
       isCurrentScene = false;
       thisCanvas.style.opacity = 0;
+
       setTimeout(function () {
         thisCanvas.style.visibility = "hidden";
+        //Reset properties
+        typingIndex = 0;
+        lineShown = 0;
+        charsInLineShown = 0;
       }, sceneTransitionTime);
     });
   }
@@ -148,28 +168,6 @@ var revelation = function (p) {
       allCanvasesLoaded = true;
     }
   });
-
-  // function selectDifficulty(option) {
-  //   if (option == "Easy") {
-  //     console.log("selecting Easy");
-  //     storyModeDifficulty = "Easy";
-  //   }
-  //   if (option == "Normal") {
-  //     console.log("selecting Normal");
-  //     storyModeDifficulty = "Normal";
-  //   }
-  //   if (option == "Hard") {
-  //     console.log("selecting Hard");
-  //     storyModeDifficulty = "Hard";
-  //   }
-  //   //Progress to song selector
-  //   let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
-  //   songSelectorCanvas.dispatchEvent(showSceneEvent);
-  //   document.querySelector("#backgroundCanvas").dispatchEvent(showSceneEvent);
-  //   console.log("select difficulty action");
-  //   //Hide this canvas
-  //   difficultyCanvas.dispatchEvent(hideSceneEvent);
-  // }
 
   function handleInput(keyCode) {
     //Handle case for menu navigation
@@ -236,56 +234,6 @@ var revelation = function (p) {
     handleInput(e.code);
   });
 
-  //Create a class for menu items
-  // Create each one has an animation timer to calculate the offset
-  class menuItem {
-    constructor(menuText, xPos, yPos, action) {
-      this.menuText = menuText;
-      this.offset = 640 * scaleRatio;
-      this.animationTimer = 0.0;
-      this.yPos = yPos;
-      this.xPos = yPos;
-      this.action = action;
-    }
-    startAnimation() {
-      // Create timer for animation menu overlay and text
-      let _this = this;
-      let menuFadeInterval = setInterval(function () {
-        _this.animationTimer += 0.2;
-        if (_this.animationTimer >= 1.0) {
-          clearInterval(menuFadeInterval);
-          _this.animationTimer = 1.0;
-        }
-      }, 30);
-    }
-    display() {
-      // console.log("drawing menu item");
-      p.push();
-      p.translate(this.offset - this.offset * this.animationTimer, 0);
-      drawText(this.menuText, "mainYellow", 1, null, this.yPos);
-      p.pop();
-    }
-    select() {
-      this.action(this.menuText);
-    }
-  }
-
-  function drawMenu() {
-    let menuOpacity = 0.4;
-    // console.log(menuOpacity);
-    let overlayColor = `rgba(0,0,0,${menuOpacity})`;
-    p.fill(p.color(overlayColor));
-    p.rect(0, 0, p.width, p.height);
-    menuItems.forEach(function (menuItem, index) {
-      if (index != selectedMenuItemIndex) {
-        menuItem.display();
-      }
-    });
-    p.rect(0, 0, p.width, p.height);
-    //Display selected menu item at full brightness
-    menuItems[selectedMenuItemIndex].display();
-  }
-
   // Draw text centered on the screen or at a certain position if specified
   function drawText(textToDraw, fontName, scaleFactor, start_xPos, start_yPos) {
     if (scaleFactor == null) {
@@ -338,26 +286,6 @@ var revelation = function (p) {
   //   let thisCanvas = document.querySelector("#titleCanvas");
   //   thisCanvas.style.transform = `translate(-50%, -50%) scale(${scaleRatio})`;
   // }
-
-  // Animates a sprite given the images as frames, based on a certain interval, with optional callback
-  function intervalAnimation(sprite, frames, interval, callback) {
-    currentlyAnimating = true;
-    let original = sprite.buttonDefault;
-    frames.forEach(function (img, index) {
-      setTimeout(function () {
-        timedAnimationIndex = (index + 1) % frames.length;
-        sprite.buttonDefault = img;
-      }, interval * index);
-    });
-    // Another for the last frame
-    setTimeout(function () {
-      currentlyAnimating = false;
-      sprite.buttonDefault = original;
-      if (callback) {
-        callback();
-      }
-    }, interval * frames.length);
-  }
 
   function drawImageToScale(img, x, y) {
     p.image(
