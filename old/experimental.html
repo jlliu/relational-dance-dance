@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDR GAME</title>
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <script src="lib/p5.min.js"></script>
+  <script src="lib/tone.js"></script>
+
+  <!-- <script src="scenesInfo.js"></script>
+  <script src="audio.js" defer></script>
+  <script src="story.js" defer></script> -->
+
+  <!-- Uncomment for installation mode -->
+  <!-- <script src="refreshIdle.js" defer></script> -->
+   <!-- <script src="songParser.js" defer></script> -->
+    <!-- <script src="songData.js" defer></script> -->
+  <script src="experimentalSong.js" defer></script>
+
+  <script src="experimentalScene.js" defer></script>
+  <!-- <script src="game1.js" defer></script>
+  <script src="game2.js" defer></script>
+  <script src="game3.js" defer></script>
+  <script src="game4.js" defer></script>
+  <script src="game5.js" defer></script>
+  <script src="game6.js" defer></script>
+  <script src="game7.js" defer></script>
+  <script src="sketch_end.js" defer></script> -->
+
+</head>
+
+<body id="experimental">
+  <!-- <button id="goToEnding">Go to ending</button> -->
+  <main>
+
+    <p id="clickToStart">
+      Click anywhere to start
+
+    </p>
+    <h1 >Score: <span id="score">0</span></h1>
+
+    <div class="narrativeScene scene1" >
+      <h1>
+        <span data-cue="1">I</span>
+        <span data-cue="2">find</span>
+        <span data-cue="3">myself</span>
+        <span data-cue="4">replaying</span>
+        <span data-cue="5">these</span>
+        <span data-cue="6">familiar</span>
+        <span data-cue="7">old</span>
+        <span data-cue="8">stories</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene2" >
+      <h1>
+        <span data-cue="9">My</span>
+        <span data-cue="10">mind</span><br>
+        <span data-cue="11">for</span>
+        <span data-cue="12">gets</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene3" >
+      <h1>
+        <span data-cue="13">My</span>
+        <span data-cue="14">body</span><br>
+        <span data-cue="15">re</span><span data-cue="16">members</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene4" >
+      <h1>
+        <span data-cue="17">I</span>
+        <span data-cue="18">used</span>
+        <span data-cue="19">to</span>
+        <span data-cue="20">be</span><span data-cue="21">lieve</span>
+        <span data-cue="22">I</span>
+        <span data-cue="23">was</span>
+        <span data-cue="24">emp</span><span data-cue="25">ty,</span>
+        <span data-cue="26">a</span>
+        <span data-cue="27">blank</span>
+        <span data-cue="28">slate</span>
+      </h1>
+    </div>
+        <div class="narrativeScene scene5" >
+      <h1>
+        <span data-cue="29">I</span>
+        <span data-cue="30">was</span>
+        <span data-cue="31">looking</span>
+        <span data-cue="32">for</span>
+        <span data-cue="33">a</span>
+        <span data-cue="34">witness</span>
+        <span data-cue="35">all</span>
+        <span data-cue="36">along</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene6" >
+      <h1>
+        <span data-cue="37">I</span>
+        <span data-cue="38">have</span>
+        <span data-cue="39">learned</span>
+        <span data-cue="40">to</span>
+        <span data-cue="41">stay</span>
+        <span data-cue="42">in</span>
+        <span data-cue="43">constant</span>
+        <span data-cue="44">motion</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene7" >
+      <h1>
+        <span data-cue="45">But to hold</span><br>
+        <span data-cue="46">is to be held</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene8" >
+      <h1>
+        <span data-cue="47">I</span>
+        <span data-cue="48">can</span>
+        <span data-cue="49">be</span>
+        <span data-cue="50">lieve</span>
+
+        <span data-cue="51">in</span>
+        <span data-cue="52">the</span>
+        <span data-cue="53">truth</span>
+        <span data-cue="54">of</span>
+
+        <span data-cue="55">sen</span>
+        <span data-cue="56">tions</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene9" >
+      <h1>
+        <span data-cue="57">There</span>
+        <span data-cue="58">are</span>
+        <span data-cue="59">clues</span>
+        <span data-cue="60">in</span>
+
+        <span data-cue="61">the</span>
+        <span data-cue="62">hunch</span>
+        <span data-cue="63">of</span>
+        <span data-cue="64">my</span>
+
+        <span data-cue="65">shoul</span>
+        <span data-cue="66">ders</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene10" >
+      <h1>
+        <span data-cue="67">There</span>
+        <span data-cue="68">is</span>
+        <span data-cue="69">wisdom</span>
+        <span data-cue="70">in</span>
+
+        <span data-cue="71">the</span>
+        <span data-cue="72">sinking</span>
+        <span data-cue="73">of</span>
+        <span data-cue="74">my</span>
+
+        <span data-cue="75">ch</span>
+        <span data-cue="76">est</span>
+      </h1>
+    </div>
+
+
+    <div class="narrativeScene scene11" >
+      <h1>
+        <span data-cue="77">There</span>
+        <span data-cue="78">are</span>
+        <span data-cue="79">signs</span>
+        <span data-cue="80">in</span>
+
+        <span data-cue="81">the</span>
+        <span data-cue="82">clench</span>
+        <span data-cue="83">of</span>
+        <span data-cue="84">my</span>
+
+        <span data-cue="85">ja</span>
+         <span data-cue="86">ws</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene12" >
+      <h1>
+        <span data-cue="87">There</span>
+        <span data-cue="88">is</span>
+        <span data-cue="89">life</span>
+        <span data-cue="90">in</span>
+
+        <span data-cue="91">the</span>
+        <span data-cue="92">ache</span>
+        <span data-cue="93">of</span>
+        <span data-cue="94">my</span>
+
+        <span data-cue="95">he</span>
+         <span data-cue="96">art</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene13" >
+      <h1>
+        <span data-cue="97">What do I want</span>
+        <span data-cue="98">in this body of mine</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene14" >
+      <h1>
+        <span data-cue="99">I want to rupture</span>
+        <span data-cue="100">I want to repair</span>
+        <span data-cue="101">I want to hurt</span>
+        <span data-cue="102">I want to heal</span>
+        <span data-cue="103">I want to be won</span>
+        <span data-cue="104">I want to be lost</span>
+        <span data-cue="105">I want to be held</span>
+        <span data-cue="106">I want to be released</span>
+      </h1>
+    </div>
+
+
+    <div class="narrativeScene scene15" >
+      <h1>
+        <span data-cue="107">I wanted to become an artist</span>
+        <span data-cue="108">I wanted redemption</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene16" >
+      <h1>
+        <span data-cue="109">To make something</span>
+        <span data-cue="110">from nothing</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene17" >
+      <h1>
+        <span data-cue="111">Now</span>
+        <span data-cue="112">I</span>
+        <span data-cue="113">see</span>
+        <span data-cue="114">I've</span>
+        <span data-cue="115">been</span>
+
+        <span data-cue="116">the</span>
+        <span data-cue="117">consis</span>
+        <span data-cue="118">tent</span>
+        <span data-cue="119">and</span>
+        <span data-cue="120">re</span>
+
+        <span data-cue="121">liable</span>
+        <span data-cue="122">per</span>
+        <span data-cue="123">son</span>
+        <span data-cue="124">I</span>
+        <span data-cue="125">have</span>
+
+        <span data-cue="126">nee</span>
+        <span data-cue="127">deed</span>
+        <span data-cue="128">all</span>
+        <span data-cue="129">a</span>
+        <span data-cue="130">long</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene18" >
+      <h1>
+        <span data-cue="131">I create</span>
+        <span data-cue="132">to see</span>
+        <span data-cue="133">I create to </span>
+        <span data-cue="134">be seen</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene19" >
+      <h1>
+        <span data-cue="135">Can</span>
+        <span data-cue="136">you</span>
+        <span data-cue="137">see</span>
+        <span data-cue="138">me?</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene20" >
+      <h1>
+        <span data-cue="139">Can</span>
+        <span data-cue="140">you</span>
+        <span data-cue="141">see</span>
+        <span data-cue="142">you?</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene21" >
+      <h1>
+        <span data-cue="143">Can</span>
+        <span data-cue="144">you</span>
+        <span data-cue="145">reach</span>
+        <span data-cue="146">me?</span>
+      </h1>
+    </div>
+
+        <div class="narrativeScene scene22" >
+      <h1>
+        <span data-cue="147">Can</span>
+        <span data-cue="148">you</span>
+        <span data-cue="149">reach</span>
+        <span data-cue="150">you?</span>
+      </h1>
+    </div>
+
+
+    <div class="narrativeScene scene23" >
+      <h1>
+        <span data-cue="151">Can</span>
+        <span data-cue="152">you</span>
+        <span data-cue="153">feel</span>
+        <span data-cue="154">me?</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene24" >
+      <h1>
+        <span data-cue="155">Can</span>
+        <span data-cue="156">you</span>
+        <span data-cue="157">feel</span>
+        <span data-cue="158">you?</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene25" >
+      <h1>
+        <span data-cue="159">Can</span>
+        <span data-cue="160">you</span>
+        <span data-cue="161">know</span>
+        <span data-cue="162">me?</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene26" >
+      <h1>
+         <span data-cue="163">Can</span>
+        <span data-cue="164">you</span>
+        <span data-cue="165">know</span>
+        <span data-cue="166">you?</span>
+      </h1>
+    </div>
+
+
+    <div class="narrativeScene scene27" >
+      <h1>
+        <span data-cue="167">Will</span>
+        <span data-cue="168">you</span>
+        <span data-cue="169">run</span>
+        <span data-cue="170">?</span>
+      </h1>
+    </div>
+
+
+    <div class="narrativeScene scene28" >
+      <h1>
+        <span data-cue="171">Will</span>
+        <span data-cue="172">you</span>
+        <span data-cue="173">stay</span>
+        <span data-cue="174">?</span>
+      </h1>
+    </div>
+
+
+    <div class="narrativeScene scene29" >
+      <h1>
+        <span data-cue="175">Will</span>
+        <span data-cue="176">you</span>
+        <span data-cue="177">stop</span>
+        <span data-cue="178">?</span>
+      </h1>
+    </div>
+
+
+    <div class="narrativeScene scene30" >
+      <h1>
+        <span data-cue="179">Will</span>
+        <span data-cue="180">you</span>
+        <span data-cue="181">play</span>
+        <span data-cue="182">?</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene31" >
+      <h1>
+        <span data-cue="183">Will</span>
+        <span data-cue="184">you</span>
+        <span data-cue="185">pause</span>
+        <span data-cue="186">?</span>
+      </h1>
+    </div>
+
+
+    <div class="narrativeScene scene32" >
+      <h1>
+        <span data-cue="187">Will</span>
+        <span data-cue="188">you</span>
+        <span data-cue="189">please</span>
+        <span data-cue="190">?</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene33" >
+      <h1>
+        <span data-cue="191">Will</span>
+        <span data-cue="192">you</span>
+        <span data-cue="193">fight</span>
+        <span data-cue="194">?</span>
+      </h1>
+    </div>
+
+
+        <div class="narrativeScene scene34" >
+      <h1>
+        <span data-cue="195">Will</span>
+        <span data-cue="196">you</span>
+        <span data-cue="197">flee</span>
+        <span data-cue="198">?</span>
+      </h1>
+    </div>
+
+    <div class="narrativeScene scene35" >
+      <h1>
+        <span data-cue="199">Lose</span>
+        <span data-cue="200">me</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene36" >
+      <h1>
+        <span data-cue="201">Win</span>
+        <span data-cue="202">me</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene37" >
+      <h1>
+        <span data-cue="203">Hurt</span>
+        <span data-cue="204">me</span>
+      </h1>
+    </div>
+        <div class="narrativeScene scene38" >
+      <h1>
+        <span data-cue="205">Heal</span>
+        <span data-cue="206">me</span>
+      </h1>
+    </div>
+    <div class="narrativeScene scene39" >
+      <h1>
+        <span data-cue="207">Lo</span>
+         <span data-cue="208">ve</span>
+        <span data-cue="209">m</span>
+         <span data-cue="210">e</span>
+      </h1>
+    </div>
+        <div class="narrativeScene scene40" >
+      <h1>
+        <span data-cue="211">Fe</span>
+        <span data-cue="212">ar</span>
+        <span data-cue="213">m</span>
+         <span data-cue="214">e</span>
+      </h1>
+    </div>
+
+        <div class="narrativeScene scene41" >
+      <h1>
+        <span data-cue="215">Ho</span>
+        <span data-cue="216">ld</span>
+         <span data-cue="217">m</span>
+         <span data-cue="218">e</span>
+      </h1>
+    </div>
+        <div class="narrativeScene scene42" >
+      <h1>
+        <span data-cue="219">Re</span>
+        <span data-cue="220">lease</span>
+        <span data-cue="221">m</span>
+         <span data-cue="222">e</span>
+      </h1>
+    </div>
+
+
+
+
+
+
+    <h1 id="feedback"></h1>
+    <div id="arrow-canvas"></div>
+    <!-- <audio controls src="assets/song.mp3"></audio> -->
+
+     <!-- <audio id="ambientBreeze" controls src="assets/audio/ambient-breeze-Cmajor.wav"></audio> -->
+ <!-- <audio id="euroBeat" controls src="assets/audio/eurobeat-drums.mp3"></audio> -->
+  </main>
+
+
+</body>
+
+</html>

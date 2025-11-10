@@ -31,9 +31,13 @@ canvas, video {
   transition: opacity 1s;
 }
 
-video, #tutorial, #difficultyCanvas, #songSelectorCanvas, #mainSongCanvas, #revelationCanvas, #unlockCanvas{
+video, #tutorial, #difficultyCanvas, #songSelectorCanvas, #mainSongCanvas, #revelationCanvas, #unlockCanvas, #scoreCanvas, #gateCanvas{
   opacity:0;
   visibility:hidden;
+}
+
+#gateCanvas{
+  transition:none;
 }
 
 #feedback{
@@ -58,6 +62,7 @@ audio{
     height: 100%;
     max-height: 100vh;
     position:absolute;
+    image-rendering:pixelated;
 }
 
 #arrowCanvas{

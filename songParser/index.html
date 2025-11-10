@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DDR GAME</title>
+  <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
+  <!-- <script src="lib/p5.min.js"></script>
+  <script src="lib/tone.js"></script> -->
+
+  <!-- <script src="scenesInfo.js"></script>
+  <script src="audio.js" defer></script>
+  <script src="story.js" defer></script> -->
+
+  <!-- Uncomment for installation mode -->
+  <!-- <script src="refreshIdle.js" defer></script> -->
+   <script src="songParser.js" defer></script>
+  <!-- <script src="songData.js" defer></script>
+
+  <script src="arrowCanvas.js" defer></script> -->
+  <!-- <script src="game1.js" defer></script>
+  <script src="game2.js" defer></script>
+  <script src="game3.js" defer></script>
+  <script src="game4.js" defer></script>
+  <script src="game5.js" defer></script>
+  <script src="game6.js" defer></script>
+  <script src="game7.js" defer></script>
+  <script src="sketch_end.js" defer></script> -->
+  <style>
+    textarea{
+      width:800px;
+      height:200px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <!-- <button id="goToEnding">Go to ending</button> -->
+   <label>Offset Ids by:</label>
+  <input id="number" type="number" value="0" /><br>
+  <label>bpm:</label>
+  <input id="bpm" type="number" value="120" step="any"/><br><br>
+  <label>delay (in seconds, add negative if relevant):</label>
+  <input id="delay" type="number" value="0" step="any"/><br><br>
+   <label>Input SM file (without header data and comments):</label><br>
+  <textarea id="inputSong" placeholder="input .sm file"></textarea><br>
+  <button id="parseButton">Parse Song</button><br>
+
+  <textarea id="results"></textarea>
+
+
+</body>
+
+</html>

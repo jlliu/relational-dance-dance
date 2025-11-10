@@ -15,7 +15,7 @@ let fonts = {
   mainYellow: {
     sets: [
       {
-        src: "assets/font-spritesheet.png",
+        src: "/assets/font-spritesheet.png",
         charSet: characterString.split(""),
         size: { width: 40, height: 58 },
 
@@ -29,7 +29,7 @@ let fonts = {
   greenHelper: {
     sets: [
       {
-        src: "assets/green-helper-text-spritesheet.png",
+        src: "/assets/green-helper-text-spritesheet.png",
         charSet: characterString.split(""),
         size: { width: 24, height: 35 },
         imgObj: null,
@@ -41,7 +41,7 @@ let fonts = {
   whitePixel: {
     sets: [
       {
-        src: "assets/white-pixel-font-spritesheet.png",
+        src: "/assets/white-pixel-font-spritesheet.png",
         charSet: characterString.split(""),
         size: { width: 24, height: 35 },
 
@@ -63,12 +63,12 @@ let fonts = {
   pink: {
     sets: [
       {
-        src: "assets/main-pink-character-spritesheet.png",
+        src: "/assets/main-pink-character-spritesheet.png",
         charSet: mainPinkCharacters.split(""),
         size: { width: 60, height: 84 },
       },
       {
-        src: "assets/wide-pink-character-spritesheet.png",
+        src: "/assets/wide-pink-character-spritesheet.png",
         charSet: widePinkCharacters.split(""),
         size: { width: 84, height: 84 },
         imgObj: null,
@@ -162,91 +162,108 @@ const hideSceneEvent = new CustomEvent("hideScene");
 const endRevelationSceneEvent = new CustomEvent("endRevelationScene");
 const sceneTransitionTime = 1000;
 
-// Background, title, tutorial, difficulty, songSelector, mainSong, unlockCanvas,
-let totalCanvases = 7;
+// Background, title, tutorial, difficulty, songSelector, mainSong, revelation, unlockCanvas, scoreCanvas, experimental, gates
+let totalCanvases = 11;
 
 let storyModeDifficulty = "Normal";
 
+let globalClock = new Tone.Clock((time) => {}, 1);
+
+globalClock.start();
+
 let songList = [
   {
-    bannerImg: `songAssets/song1-banner.png`,
+    bannerImg: `/songAssets/song1-banner.png`,
     title: `Walkin' on Eggshells`,
     cdImg: `song1-cd.png`,
     songData: eggshells,
-    songFile: `songAssets/Music/walking_on_sunshine.ogg`,
+    songFile: `/songAssets/Music/walking_on_sunshine.ogg`,
     songPlayer: new Tone.Player(
-      `songAssets/Music/walking_on_sunshine.ogg`
+      `/songAssets/Music/walking_on_sunshine.ogg`
     ).toDestination(),
     sampleStart: 57.784,
     sampleLength: 15,
     songVideoEl: document.querySelector("#cowgirlVideo"),
     cleared: false,
+    scores: [],
   },
   {
     bannerImg: `songAssets/song2-banner.png`,
     title: `Kung Fu Fawning`,
     cdImg: `song2-cd.png`,
     songData: kungfu,
-    songFile: `songAssets/Music/kungfu.ogg`,
-    songPlayer: new Tone.Player(`songAssets/Music/kungfu.ogg`).toDestination(),
+    songFile: `/songAssets/Music/kungfu.ogg`,
+    songPlayer: new Tone.Player(`/songAssets/Music/kungfu.ogg`).toDestination(),
     sampleStart: 42.713,
     sampleLength: 15,
     songVideoEl: document.querySelector("#cowgirlVideo"),
     cleared: false,
+    scores: [],
   },
   {
-    bannerImg: `songAssets/song3-banner.png`,
+    bannerImg: `/songAssets/song3-banner.png`,
     title: `Chasing Breadcrumbs`,
     cdImg: `song3-cd.png`,
     songData: barbie,
-    songFile: `songAssets/Music/barbie_girl.mp3`,
+    songFile: `/songAssets/Music/barbie_girl.mp3`,
     songPlayer: new Tone.Player(
-      `songAssets/Music/barbie_girl.mp3`
+      `/songAssets/Music/barbie_girl.mp3`
     ).toDestination(),
     sampleStart: 78.21,
     sampleLength: 11.0,
     songVideoEl: document.querySelector("#cowgirlVideo"),
     cleared: false,
+    scores: [],
   },
   {
     bannerImg: `songAssets/song4-banner.png`,
     title: `Lone Ranger`,
     cdImg: `song4-cd.png`,
     songData: cowgirl,
-    songFile: `songAssets/Music/cowgirl.ogg`,
-    songPlayer: new Tone.Player(`songAssets/Music/cowgirl.ogg`).toDestination(),
+    songFile: `/songAssets/Music/cowgirl.ogg`,
+    songPlayer: new Tone.Player(
+      `/songAssets/Music/cowgirl.ogg`
+    ).toDestination(),
     sampleStart: 41.74,
     sampleLength: 15.0,
     songVideoEl: document.querySelector("#cowgirlVideo"),
     cleared: false,
+    scores: [],
   },
   {
     bannerImg: `songAssets/song5-banner.png`,
     title: `ENTER THE VOiD`,
     cdImg: `song5-cd.png`,
     songData: sandstorm,
-    songFile: `songAssets/Music/sandstorm.ogg`,
+    songFile: `/songAssets/Music/sandstorm.ogg`,
     songPlayer: new Tone.Player(
-      `songAssets/Music/Sandstorm.ogg`
+      `/songAssets/Music/Sandstorm.ogg`
     ).toDestination(),
     sampleStart: 36.54,
     sampleLength: 12.0,
     songVideoEl: document.querySelector("#cowgirlVideo"),
     cleared: false,
+    scores: [],
   },
   {
     bannerImg: `songAssets/song6-banner.png`,
     title: `???`,
     cdImg: `song6-cd.png`,
     songData: eggshells,
-    songFile: null,
-    songPlayer: null,
-    sampleStart: null,
-    sampleLength: null,
+    songFile: `/songAssets/Music/sandstorm.ogg`,
+    songPlayer: new Tone.Player(
+      `/songAssets/Music/ambientLoop.mp3`
+    ).toDestination(),
+    sampleStart: 3.0,
+    sampleLength: 0.2,
     songVideoEl: document.querySelector("#cowgirlVideo"),
     cleared: false,
+    scores: [],
   },
 ];
+
+// Access images from song selector and score canvas
+let songBannersImgs = [];
 
 // Revelation scene
 
