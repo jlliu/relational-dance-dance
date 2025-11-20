@@ -43,7 +43,13 @@ var title = function (p) {
   let selectedMenuItemIndex = 0;
 
   // Setup all fonts in this file
-  let fontsToLoad = ["mainYellow", "pink", "greenHelper", "whitePixel"];
+  let fontsToLoad = [
+    "mainYellow",
+    "pink",
+    "greenHelper",
+    "whitePixel",
+    "whiteTerminal",
+  ];
 
   p.preload = function () {
     //Preload a background here
@@ -168,6 +174,11 @@ var title = function (p) {
     // Show tutorial
     // document.getElementById("tutorial").dispatchEvent(showSceneEvent);
     // Show difficulty (for testing)
+    // let showBackgroundShaderEvent = new CustomEvent("showScene", {
+    //   detail: {
+    //     songIndex: 2,
+    //   },
+    // });
     document.getElementById("difficultyCanvas").dispatchEvent(showSceneEvent);
 
     titleCanvas.dispatchEvent(hideSceneEvent);

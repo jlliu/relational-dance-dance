@@ -9,6 +9,9 @@ let digitList = digitString.split("");
 
 let mainPinkCharacters = `ABCDEFGHIJKLNOPQRSTUVXYZabcdefghijklnopqrstuvxyz1234567890.,?!-"'()[] `;
 
+let terminalString = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890.,?!-"'()[]> `;
+let terminalList = terminalString.split("");
+
 let widePinkCharacters = `MWmw`;
 
 let fonts = {
@@ -45,6 +48,19 @@ let fonts = {
         charSet: characterString.split(""),
         size: { width: 24, height: 35 },
 
+        imgObj: null,
+      },
+    ],
+
+    charsToImgs: {},
+  },
+
+  whiteTerminal: {
+    sets: [
+      {
+        src: "/assets/white-terminal.png",
+        charSet: terminalString.split(""),
+        size: { width: 18, height: 29 },
         imgObj: null,
       },
     ],
@@ -162,8 +178,8 @@ const hideSceneEvent = new CustomEvent("hideScene");
 const endRevelationSceneEvent = new CustomEvent("endRevelationScene");
 const sceneTransitionTime = 1000;
 
-// Background, title, tutorial, difficulty, songSelector, mainSong, revelation, unlockCanvas, scoreCanvas, experimental, gates
-let totalCanvases = 11;
+// Background, title, tutorial, difficulty, songSelector, mainSong, revelation, unlockCanvas, scoreCanvas, experimental, gates, service mode
+let totalCanvases = 12;
 
 let storyModeDifficulty = "Normal";
 

@@ -1239,7 +1239,9 @@ var arrowScene = function (p) {
           "backgroundTransition",
           { detail: percentageElapsed }
         );
-        window.dispatchEvent(backgroundTransitionEvent);
+        document
+          .querySelector("#backgroundCanvas")
+          .dispatchEvent(backgroundTransitionEvent);
         whiteBackground = false;
         let yPos = p.map(percentageElapsed, 0, 1, hitPos.y, hitPosFinal.y);
         this.yPos = yPos;
@@ -1546,7 +1548,9 @@ var arrowScene = function (p) {
     let backgroundCueEvent = new CustomEvent("backgroundCue", {
       detail: cueCount,
     });
-    window.dispatchEvent(backgroundCueEvent);
+    document
+      .querySelector("#backgroundCanvas")
+      .dispatchEvent(backgroundCueEvent);
   }
 
   function triggerNarrative(cueCount) {

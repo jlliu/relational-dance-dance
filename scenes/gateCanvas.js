@@ -66,9 +66,8 @@ var gate = function (p) {
     console.log("animating gates");
     let transitionTime = gateId == 5 ? 3000 : 4000;
     let closingInterval = setInterval(function () {
-      console.log(gatePositions.left);
-      console.log(gatePositions.right);
-      if (gatePositions.left >= 0 || gatePositions.right <= 320) {
+      //If we've reached the end
+      if (gatePositions.left + 15 >= 0 || gatePositions.right - 15 <= 320) {
         gatePositions.left = 0;
         gatePositions.right = 320;
         clearInterval(closingInterval);
@@ -80,9 +79,10 @@ var gate = function (p) {
 
     setTimeout(function () {
       let openingInterval = setInterval(function () {
-        console.log(gatePositions.left);
-        console.log(gatePositions.right);
-        if (gatePositions.left <= -320 || gatePositions.right >= 640) {
+        if (
+          gatePositions.left + -15 <= -320 ||
+          gatePositions.right + 15 >= 640
+        ) {
           gatePositions.left = -320;
           gatePositions.right = 640;
           clearInterval(openingInterval);

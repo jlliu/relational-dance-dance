@@ -20,8 +20,6 @@ var difficulty = function (p) {
   let menuItems = [];
   let selectedMenuItemIndex = 1;
 
-  let clock = new Tone.Clock((time) => {}, 1);
-
   p.preload = function () {};
 
   p.setup = function () {
@@ -36,8 +34,6 @@ var difficulty = function (p) {
     p.noSmooth();
 
     p.noStroke();
-
-    clock.start();
 
     menuItems = [
       new menuItem("Easy", null, 80, selectDifficulty),
@@ -56,7 +52,7 @@ var difficulty = function (p) {
     // Start drawing things if all canvases have loaded
     if (allCanvasesLoaded) {
       drawMenu();
-      if (Math.floor(clock.seconds) % 2 == 0) {
+      if (Math.floor(globalClock.seconds) % 2 == 0) {
         drawText("PRESS ENTER TO SELECT", "greenHelper", 1, null, 430);
       }
     }
@@ -120,11 +116,19 @@ var difficulty = function (p) {
       console.log("selecting Hard");
       storyModeDifficulty = "Hard";
     }
-    //Progress to song selector
-    let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
-    songSelectorCanvas.dispatchEvent(showSceneEvent);
-    document.querySelector("#backgroundCanvas").dispatchEvent(showSceneEvent);
-    console.log("select difficulty action");
+    // //Progress to song selector
+    // let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
+    // songSelectorCanvas.dispatchEvent(showSceneEvent);
+    // document.querySelector("#backgroundCanvas").dispatchEvent(showSceneEvent);
+    // console.log("select difficulty action");
+    // //Hide this canvas
+    // difficultyCanvas.dispatchEvent(hideSceneEvent);
+
+    //Test service mode
+
+    let serviceModeCanvas = document.querySelector("#serviceModeCanvas");
+    serviceModeCanvas.dispatchEvent(showSceneEvent);
+    document.querySelector("#backgroundCanvas").dispatchEvent(hideSceneEvent);
     //Hide this canvas
     difficultyCanvas.dispatchEvent(hideSceneEvent);
   }

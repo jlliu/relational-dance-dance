@@ -107,6 +107,10 @@ var background = function (p) {
     thisCanvas.addEventListener("showScene", (e) => {
       if (e.detail && e.detail.shaderType) {
         shaderType = e.detail.shaderType;
+        // //Override to make purple if needed
+        // if (e.detail.colorCode == 49) {
+        //   narrativeCue = 49;
+        // }
         //Animate in.revelation radio glow
         if (shaderType == "radialGlow") {
           glowAmount = 1.0;
@@ -151,6 +155,18 @@ var background = function (p) {
           }
         }, 10);
       }, 2000);
+    });
+
+    thisCanvas.addEventListener("backgroundTransition", (e) => {
+      let canvasToShow = document.querySelector("#backgroundCanvas");
+      canvasToShow.style.display = "block";
+      canvasToShow.style.opacity = 1;
+      percentageElapsed = e.detail;
+      transitionStarted = 1;
+    });
+
+    thisCanvas.addEventListener("backgroundCue", (e) => {
+      narrativeCue = e.detail;
     });
   }
 
