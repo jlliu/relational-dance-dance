@@ -27,6 +27,14 @@ var serviceMode = function (p) {
 
   let visibleScene = null;
 
+  let settingsDialogueScenes = [];
+
+  let exitDialogueScenes = [];
+
+  let currentDialogueSceneIndex = 0;
+
+  let dialogueSceneType;
+
   p.preload = function () {};
 
   p.setup = function () {
@@ -53,15 +61,18 @@ var serviceMode = function (p) {
 
     mainMenu = new menuGroup(mainMenuItems, 200, 140, "MENU");
 
-    let dialogueMenuItems = [
-      new menuItem("I AM YOU", showInputCheck),
-      new menuItem("SECOND OPTION", showSoundCheck),
-      new menuItem("THIRD OPTION", showSoundCheck),
-    ];
+    // let dialogueMenuItems = [
+    //   new menuItem("I AM YOU", showInputCheck),
+    //   new menuItem("SECOND OPTION", showSoundCheck),
+    //   new menuItem("THIRD OPTION", showSoundCheck),
+    // ];
 
-    let dialogueMenuGroup = new menuGroup(dialogueMenuItems, 360, "I AM...");
+    // let dialogueMenuGroup = new menuGroup(dialogueMenuItems, 360, "I AM...");
 
-    dialogueScene1 = new dialogueScene(["WHO ARE YOU?"], dialogueMenuGroup);
+    // dialogueScene1 = new dialogueScene(["WHO ARE YOU?"], dialogueMenuGroup);
+
+    settingsDialogueScenes = setupDialogueScenes(settingsDialogue, "settings");
+    exitDialogueScenes = setupDialogueScenes(exitDialogue, "exit");
 
     currentMenu = mainMenu;
 
@@ -71,6 +82,33 @@ var serviceMode = function (p) {
 
     setupNavigation(serviceModeCanvas);
   };
+
+  function setupDialogueScenes(dialogueData, sceneType) {
+    let dialogueScenes = [];
+
+    dialogueData.forEach(function (sceneData) {
+      let leftText = sceneData.left;
+      let menuOptions = sceneData.right.options;
+      let dialogueMenuItems = [];
+
+      menuOptions.forEach(function (option) {
+        let thisItem = new menuItem(option, progressDialogue);
+        dialogueMenuItems.push(thisItem);
+      });
+
+      let thisMenuGroup = new menuGroup(
+        dialogueMenuItems,
+        360,
+        0,
+        sceneData.right.title
+      );
+
+      let thisDialogueScene = new dialogueScene(leftText, thisMenuGroup);
+      dialogueScenes.push(thisDialogueScene);
+    });
+
+    return dialogueScenes;
+  }
 
   p.draw = function () {
     // p.clear();
@@ -83,10 +121,6 @@ var serviceMode = function (p) {
 
       // if (mainMenu == currentMenu) {
       visibleScene.display();
-      // }
-
-      // if (showSettings) {
-      //   dialogueScene1.display();
       // }
       // Note to self:
       // We need a system that displays whatever the current scene is...
@@ -152,8 +186,29 @@ var serviceMode = function (p) {
   }
 
   function showGameSettings() {
-    currentMenu = dialogueScene1.menuGroup;
-    visibleScene = dialogueScene1;
+    visibleScene = settingsDialogueScenes[0];
+    currentMenu = settingsDialogueScenes[0].menuGroup;
+    dialogueSceneType = "settings";
+  }
+
+  function progressDialogue() {
+    console.log("progress dialogue event");
+    currentDialogueSceneIndex++;
+    //We've reached end of dialogue scenes
+    if (
+      dialogueSceneType == "settings" &&
+      currentDialogueSceneIndex >= settingsDialogueScenes.length
+    ) {
+      visibleScene = mainMenu;
+      currentMenu = mainMenu;
+    } else if (
+      dialogueSceneType == "exit" &&
+      currentDialogueSceneIndex >= exitDialogueScenes.length
+    ) {
+    } else {
+      visibleScene = settingsDialogueScenes[currentDialogueSceneIndex];
+      currentMenu = settingsDialogueScenes[currentDialogueSceneIndex].menuGroup;
+    }
   }
 
   function handleInput(keyCode) {
@@ -262,7 +317,8 @@ var serviceMode = function (p) {
       // Draw menu on the right
       // let Y_start_xPos = 360;
       p.push();
-      p.translate(0, (480 - this.menuGroup.height) / 2);
+      console.log(this.menuGroup.getHeight());
+      p.translate(0, ((480 - this.menuGroup.getHeight()) / 2) * scaleRatio);
       this.menuGroup.display(true);
       p.pop();
     }
