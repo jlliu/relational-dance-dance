@@ -61,16 +61,6 @@ var serviceMode = function (p) {
 
     mainMenu = new menuGroup(mainMenuItems, 200, 140, "MENU");
 
-    // let dialogueMenuItems = [
-    //   new menuItem("I AM YOU", showInputCheck),
-    //   new menuItem("SECOND OPTION", showSoundCheck),
-    //   new menuItem("THIRD OPTION", showSoundCheck),
-    // ];
-
-    // let dialogueMenuGroup = new menuGroup(dialogueMenuItems, 360, "I AM...");
-
-    // dialogueScene1 = new dialogueScene(["WHO ARE YOU?"], dialogueMenuGroup);
-
     settingsDialogueScenes = setupDialogueScenes(settingsDialogue, "settings");
     exitDialogueScenes = setupDialogueScenes(exitDialogue, "exit");
 
@@ -120,7 +110,14 @@ var serviceMode = function (p) {
       // drawMenu();
 
       // if (mainMenu == currentMenu) {
-      visibleScene.display();
+
+      //Center main menu
+      if (visibleScene == mainMenu) {
+        mainMenu.display(true);
+      } else {
+        visibleScene.display();
+      }
+
       // }
       // Note to self:
       // We need a system that displays whatever the current scene is...
@@ -304,7 +301,7 @@ var serviceMode = function (p) {
     }
     display() {
       //Draw left side of text
-      let L_start_xPos = 50;
+      let L_start_xPos = 30;
       //Center it vertically
       let L_current_yPos = (480 - this.height_L) / 2;
       for (var i = 0; i < this.numOfLines_L; i++) {
@@ -314,13 +311,7 @@ var serviceMode = function (p) {
         L_current_yPos += 29;
       }
 
-      // Draw menu on the right
-      // let Y_start_xPos = 360;
-      p.push();
-      console.log(this.menuGroup.getHeight());
-      p.translate(0, ((480 - this.menuGroup.getHeight()) / 2) * scaleRatio);
       this.menuGroup.display(true);
-      p.pop();
     }
   }
 
@@ -338,24 +329,31 @@ var serviceMode = function (p) {
     }
     getHeight() {
       let totalHeight = 0;
-      if (this.title) {
-        totalHeight += 60;
+      let lineHeight = this.itemList[0].height;
+      if (this.titleText) {
+        totalHeight = lineHeight + 60;
       }
       let _this = this;
       this.itemList.forEach(function (menuItem) {
         totalHeight += menuItem.height + 15;
       });
+      //Compensate for last one not having a gap
+      totalHeight -= 15;
       return totalHeight;
     }
-    display(center) {
+    display(verticallyCenter) {
       let current_yPos = this.yPos;
 
-      if (center == true) {
+      //Push for translate
+      if (verticallyCenter) {
         current_yPos = 0;
+        p.push();
+        p.translate(0, ((480 - this.getHeight()) / 2) * scaleRatio);
       }
+
       //Draw title
       if (this.titleText) {
-        drawText(this.titleText, "whiteTerminal", 1, this.xPos, this.yPos);
+        drawText(this.titleText, "whiteTerminal", 1, this.xPos, current_yPos);
         current_yPos = current_yPos + 60;
       }
 
@@ -367,6 +365,11 @@ var serviceMode = function (p) {
 
         current_yPos += menuItem.height + 15;
       });
+    }
+
+    //Pop for translate
+    if(verticallyCenter) {
+      p.pop();
     }
   }
 
@@ -421,16 +424,6 @@ var serviceMode = function (p) {
       }, 160);
     }
   }
-
-  // function drawMenu() {
-  //   menuItems.forEach(function (menuItem, index) {
-  //     if (index != selectedMenuItemIndex) {
-  //       menuItem.display();
-  //     }
-  //   });
-  //   //Display selected menu item at full brightness
-  //   menuItems[selectedMenuItemIndex].display();
-  // }
 
   // Draw text centered on the screen or at a certain position if specified
   function drawText(textToDraw, fontName, scaleFactor, start_xPos, start_yPos) {
