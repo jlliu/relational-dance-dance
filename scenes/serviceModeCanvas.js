@@ -145,6 +145,8 @@ var serviceMode = function (p) {
         thisCanvas.style.visibility = "visible";
         thisCanvas.style.opacity = 1;
         isCurrentScene = true;
+        // Animate in main menu
+        mainMenu.animateMenu();
       }, sceneTransitionTime);
     });
     thisCanvas.addEventListener("hideScene", (e) => {
@@ -183,9 +185,12 @@ var serviceMode = function (p) {
   }
 
   function showGameSettings() {
-    visibleScene = settingsDialogueScenes[0];
-    currentMenu = settingsDialogueScenes[0].menuGroup;
+    let startingDialogueScene = settingsDialogueScenes[0];
+    visibleScene = startingDialogueScene;
+    currentMenu = startingDialogueScene.menuGroup;
     dialogueSceneType = "settings";
+    currentDialogueSceneIndex = 0;
+    startingDialogueScene.animateScene();
   }
 
   function progressDialogue() {
@@ -203,7 +208,9 @@ var serviceMode = function (p) {
       currentDialogueSceneIndex >= exitDialogueScenes.length
     ) {
     } else {
-      visibleScene = settingsDialogueScenes[currentDialogueSceneIndex];
+      let nextDialogueScene = settingsDialogueScenes[currentDialogueSceneIndex];
+      visibleScene = nextDialogueScene;
+      nextDialogueScene.animateScene();
       currentMenu = settingsDialogueScenes[currentDialogueSceneIndex].menuGroup;
     }
   }
@@ -216,25 +223,32 @@ var serviceMode = function (p) {
         let menuItems = currentMenu.itemList;
         if (keyCode == "ArrowDown" || keyCode == "KeyS") {
           if (menuIndex < menuItems.length - 1) {
-            currentMenu.activeMenuItemIndex++;
-            menuItems.forEach(function (menuItem) {
-              menuItem.active = false;
-            });
-            menuItems[currentMenu.activeMenuItemIndex].active = true;
+            if (currentMenu.doneAnimating && !currentMenu.currentlyFlashing) {
+              currentMenu.activeMenuItemIndex++;
+              menuItems.forEach(function (menuItem) {
+                menuItem.active = false;
+              });
+              menuItems[currentMenu.activeMenuItemIndex].active = true;
+            }
           }
         }
         if (keyCode == "ArrowUp" || keyCode == "KeyW") {
           if (menuIndex > 0) {
-            currentMenu.activeMenuItemIndex--;
+            if (currentMenu.doneAnimating && !currentMenu.currentlyFlashing) {
+              currentMenu.activeMenuItemIndex--;
+
+              menuItems.forEach(function (menuItem) {
+                menuItem.active = false;
+              });
+              menuItems[currentMenu.activeMenuItemIndex].active = true;
+            }
           }
-          menuItems.forEach(function (menuItem) {
-            menuItem.active = false;
-          });
-          menuItems[currentMenu.activeMenuItemIndex].active = true;
         }
         //Select menu item
         if (keyCode == "Enter") {
-          menuItems[currentMenu.activeMenuItemIndex].select();
+          if (currentMenu.doneAnimating) {
+            menuItems[currentMenu.activeMenuItemIndex].select();
+          }
         }
       }
     }
@@ -298,20 +312,71 @@ var serviceMode = function (p) {
         this.numOfLines_L = this.leftText.length;
         this.height_L = 29 * this.numOfLines_L;
       }
+      this.charsInLineShown = 0;
+      this.lineShown = 0;
     }
     display() {
       //Draw left side of text
       let L_start_xPos = 30;
       //Center it vertically
       let L_current_yPos = (480 - this.height_L) / 2;
+      //Draw left text, line by line
       for (var i = 0; i < this.numOfLines_L; i++) {
         let textToDraw =
           typeof this.leftText == "string" ? this.leftText : this.leftText[i];
-        drawText(textToDraw, "whiteTerminal", 1, L_start_xPos, L_current_yPos);
+
+        //Draw previous lines
+        if (this.lineShown > i) {
+          drawText(
+            textToDraw,
+            "whiteTerminal",
+            1,
+            L_start_xPos,
+            L_current_yPos
+          );
+          //Draw currently typing lines
+        } else if (this.lineShown == i) {
+          drawText(
+            textToDraw.slice(0, this.charsInLineShown),
+            "whiteTerminal",
+            1,
+            L_start_xPos,
+            L_current_yPos
+          );
+        }
+
         L_current_yPos += 29;
       }
 
       this.menuGroup.display(true);
+    }
+
+    // Animates the left with a typing, then fades in the menu part
+    animateScene() {
+      //Set up Lines list
+      let lines;
+      if (typeof this.leftText == "string") {
+        lines = [this.leftText];
+      } else {
+        lines = this.leftText;
+      }
+      let _this = this;
+      let typingAnimationTimer = setInterval(function () {
+        _this.charsInLineShown++;
+        //Reach the end of line, increment line shown
+
+        if (_this.charsInLineShown == lines[_this.lineShown].length) {
+          _this.lineShown++;
+          _this.charsInLineShown = 0;
+          if (_this.lineShown == lines.length) {
+            // END OF TYPING ANIMATION
+            clearInterval(typingAnimationTimer);
+
+            // TODO: Animate in menu
+            _this.menuGroup.animateMenu();
+          }
+        }
+      }, 60);
     }
   }
 
@@ -326,6 +391,11 @@ var serviceMode = function (p) {
       this.itemList[0].active = true;
       this.titleText = titleText;
       this.height = 0;
+      // 0 linesShown means that the first line is showing
+      this.linesShown = 0;
+      this.titleTextOpacity = 0;
+      this.doneAnimating = false;
+      this.currentlyFlashing = false;
     }
     getHeight() {
       let totalHeight = 0;
@@ -353,7 +423,9 @@ var serviceMode = function (p) {
 
       //Draw title
       if (this.titleText) {
+        p.tint(255, this.titleTextOpacity * 255);
         drawText(this.titleText, "whiteTerminal", 1, this.xPos, current_yPos);
+        p.tint(255, 255);
         current_yPos = current_yPos + 60;
       }
 
@@ -365,11 +437,47 @@ var serviceMode = function (p) {
 
         current_yPos += menuItem.height + 15;
       });
-    }
 
-    //Pop for translate
-    if(verticallyCenter) {
-      p.pop();
+      //Pop for translate
+      if (verticallyCenter) {
+        p.pop();
+      }
+    }
+    animateMenu() {
+      //Animates list of menu items line by line, depending on if there is a title...
+      let _this = this;
+      let lineShowInterval = setInterval(function () {
+        _this.linesShown++;
+        let totalLines = _this.titleText
+          ? _this.itemList.length + 1
+          : _this.itemList.length;
+        if (_this.linesShown >= totalLines) {
+          clearInterval(lineShowInterval);
+        }
+        if (_this.titleText && _this.linesShown == 1) {
+          //Show title
+          let fadeTitleTimeout = setInterval(function () {
+            _this.titleTextOpacity += 0.05;
+            if (_this.titleTextOpacity >= 1.0) {
+              _this.titleTextOpacity = 1.0;
+
+              clearInterval(fadeTitleTimeout);
+            }
+          }, 24);
+        } else {
+          let thisMenuItemIndex = _this.titleText
+            ? _this.linesShown - 2
+            : _this.linesShown - 1;
+
+          let thisMenuItem = _this.itemList[thisMenuItemIndex];
+          thisMenuItem.fadeInAnimation();
+          if (thisMenuItemIndex == _this.itemList.length - 1) {
+            thisMenuItem.fadeInAnimation(true);
+          } else {
+            thisMenuItem.fadeInAnimation();
+          }
+        }
+      }, 300);
     }
   }
 
@@ -379,6 +487,7 @@ var serviceMode = function (p) {
       this.menuText = menuText;
       this.action = action;
       this.active = false;
+      this.showCarat = false;
 
       //Account for height of multiple lines
       if (typeof this.menuText == "string") {
@@ -388,11 +497,11 @@ var serviceMode = function (p) {
         this.numOfLines = this.menuText.length;
         this.height = 29 * this.numOfLines;
       }
-      this.opacity = 1;
+      this.opacity = 0;
     }
 
     display(xPos, yPos) {
-      if (this.active) {
+      if (this.active && this.showCarat) {
         let charWidth = fonts["whiteTerminal"].sets[0].size.width;
         drawText(">", "whiteTerminal", 1, xPos - charWidth * 1.5, yPos);
       }
@@ -407,9 +516,29 @@ var serviceMode = function (p) {
         current_yPos += 29;
       }
     }
+    fadeInAnimation(isLast) {
+      let _this = this;
+      let fadeInAnimation = setInterval(function () {
+        _this.opacity += 0.05;
+        if (_this.opacity >= 1.0) {
+          _this.opacity = 1.0;
+          if (isLast) {
+            setTimeout(function () {
+              let thisItemList = currentMenu.itemList;
+              currentMenu.doneAnimating = true;
+              thisItemList.forEach(function (item) {
+                item.showCarat = true;
+              });
+            }, 200);
+          }
+          clearInterval(fadeInAnimation);
+        }
+      }, 24);
+    }
     select() {
       let _this = this;
       let count = 0;
+      currentMenu.currentlyFlashing = true;
       let flashInterval = setInterval(function () {
         _this.opacity = 0;
         setTimeout(function () {
@@ -417,6 +546,7 @@ var serviceMode = function (p) {
         }, 80);
         _this.opacity = 0;
         if (count == 10) {
+          currentMenu.currentlyFlashing = false;
           clearInterval(flashInterval);
           _this.action(_this.menuText);
         }
