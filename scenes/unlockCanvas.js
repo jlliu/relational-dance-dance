@@ -23,9 +23,24 @@ var unlock = function (p) {
 
   let glowScale = 0;
 
+  let glows = [];
+
   let numCompleted = 0;
 
   let scoreData;
+
+  let attemptedCode = [];
+  let correctCode = ["up", "down", "left", "right", "left"];
+  let codeIndex = 0;
+  let preventEnter = false;
+
+  let bottomTextOptions = {
+    default: "PRESS ENTER TO GO BACK",
+    denied: "ACCESS DENIED",
+    granted: "ACCESS GRANTED",
+  };
+
+  let bottomText = bottomTextOptions.default;
 
   p.preload = function () {
     codeGlowImg = p.loadImage("assets/code-glow.png");
@@ -47,6 +62,11 @@ var unlock = function (p) {
     window.dispatchEvent(canvasLoadedEvent);
 
     setupNavigation(unlockCanvas);
+
+    // create glows
+    for (let i = 0; i < 5; i++) {
+      glows.push(new glow(i, 1.0));
+    }
   };
 
   p.draw = function () {
@@ -56,11 +76,17 @@ var unlock = function (p) {
     if (allCanvasesLoaded) {
       //Include direction to go back if accessed from screen
       if (!unlockFromRevelation) {
-        drawText("PRESS ENTER TO GO BACK", "greenHelper", 1, null, 430);
+        if (bottomText.default) {
+          if (Math.floor(globalClock.seconds) % 2 == 0) {
+            drawText(bottomText, "greenHelper", 1, null, 430);
+          }
+        } else {
+          drawText(bottomText, "greenHelper", 1, null, 430);
+        }
       }
 
-      //FOr each song in the list (minus ???) draw a space for each input and underline
-      songList.slice(0, 5).forEach(function (song, index) {
+      //For each song in the list (minus ???) draw a space for each input and underline
+      glows.forEach(function (glow, index) {
         p.fill("white");
         p.rect(
           (135 + index * 80) * scaleRatio,
@@ -68,17 +94,29 @@ var unlock = function (p) {
           60 * scaleRatio,
           10 * scaleRatio
         );
-
-        if (index == numCompleted - 1) {
-          //Animate in recently cleared number
-          p.tint(255, glowScale * 255);
-          drawImageToScale(codeGlowImg, 135 + index * 80, 200);
-          p.noTint();
-        } else if (index < numCompleted) {
-          // Show previous ones without animation
-          drawImageToScale(codeGlowImg, 135 + index * 80, 200);
-        }
+        let showGlow = songList[index].cleared || attemptedCode.length > index;
+        glow.display(showGlow);
       });
+      // songList.slice(0, 5).forEach(function (song, index) {
+      //   p.fill("white");
+      //   p.rect(
+      //     (135 + index * 80) * scaleRatio,
+      //     300 * scaleRatio,
+      //     60 * scaleRatio,
+      //     10 * scaleRatio
+      //   );
+
+      // if (index == numCompleted - 1) {
+      //   //Animate in recently cleared number
+      //   // (Glowscale changes if coming from revelation)
+      //   p.tint(255, glowScale * 255);
+      //   drawImageToScale(codeGlowImg, 135 + index * 80, 200);
+      //   p.noTint();
+      // } else if (index < numCompleted) {
+      //   // Show previous ones without animation
+      //   drawImageToScale(codeGlowImg, 135 + index * 80, 200);
+      // }
+      // });
     }
   };
 
@@ -92,17 +130,17 @@ var unlock = function (p) {
     return num;
   }
 
-  function animateCodeGlows() {
-    //animate last one by scaling
-    let animationIndex = 1;
-    glowScale = 0;
-    let codeGlowInterval = setInterval(function () {
-      if (glowScale >= 1) {
-        clearInterval(codeGlowInterval);
-      }
-      glowScale += 0.1;
-    }, 20);
-  }
+  // function animateCodeGlows() {
+  //   //animate last one by scaling
+  //   let animationIndex = 1;
+  //   glowScale = 0;
+  //   let codeGlowInterval = setInterval(function () {
+  //     if (glowScale >= 1) {
+  //       clearInterval(codeGlowInterval);
+  //     }
+  //     glowScale += 0.1;
+  //   }, 20);
+  // }
 
   function setupNavigation(thisCanvas) {
     p.noLoop();
@@ -125,30 +163,35 @@ var unlock = function (p) {
         numCompleted = getNumCompleted();
 
         if (unlockFromRevelation) {
-          glowScale = 0;
+          // glowScale = 0;
+          glows[numCompleted - 1].scale = 0.0;
           setTimeout(function () {
-            animateCodeGlows();
+            glows[numCompleted - 1].animateIn();
           }, 2000);
+          if (numCompleted == 5) {
+            // Unlock service mode
+            setTimeout(function () {
+              transitionToServiceMode();
+            }, 4000);
+          } else {
+            //Go back to STATS SCENE
+            setTimeout(function () {
+              thisCanvas.dispatchEvent(hideSceneEvent);
+              // document
+              //   .querySelector("#songSelectorCanvas")
+              //   .dispatchEvent(showSceneEvent);
 
-          //Go back to STATS SCENE
-          setTimeout(function () {
-            thisCanvas.dispatchEvent(hideSceneEvent);
-            // document
-            //   .querySelector("#songSelectorCanvas")
-            //   .dispatchEvent(showSceneEvent);
-
-            // Figure out how to pass scoreData here
-            let showScoreSceneEvent = new CustomEvent("showScene", {
-              detail: {
-                scoreData: scoreData,
-              },
-            });
-            document
-              .getElementById("scoreCanvas")
-              .dispatchEvent(showScoreSceneEvent);
-          }, 5000);
-        } else {
-          glowScale = 1;
+              // Figure out how to pass scoreData here
+              let showScoreSceneEvent = new CustomEvent("showScene", {
+                detail: {
+                  scoreData: scoreData,
+                },
+              });
+              document
+                .getElementById("scoreCanvas")
+                .dispatchEvent(showScoreSceneEvent);
+            }, 5000);
+          }
         }
       }, sceneTransitionTime);
     });
@@ -174,6 +217,74 @@ var unlock = function (p) {
     }
   });
 
+  function listsAreEqual(list1, list2) {
+    let result = true;
+    list1.filter(function (val1, index) {
+      let val2 = list2[index];
+      if (val1 != val2) {
+        result = false;
+      }
+    });
+    return result;
+  }
+
+  function animateCodeKeypress(arrowDirection) {
+    // As we type the code, pulse animate the glows that already exist... and fade in the ones that don't
+    if (attemptedCode.length < 5) {
+      attemptedCode.push(arrowDirection);
+      if (songList[codeIndex].cleared) {
+        glows[codeIndex].pulseAnimation();
+      } else {
+        glows[codeIndex].animateIn();
+      }
+      codeIndex++;
+    }
+    if (attemptedCode.length == 5) {
+      preventEnter = true;
+      //Evaluate code
+      if (listsAreEqual(attemptedCode, correctCode)) {
+        // ACCESS GRANTED: Show experimental scene
+        bottomText = bottomTextOptions.granted;
+
+        //Transition to Terminal mode
+
+        transitionToServiceMode();
+      } else {
+        // ACCESS DENIED: Go back to song selector
+        bottomText = bottomTextOptions.denied;
+        codeIndex++;
+
+        setTimeout(function () {
+          backToSongSelector();
+        }, 4000);
+        setTimeout(function () {
+          resetCodeAttempt();
+        }, 6000);
+      }
+    }
+  }
+
+  function resetCodeAttempt() {
+    attemptedCode = [];
+    bottomText = bottomTextOptions.default;
+    codeIndex = 0;
+  }
+
+  function transitionToServiceMode() {
+    glows.forEach(function (glow) {
+      glow.growAnimation();
+    });
+    setTimeout(function () {
+      document.querySelector("#backgroundCanvas").dispatchEvent(hideSceneEvent);
+    }, 2000);
+    setTimeout(function () {
+      unlockCanvas.dispatchEvent(hideSceneEvent);
+    }, 5000);
+    setTimeout(function () {
+      let serviceModeCanvas = document.querySelector("#serviceModeCanvas");
+      serviceModeCanvas.dispatchEvent(showSceneEvent);
+    }, 11000);
+  }
   function backToSongSelector() {
     let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
     songSelectorCanvas.dispatchEvent(showSceneEvent);
@@ -183,19 +294,38 @@ var unlock = function (p) {
   function handleInput(keyCode) {
     //Handle case for menu navigation
     if (isCurrentScene) {
-      // if (keyCode == "ArrowDown" || keyCode == "KeyS") {
-      //   if (selectedMenuItemIndex < menuItems.length - 1) {
-      //     selectedMenuItemIndex++;
-      //   }
-      // }
-      // if (keyCode == "ArrowUp" || keyCode == "KeyW") {
-      //   if (selectedMenuItemIndex > 0) {
-      //     selectedMenuItemIndex--;
-      //   }
-      // }
+      if (keyCode == "ArrowDown" || keyCode == "KeyS") {
+        // if (selectedMenuItemIndex < menuItems.length - 1) {
+        //   selectedMenuItemIndex++;
+        // }
+        // attemptedCode.push("down");
+        animateCodeKeypress("down");
+      }
+      if (keyCode == "ArrowUp" || keyCode == "KeyW") {
+        // if (selectedMenuItemIndex > 0) {
+        //   selectedMenuItemIndex--;
+        // }
+
+        animateCodeKeypress("up");
+      }
+      if (keyCode == "ArrowLeft" || keyCode == "KeyA") {
+        // if (selectedMenuItemIndex < menuItems.length - 1) {
+        //   selectedMenuItemIndex++;
+        // }
+
+        animateCodeKeypress("left");
+      }
+
+      if (keyCode == "ArrowRight" || keyCode == "KeyD") {
+        // if (selectedMenuItemIndex < menuItems.length - 1) {
+        //   selectedMenuItemIndex++;
+        // }
+
+        animateCodeKeypress("right");
+      }
       //Select menu item
       if (keyCode == "Enter") {
-        if (!unlockFromRevelation) {
+        if (!unlockFromRevelation && !preventEnter) {
           console.log("go back to song selector");
           backToSongSelector();
         }
@@ -297,6 +427,70 @@ var unlock = function (p) {
   //   //Display selected menu item at full brightness
   //   menuItems[selectedMenuItemIndex].display();
   // }
+
+  class glow {
+    constructor(index, scale) {
+      this.scale = scale;
+      this.sizeScale = 1.0;
+      this.index = index;
+    }
+    display(show) {
+      if (show) {
+        p.tint(255, this.scale * 255);
+        drawImageToScale(
+          codeGlowImg,
+          135 +
+            this.index * 80 -
+            (codeGlowImg.width * this.sizeScale) / 2 +
+            codeGlowImg.width / 2,
+          200 -
+            (codeGlowImg.height * this.sizeScale) / 2 +
+            codeGlowImg.width / 2,
+          this.sizeScale
+        );
+        p.noTint();
+      }
+    }
+    pulseAnimation() {
+      this.sizeScale = 1.0;
+      let _this = this;
+      let timingIndex = 1;
+      let animationInterval = setInterval(function () {
+        if (timingIndex == 9) {
+          _this.sizeScale = 1.0;
+          clearInterval(animationInterval);
+        }
+        _this.sizeScale = 1.0 + arrowHitGradientTimings[timingIndex] * 0.5;
+        timingIndex++;
+      }, 20);
+    }
+    growAnimation() {
+      //animate last one in by scaling
+      this.sizeScale = 1.0;
+      let _this = this;
+      let time = 0;
+      let animationInterval = setInterval(function () {
+        if (time > 5000) {
+          // _this.scale = 1.0;
+          clearInterval(animationInterval);
+        }
+        _this.sizeScale *= 1.03;
+        time += 20;
+      }, 20);
+    }
+    animateIn() {
+      //animate last one in by scaling
+      this.scale = 0;
+      let _this = this;
+      let animationInterval = setInterval(function () {
+        if (_this.scale >= 1) {
+          _this.scale = 1.0;
+          clearInterval(animationInterval);
+        }
+        _this.scale += 0.1;
+      }, 20);
+    }
+  }
 
   // Draw text centered on the screen or at a certain position if specified
   function drawText(textToDraw, fontName, scaleFactor, start_xPos, start_yPos) {

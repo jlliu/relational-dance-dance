@@ -117,20 +117,20 @@ var difficulty = function (p) {
       storyModeDifficulty = "Hard";
     }
     // //Progress to song selector
-    // let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
-    // songSelectorCanvas.dispatchEvent(showSceneEvent);
-    // document.querySelector("#backgroundCanvas").dispatchEvent(showSceneEvent);
-    // console.log("select difficulty action");
-    // //Hide this canvas
-    // difficultyCanvas.dispatchEvent(hideSceneEvent);
+    let songSelectorCanvas = document.querySelector("#songSelectorCanvas");
+    songSelectorCanvas.dispatchEvent(showSceneEvent);
+    document.querySelector("#backgroundCanvas").dispatchEvent(showSceneEvent);
+    console.log("select difficulty action");
+    //Hide this canvas
+    difficultyCanvas.dispatchEvent(hideSceneEvent);
 
     //Test service mode
 
-    let serviceModeCanvas = document.querySelector("#serviceModeCanvas");
-    serviceModeCanvas.dispatchEvent(showSceneEvent);
-    document.querySelector("#backgroundCanvas").dispatchEvent(hideSceneEvent);
-    //Hide this canvas
-    difficultyCanvas.dispatchEvent(hideSceneEvent);
+    // let serviceModeCanvas = document.querySelector("#serviceModeCanvas");
+    // serviceModeCanvas.dispatchEvent(showSceneEvent);
+    // document.querySelector("#backgroundCanvas").dispatchEvent(hideSceneEvent);
+    // //Hide this canvas
+    // difficultyCanvas.dispatchEvent(hideSceneEvent);
   }
 
   function handleInput(keyCode) {

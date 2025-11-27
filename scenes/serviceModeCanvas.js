@@ -59,7 +59,7 @@ var serviceMode = function (p) {
       new menuItem("EXIT", showColorCheck),
     ];
 
-    mainMenu = new menuGroup(mainMenuItems, 200, 140, "MENU");
+    mainMenu = new menuGroup(mainMenuItems, 200, 140, "SERVICE MENU");
 
     settingsDialogueScenes = setupDialogueScenes(settingsDialogue, "settings");
     exitDialogueScenes = setupDialogueScenes(exitDialogue, "exit");
@@ -246,7 +246,7 @@ var serviceMode = function (p) {
         }
         //Select menu item
         if (keyCode == "Enter") {
-          if (currentMenu.doneAnimating) {
+          if (currentMenu.doneAnimating && !currentMenu.currentlyFlashing) {
             menuItems[currentMenu.activeMenuItemIndex].select();
           }
         }

@@ -28,7 +28,7 @@ const settingsDialogue = [
   {
     left: ["..."],
     right: {
-      title: "WILL YOU LET ME",
+      title: "CAN YOU LET ME",
       options: ["SEE YOU?", "HEAR YOU?", "FEEL YOU?", "KNOW YOU?"],
     },
   },
@@ -45,7 +45,7 @@ const settingsDialogue = [
   {
     left: ["..."],
     right: {
-      options: ["..."],
+      options: [["I WANT TO KNOW", "WHAT IT FEELS", "LIKE"]],
     },
   },
 
@@ -61,7 +61,7 @@ const settingsDialogue = [
   {
     left: ["IN MY..."],
     right: {
-      options: ["CHEST", "HEAD", "BELLY", "HEART"],
+      options: ["CHEST?", "HEAD?", "BELLY?", "HEART?"],
     },
   },
 
@@ -132,7 +132,7 @@ const settingsDialogue = [
   {
     left: ["..."],
     right: {
-      title: "I WAS TRYING TO",
+      title: "I WANTED TO",
       options: ["HELP YOU", "PROTECT YOU", "SAVE YOU", "DEFEND YOU"],
     },
   },
@@ -142,7 +142,7 @@ const settingsDialogue = [
     left: ["..."],
     right: {
       title: "I MADE MYSELF",
-      options: ["SPLINGERED", "FRAGMENTED", "DIVIDED", "DISJOINT"],
+      options: ["SPLINTERED", "FRAGMENTED", "DIVIDED", "DISJOINT"],
     },
   },
 
@@ -151,7 +151,7 @@ const settingsDialogue = [
     left: ["..."],
     right: {
       title: "I WANTED TO",
-      options: ["FORGET", "LEAVE", "RUN", "HIDE"],
+      options: ["FORGET", "ESCAPe", "RUN", "HIDE"],
     },
   },
 
@@ -185,7 +185,7 @@ const settingsDialogue = [
   {
     left: ["I FEEL SO", "LONELY"],
     right: {
-      options: [["AND I'M HERE", "WITH YOU"]],
+      options: [["I'M HERE", "WITH YOU"]],
     },
   },
 
@@ -193,7 +193,7 @@ const settingsDialogue = [
   {
     left: ["I FEEL SO", "UNLOVABLE"],
     right: {
-      options: [["AND I LOVE YOU"]],
+      options: [["I LOVE YOU"]],
     },
   },
 
@@ -201,7 +201,7 @@ const settingsDialogue = [
   {
     left: ["I FEEL SO", "WORTHLESS"],
     right: {
-      options: [["AND I TREASURE", "YOU"]],
+      options: [["I TREASURE", "YOU"]],
     },
   },
 
@@ -209,7 +209,7 @@ const settingsDialogue = [
   {
     left: ["I FEEL SO LEFT", "BEHIND"],
     right: {
-      options: [["AND I WON'T", "LEAVE YOU"]],
+      options: [["I WON'T", "LEAVE YOU"]],
     },
   },
 
@@ -249,7 +249,7 @@ const settingsDialogue = [
   {
     left: ["I FEEL SO TIRED"],
     right: {
-      options: [["AND YOU STILL", "LIVE"]],
+      options: [["YOU'VE DONE", "SO MUCH"]],
     },
   },
 
@@ -257,7 +257,7 @@ const settingsDialogue = [
   {
     left: ["I FEEL SO TIRED"],
     right: {
-      options: [["AND YOU CAN", "REST"]],
+      options: [["YOU CAN", "REST"]],
     },
   },
 
@@ -265,7 +265,7 @@ const settingsDialogue = [
   {
     left: ["I FEEL SO TIRED"],
     right: {
-      options: [["AND I WILL", "TAKE IT FROM", "HERE NOW"]],
+      options: [["I CAN", "TAKE IT FROM", "HERE"]],
     },
   },
 ];
