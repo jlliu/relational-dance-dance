@@ -37,6 +37,8 @@ var mainScene = function (p) {
   let rainbowGradientImg;
   let hitGlowImg;
 
+  let eggBombImg;
+
   //relevantNotes stores an array of note objects
   let relevantNotes = [];
   let hitMargin = 100;
@@ -92,6 +94,7 @@ var mainScene = function (p) {
     greenGradientImg = p.loadImage("/assets/greenGradient.png");
     rainbowGradientImg = p.loadImage("/assets/rainbowGradient.png");
     hitGlowImg = p.loadImage("/assets/hit-glow.png");
+    eggBombImg = p.loadImage("/assets/egg-bomb.png");
   };
 
   p.setup = function () {
@@ -236,7 +239,7 @@ var mainScene = function (p) {
           ) {
             return true;
           } else if (
-            note.noteType == "instant" &&
+            (note.noteType == "instant" || note.noteType == "mine") &&
             note.measure >= currentMeasure - 1
           ) {
             return true;
@@ -404,7 +407,7 @@ var mainScene = function (p) {
         if (note.hasPassedOver == null) {
           note.hasPassedOver = true;
           //If it's first time passing over a NOT hit note, reset combo
-          if (!note.isHit) {
+          if (!note.isHit && note.noteType != "mine") {
             updateMiss("miss", note);
           }
         }
@@ -517,7 +520,7 @@ var mainScene = function (p) {
   }
   function updateHit(score, note) {
     //Is this the first time hitting this note?
-    if (!note.isHit) {
+    if (!note.isHit && note.noteType != "mine") {
       comboObj.incrementCombo();
       note.isHit = true;
       let scoreScale = 1;
@@ -529,6 +532,12 @@ var mainScene = function (p) {
         feedbackObj.updateState("perfect", true);
       }
       scoreData.update(score);
+    } else if (!note.isHit && note.noteType == "mine") {
+      //Successfully hitting mines should set off the bomb;
+      note.isHit = true;
+      feedbackObj.updateState("mine", true);
+      scoreData.mineHit();
+      sound_fx.eggCrack.start();
     }
 
     //Add logic for hitting holds in particular
@@ -866,6 +875,22 @@ var mainScene = function (p) {
             p.tint(255, 255);
           }
         }
+      } else if (this.noteType == "mine" && !this.isHit) {
+        console.log("displaying a mine");
+        // Draw mines
+
+        if (passedOver) {
+          //Draw passed over notes greyed out
+          p.tint(255, 127);
+          drawImageToScale(eggBombImg, arrow_xPos[this.direction], yPos);
+          p.tint(255, 255);
+        } else {
+          //Draw upcoming notes iwth rainbow
+          // p.tint(255, 0, 0);
+          // arrowImgs[note.direction].filter(p.INVERT);
+          drawImageToScale(eggBombImg, arrow_xPos[this.direction], yPos);
+          // p.tint(255, 255, 255);
+        }
       }
     }
   }
@@ -919,6 +944,13 @@ var mainScene = function (p) {
       } else if (this.scoreCount <= 1000000) {
         this.ranking = "AA";
       }
+    }
+    mineHit() {
+      healthBar.decrement();
+      healthBar.decrement();
+      healthBar.decrement();
+      healthBar.decrement();
+      healthBar.decrement();
     }
     update(scoreType) {
       if (scoreType == "miss") {
@@ -1198,6 +1230,8 @@ var mainScene = function (p) {
         this.text = "Too late!";
       } else if (this.state == "miss") {
         this.text = "Miss";
+      } else if (this.state == "mine") {
+        this.text = "BAD!";
       }
       let _this = this;
       if (animate) {

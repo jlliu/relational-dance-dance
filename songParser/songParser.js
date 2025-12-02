@@ -329,15 +329,17 @@ let parseSong = function (songText, offsetId, bpm, delay) {
       //Create a new note for the lines that we see, based on the length of the note....
 
       subdivisionSplit.forEach(function (arrowElement, arrowIndex) {
+        console.log(arrowElement);
+        let secondsPerSubdivision = secondsPerMeasure / subdivisionNum;
+        let startTime =
+          measureIndex * secondsPerMeasure +
+          subdivisionIndex * secondsPerSubdivision;
+
+        let startBeat =
+          measureIndex * 4 + (subdivisionIndex / subdivisionNum) * 4;
+
         if (parseInt(arrowElement)) {
           //DETERMINE START TIME
-          let secondsPerSubdivision = secondsPerMeasure / subdivisionNum;
-          let startTime =
-            measureIndex * secondsPerMeasure +
-            subdivisionIndex * secondsPerSubdivision;
-
-          let startBeat =
-            measureIndex * 4 + (subdivisionIndex / subdivisionNum) * 4;
 
           // Create a new note if applicable
 
@@ -399,9 +401,26 @@ let parseSong = function (songText, offsetId, bpm, delay) {
           //   thisNoteData.endBeat = thisNoteData.startBeat + holdFor;
           //   thisNoteData.endMeasure = Math.floor(thisNoteData.endBeat / 4);
           // }
+        } else if (arrowElement == "M") {
+          console.log("THIS IS A MINE!!!");
+
+          let thisNoteData = {
+            id: noteData.length + offsetId,
+            startBeat: startBeat,
+            startTime: startTime,
+            noteType: "mine",
+            measure: measureIndex,
+          };
+
+          //DETERMINE DIRECTION
+
+          thisNoteData.direction = getDirection(arrowIndex);
+          noteData.push(thisNoteData);
+          // totalNotes++; // Don't affect total notes
         } else {
-          // console.log("this is zero");
+          // This is a zero
         }
+        // console.log("this is zero");
       });
     });
   });

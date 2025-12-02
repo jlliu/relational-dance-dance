@@ -187,18 +187,22 @@ let globalClock = new Tone.Clock((time) => {}, 1);
 
 globalClock.start();
 
+let sound_fx = {
+  eggCrack: new Tone.Player(`/assets/fx/egg-crack.mp3`).toDestination(),
+};
+
 let songList = [
   {
     bannerImg: `/songAssets/song1-banner.png`,
     title: `Walkin' on Eggshells`,
     cdImg: `song1-cd.png`,
     songData: eggshells,
-    songFile: `/songAssets/Music/walking_on_sunshine.ogg`,
+    songFile: `/songAssets/Music/eggshells.mp3`,
     songPlayer: new Tone.Player(
-      `/songAssets/Music/walking_on_sunshine.ogg`
+      `/songAssets/Music/eggshells.mp3`
     ).toDestination(),
-    sampleStart: 57.784,
-    sampleLength: 15,
+    sampleStart: 45.5,
+    sampleLength: 14,
     songVideoEl: document.querySelector("#cowgirlVideo"),
     cleared: false,
     scores: [],
