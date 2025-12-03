@@ -60,7 +60,7 @@ var mainScene = function (p) {
   let t = 0;
   let currentBeat = 0;
   let pixelsElapsed = 0;
-  let pixelsPerBeat = 200;
+  let pixelsPerBeat = 120;
 
   let clock = new Tone.Clock((time) => {}, 1);
 
@@ -268,72 +268,78 @@ var mainScene = function (p) {
 
     //Handle case for song end
     if (thisMeasure > measureData.length) {
-      console.log("song ended!!");
-      clock.stop();
-      thisSongPlayer.stop();
-
-      //Update score in global data
-      songList[songId].scores.push(scoreData.getScoreInfo());
-
-      // Show gate transition
-      let showGateEvent = new CustomEvent("showScene", {
-        detail: {
-          gateId: 5,
-        },
-      });
-      document.querySelector("#gateCanvas").dispatchEvent(showGateEvent);
-
-      // Hide current scene after gate closed
-      setTimeout(function () {
-        mainSongCanvas.dispatchEvent(hideSceneEvent);
-      }, 2000);
-
-      // Continue to next scene after gate transition
-      setTimeout(function () {
-        let backgroundCanvas = document.querySelector("#backgroundCanvas");
-        backgroundCanvas.dispatchEvent(showSceneEvent);
-
-        if (!songList[songId].cleared && scoreData.ranking != "E") {
-          // If first time cleared, show revelation scene
-          songList[songId].cleared = true;
-          let showRevelationSceneEvent = new CustomEvent("showScene", {
-            detail: {
-              songIndex: songId,
-              scoreData: scoreData.getScoreInfo(),
-            },
-          });
-          document
-            .getElementById("revelationCanvas")
-            .dispatchEvent(showRevelationSceneEvent);
-
-          let showBackgroundShaderEvent = new CustomEvent("showScene", {
-            detail: {
-              shaderType: "radialGlow",
-              songIndex: songId,
-            },
-          });
-          document
-            .getElementById("backgroundCanvas")
-            .dispatchEvent(showBackgroundShaderEvent);
-        } else {
-          // Show Score scene directly if failed or if we've cleared before
-          let showScoreSceneEvent = new CustomEvent("showScene", {
-            detail: {
-              scoreData: scoreData.getScoreInfo(),
-            },
-          });
-          document
-            .getElementById("scoreCanvas")
-            .dispatchEvent(showScoreSceneEvent);
-        }
-
-        //Reset at the end
-        window.setTimeout(function () {
-          console.log("resetting for new song");
-          resetForNewSong();
-        }, 3000);
-      }, 3000);
+      let win = scoreData.ranking != "E";
+      handleSongEnd(win);
     }
+  }
+
+  function handleSongEnd(win) {
+    console.log("song ended!!");
+    clock.stop();
+    thisSongPlayer.stop();
+
+    //Update score in global data
+    songList[songId].scores.push(scoreData.getScoreInfo());
+
+    // Show gate transition (Blank gate)
+    let showGateEvent = new CustomEvent("showScene", {
+      detail: {
+        gateId: 5,
+        win: win,
+      },
+    });
+    document.querySelector("#gateCanvas").dispatchEvent(showGateEvent);
+
+    // Hide current scene after gate closed
+    setTimeout(function () {
+      mainSongCanvas.dispatchEvent(hideSceneEvent);
+    }, 2000);
+
+    // Continue to next scene after gate transition
+    setTimeout(function () {
+      let backgroundCanvas = document.querySelector("#backgroundCanvas");
+      backgroundCanvas.dispatchEvent(showSceneEvent);
+
+      if (!songList[songId].cleared && win) {
+        // If first time cleared, show revelation scene
+        songList[songId].cleared = true;
+        let showRevelationSceneEvent = new CustomEvent("showScene", {
+          detail: {
+            songIndex: songId,
+            scoreData: scoreData.getScoreInfo(),
+          },
+        });
+        document
+          .getElementById("revelationCanvas")
+          .dispatchEvent(showRevelationSceneEvent);
+
+        let showBackgroundShaderEvent = new CustomEvent("showScene", {
+          detail: {
+            shaderType: "radialGlow",
+            songIndex: songId,
+          },
+        });
+        document
+          .getElementById("backgroundCanvas")
+          .dispatchEvent(showBackgroundShaderEvent);
+      } else {
+        // Show Score scene directly if failed or if we've cleared before
+        let showScoreSceneEvent = new CustomEvent("showScene", {
+          detail: {
+            scoreData: scoreData.getScoreInfo(),
+          },
+        });
+        document
+          .getElementById("scoreCanvas")
+          .dispatchEvent(showScoreSceneEvent);
+      }
+
+      //Reset at the end
+      window.setTimeout(function () {
+        console.log("resetting for new song");
+        resetForNewSong();
+      }, 3000);
+    }, 3000);
   }
 
   function startSong(songId) {
@@ -341,7 +347,14 @@ var mainScene = function (p) {
     thisSongPlayer.loop = false;
 
     //Setup info for the song
-    thisSongData = JSON.parse(songList[songId].songData);
+
+    if (storyModeDifficulty == "Easy") {
+      thisSongData = JSON.parse(songList[songId].songData.easy);
+    } else if (storyModeDifficulty == "Hard") {
+      thisSongData = JSON.parse(songList[songId].songData.hard);
+    } else {
+      thisSongData = JSON.parse(songList[songId].songData.normal);
+    }
     measureData = thisSongData.measureData;
     songBpm = thisSongData.bpm;
     songDelay = thisSongData.delay;
@@ -538,6 +551,7 @@ var mainScene = function (p) {
       feedbackObj.updateState("mine", true);
       scoreData.mineHit();
       sound_fx.eggCrack.start();
+      note.animateEggshellCrack();
     }
 
     //Add logic for hitting holds in particular
@@ -768,6 +782,23 @@ var mainScene = function (p) {
       this.endTime = noteData.endTime;
       this.endBeat = noteData.endBeat;
       this.endMeasure = noteData.endMeasure;
+      this.eggshellSceneOpacity = 0;
+    }
+    animateEggshellCrack() {
+      console.log("aniimateEggshellCrack");
+      let i = 0;
+      let _this = this;
+      let eggshellAnimationInterval = setInterval(function () {
+        console.log("interval step");
+        if (i < Object.keys(arrowHitGradientTimings).length) {
+          _this.eggshellSceneOpacity = arrowHitGradientTimings[i];
+          console.log(_this.eggshellSceneOpacity);
+        } else {
+          _this.eggshellSceneOpacity = 0;
+          clearInterval(eggshellAnimationInterval);
+        }
+        i++;
+      }, 30);
     }
     display(yPos, passedOver) {
       // Draw instant notes
@@ -876,7 +907,7 @@ var mainScene = function (p) {
           }
         }
       } else if (this.noteType == "mine" && !this.isHit) {
-        console.log("displaying a mine");
+        // console.log("displaying a mine");
         // Draw mines
 
         if (passedOver) {
@@ -891,6 +922,16 @@ var mainScene = function (p) {
           drawImageToScale(eggBombImg, arrow_xPos[this.direction], yPos);
           // p.tint(255, 255, 255);
         }
+      }
+
+      if (this.noteType == "mine" && this.eggshellSceneOpacity > 0) {
+        console.log("drawing the opacity");
+        // Draw flash if eggshell opacity is hit
+
+        let c = p.color(255, 255, 255);
+        c.setAlpha(this.eggshellSceneOpacity * 255);
+        p.fill(c);
+        p.rect(0, 0, p.width, p.height);
       }
     }
   }
@@ -946,11 +987,7 @@ var mainScene = function (p) {
       }
     }
     mineHit() {
-      healthBar.decrement();
-      healthBar.decrement();
-      healthBar.decrement();
-      healthBar.decrement();
-      healthBar.decrement();
+      healthBar.decrement(0.15);
     }
     update(scoreType) {
       if (scoreType == "miss") {
@@ -1054,10 +1091,19 @@ var mainScene = function (p) {
         this.gradientColor = "rainbow";
       }
     }
-    decrement() {
+    decrement(amount) {
+      if (amount == null) {
+        amount = 0.025;
+      }
       if (this.amountFilled > 0) {
-        this.amountFilled -= 0.01;
+        this.amountFilled -= amount;
         this.gradientColor = "green";
+      }
+      // Check for failing state, if bar goes to zero
+      if (this.amountFilled <= 0) {
+        console.log("FAILED");
+
+        handleSongEnd(false);
       }
     }
     reset() {

@@ -12,6 +12,9 @@ var gate = function (p) {
   let gateSpritesheet;
   let gateImgs = [];
 
+  let winImg;
+  let failImg;
+
   let numCanvasesLoaded = 0;
   let allCanvasesLoaded = false;
 
@@ -21,8 +24,12 @@ var gate = function (p) {
   //Store x position of left and right gates
   let gatePositions = { left: -320, right: 640 };
 
+  let winState = null;
+
   p.preload = function () {
     gateSpritesheet = p.loadImage("/assets/gatesSpritesheet.png");
+    winImg = p.loadImage("assets/result-cleared.png");
+    failImg = p.loadImage("assets/result-failed.png");
   };
 
   p.setup = function () {
@@ -59,6 +66,13 @@ var gate = function (p) {
       drawImageToScale(thisGate.left, gatePositions.left, 0);
 
       drawImageToScale(thisGate.right, gatePositions.right, 0);
+      if (winState != null) {
+        if (winState) {
+          drawImageToScale(winImg, 104, 181);
+        } else {
+          drawImageToScale(failImg, 144, 181);
+        }
+      }
     }
   };
 
@@ -99,6 +113,17 @@ var gate = function (p) {
     p.noLoop();
     thisCanvas.addEventListener("showScene", (e) => {
       gateId = e.detail.gateId;
+      if (e.detail.win != null) {
+        if (e.detail.win) {
+          // Show cleared
+          winState = true;
+        } else {
+          // Show false
+          winState = false;
+        }
+      } else {
+        winState = null;
+      }
       p.loop();
 
       thisCanvas.style.visibility = "visible";
@@ -112,6 +137,7 @@ var gate = function (p) {
       thisCanvas.style.opacity = 0;
       setTimeout(function () {
         thisCanvas.style.visibility = "hidden";
+        winState = null;
       }, sceneTransitionTime);
     });
   }
