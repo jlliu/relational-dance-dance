@@ -66,6 +66,9 @@ var mainScene = function (p) {
 
   let startDrawingArrows = false;
 
+  let songVideo;
+  let videoLoadedFirstTime = false;
+
   p.preload = function () {
     //Preload a background here
     //Preload whatever needs to be preloaded
@@ -161,33 +164,11 @@ var mainScene = function (p) {
       songId = e.detail.songId;
       //Load video
 
-      let video = document.querySelector("#songVideo");
-      video.load();
-      video.addEventListener(
-        "canplaythrough",
-        function () {
-          // Video is loaded and can be played through
-          video.play();
-        },
-        false
-      );
-
-      p.loop();
-      setTimeout(function () {
-        thisCanvas.style.visibility = "visible";
-        thisCanvas.style.opacity = 1;
-        video.style.visibility = "visible";
-        video.style.opacity = 1;
-
-        isCurrentScene = true;
-
-        //Setup video
-      }, sceneTransitionTime);
-
-      // Start song a bit after
-      setTimeout(function () {
-        startSong(songId);
-      }, sceneTransitionTime + 2000);
+      songVideo = document.querySelector("#songVideo");
+      songVideo.src = songList[songId].videoUrl;
+      songVideo.load();
+      songVideo.loop = true;
+      songVideo.addEventListener("canplaythrough", setupSongIntro, false);
     });
     thisCanvas.addEventListener("hideScene", (e) => {
       p.noLoop();
@@ -200,6 +181,31 @@ var mainScene = function (p) {
         video.style.visibility = "hidden";
       }, sceneTransitionTime);
     });
+  }
+
+  function setupSongIntro() {
+    let thisCanvas = mainSongCanvas;
+    // Video is loaded and can be played through
+
+    // if (!videoLoadedFirstTime) {
+    console.log("can play through");
+    // videoLoadedFirstTime = true;
+    p.loop();
+    setTimeout(function () {
+      thisCanvas.style.visibility = "visible";
+      thisCanvas.style.opacity = 1;
+      songVideo.style.visibility = "visible";
+      songVideo.style.opacity = 1;
+      isCurrentScene = true;
+    }, sceneTransitionTime);
+
+    // Start song a bit after
+    setTimeout(function () {
+      startSong(songId);
+    }, sceneTransitionTime + 2000);
+    // }
+
+    songVideo.removeEventListener("canplaythrough", setupSongIntro);
   }
 
   function updateNotes() {
@@ -365,7 +371,6 @@ var mainScene = function (p) {
 
     //For negative songDelays, start song before notes
     if (songDelay < 0) {
-      thisSongPlayer.start();
       setTimeout(function () {
         updateArrowsInterval = setInterval(function () {
           updateNotes();
@@ -386,6 +391,8 @@ var mainScene = function (p) {
       clock.start();
 
       setTimeout(function () {
+        console.log(songVideo);
+        songVideo.play();
         thisSongPlayer.start();
       }, songDelay * 1000);
     }
@@ -683,6 +690,8 @@ var mainScene = function (p) {
     t = 0;
     scoreData = new Score();
     healthBar.reset();
+    songVideo = null;
+    videoLoadedFirstTime = false;
   }
 
   function padOrKeypress(direction) {
